@@ -1,2 +1,2 @@
 # 4256-17-Rockefeller
-the Cyborg Cat's Java code for FRC Steamworks 2017
+the Cyborg Cats' Java robot code for FRC Steamworks 2017
