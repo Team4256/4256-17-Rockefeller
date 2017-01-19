@@ -16,6 +16,12 @@ public class Robot extends IterativeRobot {
 	final String customAuto = "My Auto";
 	String autoSelected;
 	SendableChooser<String> chooser = new SendableChooser<>();
+	//Human Input
+	final static R_Xbox4256 driverStick = new R_Xbox4256(0);
+	final static R_Xbox4256 gunnerStick = new R_Xbox4256(1);
+	//Robot Input
+	final static R_Gyrometer4256 gyro = new R_Gyrometer4256(0, 0);
+	//Robot Output
 
 	/**
 	 * This function is run when the robot is first started up and should be
