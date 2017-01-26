@@ -20,9 +20,17 @@ public class Robot extends IterativeRobot {
 	final static R_Xbox4256 driverStick = new R_Xbox4256(0);
 	final static R_Xbox4256 gunnerStick = new R_Xbox4256(1);
 	//Robot Input
-	final static R_Gyrometer4256 gyro = new R_Gyrometer4256(0, 0);
+	final static R_Gyrometer4256 gyro = new R_Gyrometer4256(Parameters.Gyrometer_updateHz, Parameters.Gyrometer_protectedZoneStart, Parameters.Gyrometer_protectedZoneSize);
 	//Robot Output
-
+	final static R_CANTalon4256 rotator1 = new R_CANTalon4256(Parameters.Swerve_module1rotator, false);
+	final static R_CANTalon4256 rotator2 = new R_CANTalon4256(Parameters.Swerve_module2rotator, false);
+	final static R_CANTalon4256 rotator3 = new R_CANTalon4256(Parameters.Swerve_module3rotator, false);
+	final static R_CANTalon4256 rotator4 = new R_CANTalon4256(Parameters.Swerve_module4rotator, false);
+	final static R_SwerveModule2017 module1 = new R_SwerveModule2017(rotator1, Parameters.Swerve_module1drive1, Parameters.Swerve_module1drive2);
+	final static R_SwerveModule2017 module2 = new R_SwerveModule2017(rotator2, Parameters.Swerve_module2drive1, Parameters.Swerve_module2drive2);
+	final static R_SwerveModule2017 module3 = new R_SwerveModule2017(rotator3, Parameters.Swerve_module3drive1, Parameters.Swerve_module3drive2);
+	final static R_SwerveModule2017 module4 = new R_SwerveModule2017(rotator4, Parameters.Swerve_module4drive1, Parameters.Swerve_module4drive2);
+	final static R_Base2017 base = new R_Base2017(module1, module2, module3, module4);
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.

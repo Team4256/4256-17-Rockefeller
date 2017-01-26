@@ -1,13 +1,38 @@
-package org.usfirst.frc.team4256.robot;
+package org.usfirst.frc.team4256.robot;//COMPLETE
 
 public class V_Compass4256 {
-	public float tareAngle = 0;
-	public float protectedZoneStart; //Angles increase as the numbers on a clock increase. This value should be the first protected angle encountered by a minute hand which starts at 12:00.
-	public float protectedZoneSize; //This value should be the number of degrees the minute hand must travel before reaching the end of the protected section.
+	private float tareAngle = 0;
+	private float protectedZoneStart; //Angles increase as the numbers on a clock increase. This value should be the first protected angle encountered by a minute hand which starts at 12:00.
+	private float protectedZoneSize; //This value should be the number of degrees the minute hand must travel before reaching the end of the protected section.
 	
 	public V_Compass4256(final float protectedZoneStart, final float protectedZoneSize) {
 		this.protectedZoneStart = protectedZoneStart;
-		this.protectedZoneSize = Math.abs(protectedZoneSize)%360;//TODO can this be public final
+		this.protectedZoneSize = Math.abs(protectedZoneSize)%360;
+	}
+	/**
+	 * This function tares the compass at the specified angle, relative to the current 0. It accepts both -'s and +'s.
+	**/
+	public void setTareAngle(final float tareAngle) {
+		this.tareAngle = validateAngle(this.tareAngle + tareAngle);
+		protectedZoneStart = validateAngle(protectedZoneStart - tareAngle);
+	}
+	/**
+	 * This function returns the current tare angle, relative to the initialized 0.
+	**/
+	public float getTareAngle() {
+		return tareAngle;
+	}
+	/**
+	 * This function returns the starting angle of the protected zone.
+	**/
+	public float getProtectedZoneStart() {
+		return protectedZoneStart;
+	}
+	/**
+	 * This function returns the size of the protected zone in degrees.
+	**/
+	public float getProtectedZoneSize() {
+		return protectedZoneSize;
 	}
 	/**
 	 * This function modifies the input to create a value between 0 and 359.999...
@@ -18,6 +43,17 @@ public class V_Compass4256 {
 		}else {
 			return (angle%360 < 360) ? angle%360 : 0;
 		}
+	}
+	/**
+	 * This function returns a valid and legal version of the input.
+	**/
+	public float legalizeAngle(float angle) {
+		angle = validateAngle(angle);
+		protectedZoneStart = validateAngle(protectedZoneStart);
+		float protectedZoneEnd = validateAngle(protectedZoneStart + protectedZoneSize);
+		if (findPath(protectedZoneStart, angle) >= 0.0 && findPath(protectedZoneStart, angle) <= protectedZoneSize) {
+			angle = Math.abs(findPath(angle, protectedZoneStart)) <= Math.abs(findPath(angle, protectedZoneEnd)) ? protectedZoneStart : protectedZoneEnd;
+		}return angle;
 	}
 	/**
 	 * This function finds the shortest path from the start angle to the end angle and returns the size of that path in degrees.
@@ -32,24 +68,6 @@ public class V_Compass4256 {
 		}if (endAngle - startAngle < -180) {
 			pathVector = -pathVector;
 		}return pathVector;
-	}
-	/**
-	 * This function returns a valid and legal version of the input.
-	**/
-	public float legalizeAngle(float angle) {
-		angle = validateAngle(angle);
-		protectedZoneStart = validateAngle(protectedZoneStart);
-		float protectedZoneEnd = validateAngle(protectedZoneStart + protectedZoneSize);
-		if (findPath(protectedZoneStart, angle) >= 0.0 && findPath(protectedZoneStart, angle) <= protectedZoneSize) {
-			angle = Math.abs(findPath(angle, protectedZoneStart)) <= Math.abs(findPath(angle, protectedZoneEnd)) ? protectedZoneStart : protectedZoneEnd;
-		}return angle;
-	}
-	/**
-	 * This function tares the compass at the specified angle. It accepts both -'s and +'s.
-	**/
-	public void setTareAngle(final float tareAngle) {
-		this.tareAngle = validateAngle(this.tareAngle + tareAngle);
-		this.protectedZoneStart = validateAngle(this.protectedZoneStart + tareAngle);
 	}
 	/**
 	 * This function returns the path to the border that is nearest to the specified angle.
