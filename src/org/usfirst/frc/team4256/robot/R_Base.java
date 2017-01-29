@@ -1,16 +1,19 @@
 package org.usfirst.frc.team4256.robot;
 
-public class R_Base2017 {
+import com.cyborgcats.reusable.R_Gyrometer;
+import com.cyborgcats.reusable.V_Compass;
+
+public class R_Base {
 	private static final double Modules_side = 26;//MOD refers to the point at which the wheel touches the ground
 	private static final double Modules_front = 22.5;
-	private static final V_Compass4256 compass = new V_Compass4256(0, 0);
-	private R_Gyrometer4256 gyro;
-	private R_SwerveModule2017 module1;//arranged clockwise
-	private R_SwerveModule2017 module2;
-	private R_SwerveModule2017 module3;
-	private R_SwerveModule2017 module4;
+	private static final V_Compass compass = new V_Compass(0, 0);
+	private R_Gyrometer gyro;
+	private R_SwerveModule module1;//arranged clockwise
+	private R_SwerveModule module2;
+	private R_SwerveModule module3;
+	private R_SwerveModule module4;
 	
-	public R_Base2017(final R_Gyrometer4256 gyro, final R_SwerveModule2017 module1, final R_SwerveModule2017 module2, final R_SwerveModule2017 module3, final R_SwerveModule2017 module4) {
+	public R_Base(final R_Gyrometer gyro, final R_SwerveModule module1, final R_SwerveModule module2, final R_SwerveModule module3, final R_SwerveModule module4) {
 		this.gyro = gyro;
 		this.module1 = module1;
 		this.module2 = module2;
@@ -25,14 +28,14 @@ public class R_Base2017 {
 	private static final double Module4_frontAngle = -Modules_shortAngle/2;
 	
 	public void swerveDrive(final double direction, final double speed, final double spin) {
-		module1.rotateTo(R_SwerveModule2017.findWheelToField(direction, gyro.getCurrentAngle()));
-		module2.rotateTo(R_SwerveModule2017.findWheelToField(direction, gyro.getCurrentAngle()));
-		module3.rotateTo(R_SwerveModule2017.findWheelToField(direction, gyro.getCurrentAngle()));
-		module4.rotateTo(R_SwerveModule2017.findWheelToField(direction, gyro.getCurrentAngle()));
-		double module1_fieldAngle = (double)V_Compass4256.validateAngle((float)(gyro.getCurrentAngle() + Module1_frontAngle));
-		double module2_fieldAngle = (double)V_Compass4256.validateAngle((float)(gyro.getCurrentAngle() + Module2_frontAngle));
-		double module3_fieldAngle = (double)V_Compass4256.validateAngle((float)(gyro.getCurrentAngle() + Module3_frontAngle));
-		double module4_fieldAngle = (double)V_Compass4256.validateAngle((float)(gyro.getCurrentAngle() + Module4_frontAngle));
+		module1.rotateTo(R_SwerveModule.findWheelToField(direction, gyro.getCurrentAngle()));
+		module2.rotateTo(R_SwerveModule.findWheelToField(direction, gyro.getCurrentAngle()));
+		module3.rotateTo(R_SwerveModule.findWheelToField(direction, gyro.getCurrentAngle()));
+		module4.rotateTo(R_SwerveModule.findWheelToField(direction, gyro.getCurrentAngle()));
+		double module1_fieldAngle = (double)V_Compass.validateAngle((float)(gyro.getCurrentAngle() + Module1_frontAngle));
+		double module2_fieldAngle = (double)V_Compass.validateAngle((float)(gyro.getCurrentAngle() + Module2_frontAngle));
+		double module3_fieldAngle = (double)V_Compass.validateAngle((float)(gyro.getCurrentAngle() + Module3_frontAngle));
+		double module4_fieldAngle = (double)V_Compass.validateAngle((float)(gyro.getCurrentAngle() + Module4_frontAngle));
 		double speed1 = speed*spin*Math.cos(Math.toRadians(module1_fieldAngle - 90));
 		double speed2 = speed*spin*Math.cos(Math.toRadians(module2_fieldAngle - 90));
 		double speed3 = speed*spin*Math.cos(Math.toRadians(module3_fieldAngle - 90));

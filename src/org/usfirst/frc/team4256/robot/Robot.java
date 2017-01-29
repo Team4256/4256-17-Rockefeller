@@ -1,5 +1,9 @@
 package org.usfirst.frc.team4256.robot;
 
+import com.cyborgcats.reusable.R_CANTalon;
+import com.cyborgcats.reusable.R_Gyrometer;
+import com.cyborgcats.reusable.R_Xbox;
+
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -17,20 +21,19 @@ public class Robot extends IterativeRobot {
 	String autoSelected;
 	SendableChooser<String> chooser = new SendableChooser<>();
 	//Human Input
-	private static final R_Xbox4256 driverStick = new R_Xbox4256(0);
-	private static final R_Xbox4256 gunnerStick = new R_Xbox4256(1);
+	private static final R_Xbox driverStick = new R_Xbox(0);
 	//Robot Input
-	private static final R_Gyrometer4256 gyro = new R_Gyrometer4256(Parameters.Gyrometer_updateHz, Parameters.Gyrometer_protectedZoneStart, Parameters.Gyrometer_protectedZoneSize);
+	private static final R_Gyrometer gyro = new R_Gyrometer(Parameters.Gyrometer_updateHz, Parameters.Gyrometer_protectedZoneStart, Parameters.Gyrometer_protectedZoneSize);
 	//Robot Output
-	private static final R_CANTalon4256 rotator1 = new R_CANTalon4256(Parameters.Swerve_module1rotator, false, R_CANTalon4256.absolute);
-	private static final R_CANTalon4256 rotator2 = new R_CANTalon4256(Parameters.Swerve_module2rotator, false, R_CANTalon4256.absolute);
-	private static final R_CANTalon4256 rotator3 = new R_CANTalon4256(Parameters.Swerve_module3rotator, false, R_CANTalon4256.absolute);
-	private static final R_CANTalon4256 rotator4 = new R_CANTalon4256(Parameters.Swerve_module4rotator, false, R_CANTalon4256.absolute);
-	private static final R_SwerveModule2017 module1 = new R_SwerveModule2017(rotator1, Parameters.Swerve_module1drive1, Parameters.Swerve_module1drive2);
-	private static final R_SwerveModule2017 module2 = new R_SwerveModule2017(rotator2, Parameters.Swerve_module2drive1, Parameters.Swerve_module2drive2);
-	private static final R_SwerveModule2017 module3 = new R_SwerveModule2017(rotator3, Parameters.Swerve_module3drive1, Parameters.Swerve_module3drive2);
-	private static final R_SwerveModule2017 module4 = new R_SwerveModule2017(rotator4, Parameters.Swerve_module4drive1, Parameters.Swerve_module4drive2);
-	private static final R_Base2017 base = new R_Base2017(gyro, module1, module2, module3, module4);
+	private static final R_CANTalon rotator1 = new R_CANTalon(Parameters.Swerve_module1rotator, false, R_CANTalon.absolute);
+	private static final R_CANTalon rotator2 = new R_CANTalon(Parameters.Swerve_module2rotator, false, R_CANTalon.absolute);
+	private static final R_CANTalon rotator3 = new R_CANTalon(Parameters.Swerve_module3rotator, false, R_CANTalon.absolute);
+	private static final R_CANTalon rotator4 = new R_CANTalon(Parameters.Swerve_module4rotator, false, R_CANTalon.absolute);
+	private static final R_SwerveModule module1 = new R_SwerveModule(rotator1, Parameters.Swerve_module1drive1, Parameters.Swerve_module1drive2);
+	private static final R_SwerveModule module2 = new R_SwerveModule(rotator2, Parameters.Swerve_module2drive1, Parameters.Swerve_module2drive2);
+	private static final R_SwerveModule module3 = new R_SwerveModule(rotator3, Parameters.Swerve_module3drive1, Parameters.Swerve_module3drive2);
+	private static final R_SwerveModule module4 = new R_SwerveModule(rotator4, Parameters.Swerve_module4drive1, Parameters.Swerve_module4drive2);
+	private static final R_Base base = new R_Base(gyro, module1, module2, module3, module4);
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.

@@ -1,11 +1,12 @@
-package org.usfirst.frc.team4256.robot;//COMPLETE
+package com.cyborgcats.reusable;
+//package org.usfirst.frc.team4256.robot;//COMPLETE
 
-public class V_Compass4256 {
+public class V_Compass {
 	private float tareAngle = 0;
 	private float protectedZoneStart; //Angles increase as the numbers on a clock increase. This value should be the first protected angle encountered by a minute hand which starts at 12:00.
 	private float protectedZoneSize; //This value should be the number of degrees the minute hand must travel before reaching the end of the protected section.
 	
-	public V_Compass4256(final float protectedZoneStart, final float protectedZoneSize) {
+	public V_Compass(final float protectedZoneStart, final float protectedZoneSize) {
 		this.protectedZoneStart = protectedZoneStart;
 		this.protectedZoneSize = Math.abs(protectedZoneSize)%360;
 	}

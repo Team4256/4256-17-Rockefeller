@@ -1,8 +1,9 @@
-package org.usfirst.frc.team4256.robot;//COMPLETE
+package com.cyborgcats.reusable;
+//package org.usfirst.frc.team4256.robot;//COMPLETE
 
 import edu.wpi.first.wpilibj.Joystick;
 
-public class R_Xbox4256 extends Joystick {
+public class R_Xbox extends Joystick {
 	public static final int AXIS_LEFT_X = 0;
 	public static final int AXIS_LEFT_Y = 1;
 	public static final int AXIS_LT = 2;
@@ -35,7 +36,7 @@ public class R_Xbox4256 extends Joystick {
 	public static final int POV_WEST = 270;
 	public static final int POV_NORTH_WEST = 315;
 	
-	public R_Xbox4256(final int port) throws IllegalStateException {
+	public R_Xbox(final int port) throws IllegalStateException {
 		super(port);
 		if (!getIsXbox()) {
 			throw new IllegalStateException("Xbox4256 was used with something other than an xbox controller.");
