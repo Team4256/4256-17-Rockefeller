@@ -4,7 +4,7 @@ import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.SerialPort;
 
 public class R_Gyrometer4256 extends AHRS {
-	private V_Compass4256 compass;
+	public V_Compass4256 compass;
 	
 	public R_Gyrometer4256(final byte updateHz, final float protectedZoneStart, final float protectedZoneSize) {
 		super(SerialPort.Port.kMXP, SerialDataType.kProcessedData, updateHz);
@@ -33,7 +33,7 @@ public class R_Gyrometer4256 extends AHRS {
 	 * Positive means clockwise and negative means counter-clockwise.
 	 * If the current angle is inside the protected zone, the path goes through the previously breached border.
 	**/
-	public float getCurrentPath(float endAngle) {
+	public float findNewPath(float endAngle) {
 		endAngle = compass.legalizeAngle(endAngle);
 		final float currentAngle = getCurrentAngle();
 		float currentPathVector = V_Compass4256.findPath(currentAngle, endAngle);

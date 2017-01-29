@@ -24,30 +24,9 @@ public class R_SwerveModule2017 {//style: any custom real class can be passed in
 		drive1.set(speed);
 		drive2.set(speed);
 	}
-	//should have 4096 units per rotation of shaft. How does that compare to a rotation of the wheel??
-	public int getPulseWidthPosition(){
-		return rotator.getPulseWidthPosition();
-	}
-	public int getPulseWidthScaled(){
-		return rotator.getPulseWidthPosition()/4096;
-	}
-	public int getPulseWidthVel(){
-		return rotator.getPulseWidthVelocity();
-	}
-	public int getPulseWidthVelScaled(){
-		return rotator.getPulseWidthVelocity()/4096;
-	}
-	public double getCurrentSensorPos(){
-		return rotator.getPosition();
-	}
-	public double getCurrentSensorVel(){
-		return rotator.getSpeed();
-	}
-	public int getQuadPos(){
-		return rotator.getEncPosition();
-	}
-	public int getQuadVel(){
-		return rotator.getEncVelocity();
+	
+	public double decapitateAngle(final double endAngle) {
+		return V_Compass4256.findPath((float)getPulseWidthPosition(), (float)endAngle) > 90 ? (double)V_Compass4256.validateAngle((float)(endAngle + 180)) : endAngle;
 	}
 	
 }
