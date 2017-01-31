@@ -6,7 +6,6 @@ import com.cyborgcats.reusable.V_Compass;
 public class R_Base {
 	private static final double Modules_side = 26;//MOD refers to the point at which the wheel touches the ground
 	private static final double Modules_front = 22.5;
-	private static final V_Compass compass = new V_Compass(0, 0);
 	private R_Gyrometer gyro;
 	private R_SwerveModule module1;//arranged clockwise
 	private R_SwerveModule module2;
@@ -21,11 +20,10 @@ public class R_Base {
 		this.module4 = module4;
 	}
 	//private static final double RADIUS = Math.sqrt(Math.pow(MOD2MOD_SIDE, 2) + Math.pow(MOD2MOD_FRONT, 2))/2;
-	private static final double Modules_shortAngle = Math.toDegrees(Math.atan(Modules_front/Modules_side));
-	private static final double Module1_frontAngle = Modules_shortAngle/2;
-	private static final double Module2_frontAngle = Module1_frontAngle + (360 - (2*Modules_shortAngle))/2;
-	private static final double Module3_frontAngle = -Modules_shortAngle;
-	private static final double Module4_frontAngle = -Modules_shortAngle/2;
+	private static final double Module1_frontAngle = Math.toDegrees(Math.atan(Modules_front/Modules_side));
+	private static final double Module2_frontAngle = 180 - Module1_frontAngle;
+	private static final double Module3_frontAngle = -Module2_frontAngle;
+	private static final double Module4_frontAngle = -Module1_frontAngle;
 	
 	public void swerveDrive(final double direction, final double speed, final double spin) {
 		module1.rotateTo(R_SwerveModule.findWheelToField(direction, gyro.getCurrentAngle()));

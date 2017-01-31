@@ -16,6 +16,9 @@ public class R_SwerveModule {//style: any custom real class can be passed into a
 		drive2 = new Talon(drive2Port);
 	}
 	public static double findWheelToField(final double wheelAngle, final double robotAngle) {
+		return (double)V_Compass.validateAngle((float)(wheelAngle + robotAngle));
+	}
+	public static double findWheelToRobot(final double wheelAngle, final double robotAngle) {
 		return (double)V_Compass.validateAngle((float)(wheelAngle - robotAngle));
 	}
 	

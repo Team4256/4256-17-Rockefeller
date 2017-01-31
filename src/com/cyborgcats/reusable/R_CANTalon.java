@@ -1,5 +1,4 @@
 package com.cyborgcats.reusable;
-//package org.usfirst.frc.team4256.robot;
 
 import com.ctre.CANTalon;
 
@@ -8,9 +7,10 @@ public class R_CANTalon extends CANTalon {
 	public static final FeedbackDevice relative = FeedbackDevice.CtreMagEncoder_Relative;
 	private static final float floatiness = 1;//the tolerance when checking for equivalence of floats
 	private double lastLegalDirection = 1.0;
+	private double gearRatio;
 	public V_Compass compass;
 	
-	public R_CANTalon(final int deviceNumber, final boolean reverseSensor, final FeedbackDevice deviceType) {//can also have update rate
+	public R_CANTalon(final int deviceNumber, final FeedbackDevice deviceType, final boolean reverseSensor, final double gearRatio) {//can also have update rate
 		super(deviceNumber);
 		reverseSensor(reverseSensor);//sensor must count positively as motor spins with positive speed
 		setFeedbackDevice(deviceType);
@@ -21,6 +21,7 @@ public class R_CANTalon extends CANTalon {
 		if (isSensorPresent(deviceType) != FeedbackDeviceStatus.FeedbackStatusPresent) {
 			throw new IllegalStateException("A CANTalon4256 could not find its integrated versaplanetary encoder.");
 		}
+		this.gearRatio = gearRatio;
 		compass = new V_Compass(0, 0);//0, 0 is tailored toward a swerve-ready CANTalon, but can be set to anything.
 	}
 	/**
@@ -28,11 +29,11 @@ public class R_CANTalon extends CANTalon {
 	**/
 	public float getCurrentAngle() {//ANGLE
 		if (getControlMode() != TalonControlMode.Position) {changeControlMode(TalonControlMode.Position);}
-		float currentAngle = (float)getPosition()*360;
+		float currentAngle = (float)(getPosition()*360/gearRatio);
 		if (0 <= V_Compass.validateAngle((float)getPosition()) && V_Compass.validateAngle((float)getPosition()) <= compass.getTareAngle()) {
-			currentAngle = 360 - compass.getTareAngle() + V_Compass.validateAngle((float)getPosition());//follows order of operations
+			currentAngle += 360 - compass.getTareAngle();//follows order of operations
 		}else {
-			currentAngle = V_Compass.validateAngle((float)getPosition()) - compass.getTareAngle();
+			currentAngle -= compass.getTareAngle();
 		}return V_Compass.validateAngle(currentAngle);
 	}
 	/**
@@ -57,14 +58,14 @@ public class R_CANTalon extends CANTalon {
 	**/
 	public void setDesiredAngle(final float desiredAngle) {//ANGLE
 		if (getControlMode() != TalonControlMode.Position) {changeControlMode(TalonControlMode.Position);}
-		set(getPosition() + (double)compass.findLegalPath(getCurrentAngle(), desiredAngle)/360);
+		set(getPosition() + (double)findNewPath(desiredAngle)*gearRatio/360);
 	}
 	
 	public float getCurrentError() {//ANGLE AND SPEED
 		if (getControlMode() == TalonControlMode.Position) {
-			return (float)getError()*360/4096;//degrees
+			return (float)(getError()*360/(4096*gearRatio));//degrees
 		}else if (getControlMode() == TalonControlMode.Speed) {
-			return (float)getError()*600/4096;//rpm
+			return (float)(getError()*600/(4096*gearRatio));//rpm
 		}else {
 			return -1;//TODO make this function work for every type of control mode
 		}

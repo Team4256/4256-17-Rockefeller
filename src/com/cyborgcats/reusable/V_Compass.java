@@ -1,5 +1,4 @@
-package com.cyborgcats.reusable;
-//package org.usfirst.frc.team4256.robot;//COMPLETE
+package com.cyborgcats.reusable;//COMPLETE
 
 public class V_Compass {
 	private float tareAngle = 0;
@@ -52,7 +51,7 @@ public class V_Compass {
 		angle = validateAngle(angle);
 		protectedZoneStart = validateAngle(protectedZoneStart);
 		float protectedZoneEnd = validateAngle(protectedZoneStart + protectedZoneSize);
-		if (findPath(protectedZoneStart, angle) >= 0.0 && findPath(protectedZoneStart, angle) <= protectedZoneSize) {
+		if (findPath(protectedZoneStart, angle) >= 0 && findPath(protectedZoneStart, angle) <= protectedZoneSize) {
 			angle = Math.abs(findPath(angle, protectedZoneStart)) <= Math.abs(findPath(angle, protectedZoneEnd)) ? protectedZoneStart : protectedZoneEnd;
 		}return angle;
 	}
