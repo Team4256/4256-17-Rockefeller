@@ -5,7 +5,7 @@ import com.cyborgcats.reusable.V_Compass;
 
 import edu.wpi.first.wpilibj.Talon;
 
-public class R_SwerveModule {//style: any custom real class can be passed into another during construction
+public class R_SwerveModule {
 	private R_CANTalon rotator;
 	private Talon drive1;
 	private Talon drive2;
@@ -15,24 +15,37 @@ public class R_SwerveModule {//style: any custom real class can be passed into a
 		drive1 = new Talon(drive1Port);
 		drive2 = new Talon(drive2Port);
 	}
-	public static double findWheelToField(final double wheelAngle, final double robotAngle) {
-		return (double)V_Compass.validateAngle((float)(wheelAngle + robotAngle));
+	/**
+	 * This function translates angles from the robot's perspective to the field's orientation.
+	 * It requires an angle and input from the gyrometer.
+	**/
+	public static double convertToField(final double wheel_robotAngle, final double robot_fieldAngle) {
+		return V_Compass.validateAngle(wheel_robotAngle + robot_fieldAngle);
 	}
-	public static double findWheelToRobot(final double wheelAngle, final double robotAngle) {
-		return (double)V_Compass.validateAngle((float)(wheelAngle - robotAngle));
+	/**
+	 * This function translates angles from the field's orientation to the robot's perspective.
+	 * It requires an angle and input from the gyrometer.
+	**/
+	public static double convertToRobot(final double wheel_fieldAngle, final double robot_fieldAngle) {
+		return V_Compass.validateAngle(wheel_fieldAngle - robot_fieldAngle);
 	}
-	
-	public void rotateTo(final double wheelAngle) {
-		
+	/**
+	 * 
+	**/
+	public void rotateTo(final double wheel_fieldAngle, final double robot_fieldAngle) {
+		rotator.setDesiredAngle(convertToRobot(wheel_fieldAngle, robot_fieldAngle));
 	}
-	
+	/**
+	 * 
+	**/
 	public void set(final double speed) {
 		drive1.set(speed);
 		drive2.set(speed);
 	}
-	
+	/**
+	 * 
+	**/
 	public double decapitateAngle(final double endAngle) {
 		return V_Compass.findPath((float)rotator.getCurrentAngle(), (float)endAngle) > 90 ? (double)V_Compass.validateAngle((float)(endAngle + 180)) : endAngle;
 	}
-	
 }

@@ -44,10 +44,10 @@ public class R_Xbox extends Joystick {
 	private double[] deadbands = new double[getAxisCount()];
 	private double[] previousAxisValues = new double[getAxisCount()];
 	{
-		for (int i = 0; i  <= deadbands.length; i++) {
+		for (int i = 0; i  <= deadbands.length - 1; i++) {
 			deadbands[i] = 0.2;
 		}
-		for (int i = 0; i <= previousAxisValues.length; i++) {
+		for (int i = 0; i <= previousAxisValues.length - 1; i++) {
 			previousAxisValues[i] = 0.0;
 		}
 	}
@@ -88,21 +88,39 @@ public class R_Xbox extends Joystick {
 	 * Otherwise, it returns false.
 	**/
 	public boolean isActive() {
-		for(int i = 1; i<=getButtonCount(); i++) {
+		for (int i = 1; i <= getButtonCount(); i++) {
 			if(getRawButton(i)) {
 				return true;
 			}
 		}
-		for(int i = 0; i<getAxisCount(); i++) {
+		for (int i = 0; i < getAxisCount(); i++) {
 			if(getAxisActivity(i)) {
 				return true;
 			}
 		}
-		for(int i = 0; i<getPOVCount(); i++) {
+		for (int i = 0; i < getPOVCount(); i++) {
 			if(getPOV(i) != -1) {
 				return true;
 			}
 		}
 		return false;
+	}
+	
+	public double convertToAngle(final double x, final double y) {
+		return -1*V_Compass.validateAngle(180 - Math.toDegrees(Math.atan2(x, y)));//TODO simplify??
+	}
+	
+	public double getCurrentAngle(final int xAxis, final int yAxis) {
+		return convertToAngle(getRawAxis(xAxis), getRawAxis(yAxis));
+	}
+	
+	public double getDeadbandedAngle(final int xAxis, final int yAxis) {
+		if ((getRawAxis(xAxis) != getDeadbandedAxis(yAxis)) && (getRawAxis(xAxis) != getDeadbandedAxis(yAxis))) {
+			return convertToAngle(previousAxisValues[xAxis], previousAxisValues[yAxis]);
+		}else {
+			previousAxisValues[xAxis] = getRawAxis(xAxis);
+			previousAxisValues[yAxis] = getRawAxis(yAxis);
+			return getCurrentAngle(xAxis, yAxis);
+		}
 	}
 }

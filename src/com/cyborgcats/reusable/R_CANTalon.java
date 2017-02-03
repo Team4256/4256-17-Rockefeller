@@ -5,8 +5,7 @@ import com.ctre.CANTalon;
 public class R_CANTalon extends CANTalon {
 	public static final FeedbackDevice absolute = FeedbackDevice.CtreMagEncoder_Absolute;
 	public static final FeedbackDevice relative = FeedbackDevice.CtreMagEncoder_Relative;
-	private static final float floatiness = 1;//the tolerance when checking for equivalence of floats
-	private double lastLegalDirection = 1.0;
+	private double lastLegalDirection = 1;
 	private double gearRatio;
 	public V_Compass compass;
 	
@@ -27,10 +26,10 @@ public class R_CANTalon extends CANTalon {
 	/**
 	 * This function returns the current angle based on the tare angle.
 	**/
-	public float getCurrentAngle() {//ANGLE
+	public double getCurrentAngle() {//ANGLE
 		if (getControlMode() != TalonControlMode.Position) {changeControlMode(TalonControlMode.Position);}
-		float currentAngle = (float)(getPosition()*360/gearRatio);
-		if (0 <= V_Compass.validateAngle((float)getPosition()) && V_Compass.validateAngle((float)getPosition()) <= compass.getTareAngle()) {
+		double currentAngle = getPosition()*360/gearRatio;
+		if (0 <= V_Compass.validateAngle(getPosition()) && V_Compass.validateAngle(getPosition()) <= compass.getTareAngle()) {
 			currentAngle += 360 - compass.getTareAngle();//follows order of operations
 		}else {
 			currentAngle -= compass.getTareAngle();
@@ -41,11 +40,11 @@ public class R_CANTalon extends CANTalon {
 	 * Positive means clockwise and negative means counter-clockwise.
 	 * If the current angle is inside the protected zone, the path goes through the previously breached border.
 	**/
-	public float findNewPath(float endAngle) {//ANGLE
+	public double findNewPath(double endAngle) {//ANGLE
 		endAngle = compass.legalizeAngle(endAngle);
-		final float currentAngle = getCurrentAngle();
-		float currentPathVector = V_Compass.findPath(currentAngle, endAngle);
-		boolean legal = Math.abs(compass.legalizeAngle(currentAngle) - currentAngle) <= floatiness;
+		final double currentAngle = getCurrentAngle();
+		double currentPathVector = V_Compass.findPath(currentAngle, endAngle);
+		boolean legal = compass.legalizeAngle(currentAngle) == currentAngle;
 		if (legal) {
 			currentPathVector = compass.findLegalPath(currentAngle, endAngle);
 			lastLegalDirection = Math.signum(currentPathVector);
@@ -56,16 +55,16 @@ public class R_CANTalon extends CANTalon {
 	/**
 	 * This function updates the PID loop's target position such that the motor will rotate to the specified angle in the best way possible.
 	**/
-	public void setDesiredAngle(final float desiredAngle) {//ANGLE
+	public void setDesiredAngle(final double desiredAngle) {//ANGLE
 		if (getControlMode() != TalonControlMode.Position) {changeControlMode(TalonControlMode.Position);}
-		set(getPosition() + (double)findNewPath(desiredAngle)*gearRatio/360);
+		set(getPosition() + findNewPath(desiredAngle)*gearRatio/360);
 	}
 	
-	public float getCurrentError() {//ANGLE AND SPEED
+	public double getCurrentError() {//ANGLE AND SPEED
 		if (getControlMode() == TalonControlMode.Position) {
-			return (float)(getError()*360/(4096*gearRatio));//degrees
+			return getError()*360/(4096*gearRatio);//degrees
 		}else if (getControlMode() == TalonControlMode.Speed) {
-			return (float)(getError()*600/(4096*gearRatio));//rpm
+			return getError()*600/(4096*gearRatio);//rpm
 		}else {
 			return -1;//TODO make this function work for every type of control mode
 		}

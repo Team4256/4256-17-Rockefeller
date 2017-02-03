@@ -29,7 +29,7 @@ public class Robot extends IterativeRobot {
 	//private static final R_CANTalon rotator2 = new R_CANTalon(Parameters.Swerve_module2rotator, R_CANTalon.absolute, false, 4.2);
 	//private static final R_CANTalon rotator3 = new R_CANTalon(Parameters.Swerve_module3rotator, R_CANTalon.absolute, false, 4.2);
 	//private static final R_CANTalon rotator4 = new R_CANTalon(Parameters.Swerve_module4rotator, R_CANTalon.absolute, false, 4.2);
-	//private static final R_SwerveModule module1 = new R_SwerveModule(rotator1, Parameters.Swerve_module1drive1, Parameters.Swerve_module1drive2);
+	private static final R_SwerveModule module1 = new R_SwerveModule(rotator1, Parameters.Swerve_module1drive1, Parameters.Swerve_module1drive2);
 	//private static final R_SwerveModule module2 = new R_SwerveModule(rotator2, Parameters.Swerve_module2drive1, Parameters.Swerve_module2drive2);
 	//private static final R_SwerveModule module3 = new R_SwerveModule(rotator3, Parameters.Swerve_module3drive1, Parameters.Swerve_module3drive2);
 	//private static final R_SwerveModule module4 = new R_SwerveModule(rotator4, Parameters.Swerve_module4drive1, Parameters.Swerve_module4drive2);
@@ -43,8 +43,6 @@ public class Robot extends IterativeRobot {
 		chooser.addDefault("Default Auto", defaultAuto);
 		chooser.addObject("My Auto", customAuto);
 		SmartDashboard.putData("Auto choices", chooser);
-		/////////////////TODO
-		SmartDashboard.putNumber("target angle", 0);
 	}
 
 	/**
@@ -94,11 +92,7 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void testPeriodic() {
-		/////////////////TODO
-		SmartDashboard.putNumber("current angle", rotator1.getCurrentAngle());
-		SmartDashboard.putNumber("current error", rotator1.getCurrentError());
-		SmartDashboard.putNumber("new path", (double)rotator1.findNewPath((float)SmartDashboard.getNumber("target angle", 0)));
-		rotator1.setDesiredAngle((float)SmartDashboard.getNumber("target angle", 0));
+		module1.rotateTo(driverStick.getDeadbandedAngle(R_Xbox.AXIS_LEFT_X, R_Xbox.AXIS_LEFT_Y), gyro.getCurrentAngle());
+		module1.set(driverStick.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_Y));
 	}
 }
-
