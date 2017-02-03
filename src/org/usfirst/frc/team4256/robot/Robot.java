@@ -92,7 +92,7 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void testPeriodic() {
-		module1.rotateTo(driverStick.getDeadbandedAngle(R_Xbox.AXIS_LEFT_X, R_Xbox.AXIS_LEFT_Y), gyro.getCurrentAngle());
-		module1.set(driverStick.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_Y));
+		module1.rotateTo(driverStick.getCurrentAngle(R_Xbox.STICK_LEFT, true), gyro.getCurrentAngle());
+		module1.set(driverStick.getCurrentRadius(R_Xbox.STICK_LEFT, true));
 	}
 }

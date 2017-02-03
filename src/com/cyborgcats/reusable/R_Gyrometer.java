@@ -17,12 +17,13 @@ public class R_Gyrometer extends AHRS {
 	 * This function returns the current angle based on the tare angle.
 	**/
 	public double getCurrentAngle() {
+		double heading = V_Compass.validateAngle((double)getFusedHeading());
 		if (!isCalibrating()) {
 			double currentAngle;
-			if (0 <= V_Compass.validateAngle((double)getFusedHeading()) && V_Compass.validateAngle((double)getFusedHeading()) <= compass.getTareAngle()) {
-				currentAngle = 360 - compass.getTareAngle() + V_Compass.validateAngle((double)getFusedHeading());//follows order of operations
+			if (0 <= heading && heading <= compass.getTareAngle()) {
+				currentAngle = 360 - compass.getTareAngle() + heading;//follows order of operations
 			}else {
-				currentAngle = V_Compass.validateAngle((double)getFusedHeading()) - compass.getTareAngle();
+				currentAngle = heading - compass.getTareAngle();
 			}lastMeasuredAngle = V_Compass.validateAngle(currentAngle);
 		}return lastMeasuredAngle;
 	}

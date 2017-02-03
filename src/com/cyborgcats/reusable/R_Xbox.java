@@ -10,6 +10,9 @@ public class R_Xbox extends Joystick {
 	public static final int AXIS_RIGHT_X = 4;
 	public static final int AXIS_RIGHT_Y = 5;
 	
+	public static final int[] STICK_LEFT = new int[] {AXIS_LEFT_X, AXIS_LEFT_Y};
+	public static final int[] STICK_RIGHT = new int[] {AXIS_RIGHT_X, AXIS_RIGHT_Y};
+	
 	public static final int BUTTON_A = 1;
 	public static final int BUTTON_B = 2;
 	public static final int BUTTON_X = 3;
@@ -48,7 +51,7 @@ public class R_Xbox extends Joystick {
 			deadbands[i] = 0.2;
 		}
 		for (int i = 0; i <= previousAxisValues.length - 1; i++) {
-			previousAxisValues[i] = 0.0;
+			previousAxisValues[i] = 0;
 		}
 	}
 	/**
@@ -72,14 +75,14 @@ public class R_Xbox extends Joystick {
 	 * Otherwise, it returns false.
 	**/
 	public boolean getAxisPress(final int axis, final double minimum) {
-		return getRawAxis(axis) >= minimum;
+		return Math.abs(getRawAxis(axis)) >= minimum;
 	}
 	/**
 	 * This function returns true if the specified axis' value has changed since the last time it was called.
 	 * Otherwise, it returns false.
 	**/
 	public boolean getAxisActivity(final int axis) {
-		boolean activityBool = Math.abs(getRawAxis(axis) - previousAxisValues[axis]) <= 0.05 ? false : true;
+		final boolean activityBool = Math.abs(getRawAxis(axis) - previousAxisValues[axis]) >= 0.05;
 		previousAxisValues[axis] = getRawAxis(axis);
 		return activityBool;
 	}
@@ -105,22 +108,34 @@ public class R_Xbox extends Joystick {
 		}
 		return false;
 	}
-	
-	public double convertToAngle(final double x, final double y) {
-		return -1*V_Compass.validateAngle(180 - Math.toDegrees(Math.atan2(x, y)));//TODO simplify??
-	}
-	
-	public double getCurrentAngle(final int xAxis, final int yAxis) {
-		return convertToAngle(getRawAxis(xAxis), getRawAxis(yAxis));
-	}
-	
-	public double getDeadbandedAngle(final int xAxis, final int yAxis) {
-		if ((getRawAxis(xAxis) != getDeadbandedAxis(yAxis)) && (getRawAxis(xAxis) != getDeadbandedAxis(yAxis))) {
-			return convertToAngle(previousAxisValues[xAxis], previousAxisValues[yAxis]);
+	/**
+	 * This function returns the angle between the specified stick and the Y axis. If deadbanded is true, small movements in the middle are ignored.
+	**/
+	public double getCurrentAngle(final int[] stick, final boolean deadbanded) {
+		final double x = getRawAxis(stick[1]);
+		final double y = getRawAxis(stick[0]);
+		final boolean badX = Math.abs(x) <= deadbands[stick[1]];
+		final boolean badY = Math.abs(y) <= deadbands[stick[0]];
+		if (deadbanded && badX && badY) {
+			return V_Compass.convertToAngle(previousAxisValues[stick[1]], previousAxisValues[stick[0]]);
 		}else {
-			previousAxisValues[xAxis] = getRawAxis(xAxis);
-			previousAxisValues[yAxis] = getRawAxis(yAxis);
-			return getCurrentAngle(xAxis, yAxis);
+			previousAxisValues[stick[1]] = x;
+			previousAxisValues[stick[0]] = y;
+			return V_Compass.convertToAngle(x, y);
+		}
+	}
+	/**
+	 * This function returns the length of the hypotenuse formed by the 2 axis of the specified stick. If deadbanded is true, small movements in the middle are ignored.
+	**/
+	public double getCurrentRadius(final int[] stick, final boolean deadbanded) {
+		final double x = getRawAxis(stick[1]);
+		final double y = getRawAxis(stick[0]);
+		final boolean badX = Math.abs(x) <= deadbands[stick[1]];
+		final boolean badY = Math.abs(y) <= deadbands[stick[0]];
+		if (deadbanded && badX && badY) {
+			return 0;
+		}else {
+			return Math.sqrt(x*x + y*y);
 		}
 	}
 }

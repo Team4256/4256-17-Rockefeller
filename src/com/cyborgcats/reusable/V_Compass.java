@@ -92,4 +92,10 @@ public class V_Compass {
 			legalPathVector = 360*Math.signum(-legalPathVector) + legalPathVector;
 		}return legalPathVector;
 	}
+	/**
+	 * This function finds the angle between the Y axis and any Cartesian coordinate.
+	**/
+	public static double convertToAngle(final double x, final double y) {
+		return Math.toDegrees(-1*(Math.atan2(y, x) - Math.PI/2));
+	}
 }

@@ -6,7 +6,7 @@ import com.cyborgcats.reusable.V_Compass;
 import edu.wpi.first.wpilibj.Talon;
 
 public class R_SwerveModule {
-	private R_CANTalon rotator;
+	private R_CANTalon rotator;//TODO if the one in robot is modified, does this get updated
 	private Talon drive1;
 	private Talon drive2;
 	
@@ -33,7 +33,7 @@ public class R_SwerveModule {
 	 * 
 	**/
 	public void rotateTo(final double wheel_fieldAngle, final double robot_fieldAngle) {
-		rotator.setDesiredAngle(convertToRobot(wheel_fieldAngle, robot_fieldAngle));
+		rotator.setDesiredAngle(decapitateAngle(convertToRobot(wheel_fieldAngle, robot_fieldAngle)));
 	}
 	/**
 	 * 
@@ -46,6 +46,6 @@ public class R_SwerveModule {
 	 * 
 	**/
 	public double decapitateAngle(final double endAngle) {
-		return V_Compass.findPath((float)rotator.getCurrentAngle(), (float)endAngle) > 90 ? (double)V_Compass.validateAngle((float)(endAngle + 180)) : endAngle;
+		return Math.abs(rotator.findNewPath(endAngle)) > 90 ? V_Compass.validateAngle(endAngle + 180) : V_Compass.validateAngle(endAngle);
 	}
 }
