@@ -26,7 +26,7 @@ public class R_SwerveModule {
 	 * 
 	**/
 	public void set(final double speed) {
-		drive1.set(speed*decapitated);//TODO make sure this keeps direction consistent, if not then just pass in speed*Math.signum(acos(currentangle + 90))
+		drive1.set(speed*decapitated);
 		drive2.set(speed*decapitated);
 	}
 	/**
@@ -53,8 +53,7 @@ public class R_SwerveModule {
 	 * 
 	**/
 	public double decapitateAngle(final double endAngle) {
-		final boolean necessary = Math.abs(rotator.findNewPath(endAngle)) > 90;
-		decapitated = necessary ? -1 : 1;
-		return necessary ? V_Compass.validateAngle(endAngle + 180) : V_Compass.validateAngle(endAngle);
+		decapitated = Math.abs(rotator.findNewPath(endAngle)) > 90 ? -1 : 1;
+		return decapitated == -1 ? V_Compass.validateAngle(endAngle + 180) : V_Compass.validateAngle(endAngle);
 	}
 }

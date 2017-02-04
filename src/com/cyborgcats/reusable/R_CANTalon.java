@@ -2,19 +2,16 @@ package com.cyborgcats.reusable;
 
 import com.ctre.CANTalon;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 public class R_CANTalon extends CANTalon {
 	public static final FeedbackDevice absolute = FeedbackDevice.CtreMagEncoder_Absolute;
 	public static final FeedbackDevice relative = FeedbackDevice.CtreMagEncoder_Relative;
-	private boolean flipped;
 	private double gearRatio;
 	private double lastLegalDirection = 1;
 	public V_Compass compass;
 	
 	public R_CANTalon(final int deviceNumber, final FeedbackDevice deviceType, final boolean reverseSensor, final double gearRatio) {//can also have update rate
 		super(deviceNumber);
-		reverseSensor(reverseSensor);//sensor must count positively as motor spins with positive speed
+		reverseOutput(reverseSensor);//sensor must count positively as motor spins with positive speed
 		setFeedbackDevice(deviceType);
 		configNominalOutputVoltage(+0f, -0f);//minimum voltage draw
 		configPeakOutputVoltage(+12f, -12f);//maximum voltage draw
@@ -23,7 +20,6 @@ public class R_CANTalon extends CANTalon {
 		if (isSensorPresent(deviceType) != FeedbackDeviceStatus.FeedbackStatusPresent) {
 			throw new IllegalStateException("A CANTalon4256 could not find its integrated versaplanetary encoder.");
 		}
-		flipped = reverseSensor;
 		this.gearRatio = gearRatio;
 		compass = new V_Compass(0, 0);//0, 0 is tailored toward a swerve-ready CANTalon, but can be set to anything.
 	}
@@ -32,11 +28,11 @@ public class R_CANTalon extends CANTalon {
 	**/
 	public double getCurrentAngle(final boolean wraparound) {//ANGLE
 		if (getControlMode() != TalonControlMode.Position) {changeControlMode(TalonControlMode.Position);}
-		double currentAngle = flipped ? -getPosition()*360/gearRatio : getPosition()*360/gearRatio;
+		double currentAngle = getPosition()*360/gearRatio;
 		if (wraparound) {
-			currentAngle = flipped ? V_Compass.validateAngle(360 + currentAngle) : V_Compass.validateAngle(currentAngle);
+			currentAngle = V_Compass.validateAngle(currentAngle);
 			if (0 <= currentAngle && currentAngle <= compass.getTareAngle()) {
-				currentAngle += 360 - compass.getTareAngle();//follows order of operations
+				currentAngle += 360 - compass.getTareAngle();
 			}
 		}else {
 			currentAngle -= compass.getTareAngle();
@@ -51,7 +47,6 @@ public class R_CANTalon extends CANTalon {
 		endAngle = compass.legalizeAngle(endAngle);
 		final double currentAngle = getCurrentAngle(true);
 		double currentPathVector = V_Compass.findPath(currentAngle, endAngle);
-		SmartDashboard.putNumber("current vector", currentPathVector);
 		boolean legal = compass.legalizeAngle(currentAngle) == currentAngle;
 		if (legal) {
 			currentPathVector = compass.findLegalPath(currentAngle, endAngle);
@@ -65,7 +60,7 @@ public class R_CANTalon extends CANTalon {
 	**/
 	public void setDesiredAngle(final double desiredAngle) {//ANGLE
 		if (getControlMode() != TalonControlMode.Position) {changeControlMode(TalonControlMode.Position);}
-		set((getCurrentAngle(false) + findNewPath(desiredAngle)*gearRatio)/360);
+		set((getCurrentAngle(false) + findNewPath(desiredAngle))*gearRatio/360);
 	}
 	
 	public double getCurrentError() {//ANGLE AND SPEED
