@@ -1,6 +1,6 @@
 package org.usfirst.frc.team4256.robot;
 
-public abstract class V_Polish4256 {//things that are used regardless of the driver, yet are not specific to a physical object, just copied over some interesting code from last year
+public abstract class V_Instructions {//things that are used regardless of the driver, yet are not specific to a physical object, just copied over some interesting code from last year
 	
 	public static void shotAlignment(final double theoreticalTimeS, final double tolerance, final boolean enable) {
 		//final float goalAngle = OPERATE2016.gyro.getCurrentAngle() + (float)OPERATE2016.visionTable.getNumber("AngleDifferential", 0.0);

@@ -1,14 +1,14 @@
-package org.usfirst.frc.team4256.robot;
+package com.cyborgcats.reusable;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class V_Filter4256 {
+public abstract class V_Fridge {
 	private static Map<String, Boolean> previousStates = new HashMap<String, Boolean>();
 	public static Map<String, Boolean> toggleStates = new HashMap<String, Boolean>();
 	private static Map<String, Long> stickyTimes = new HashMap<String, Long>();
 	
-	public static boolean toggleize(final String key, final boolean currentState) {
+	public static boolean freeze(final String key, final boolean currentState) {
 		if (previousStates.get(key) == null) {
 			previousStates.put(key, false);
 		}if (toggleStates.get(key) == null) {
@@ -21,7 +21,7 @@ public abstract class V_Filter4256 {
 		return toggleStates.get(key);
 	}
 	
-	public static boolean viscousize(final String key, final boolean currentState, final double timeoutMS) {
+	public static boolean chill(final String key, final boolean currentState, final double timeoutMS) {
 		if (previousStates.get(key) == null) {
 			previousStates.put(key, false);
 		}if (currentState && (currentState != previousStates.get(key))) {

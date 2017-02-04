@@ -3,7 +3,7 @@ package org.usfirst.frc.team4256.robot;
 import com.cyborgcats.reusable.R_Gyro;
 import com.cyborgcats.reusable.V_Compass;
 
-public class R_Base {
+public class R_DriveTrain {
 	private static final double Modules_side = 21.85;//MOD refers to the point at which the wheel touches the ground
 	private static final double Modules_front = 25.85;
 	private R_Gyro gyro;
@@ -12,7 +12,7 @@ public class R_Base {
 	private R_SwerveModule module3;
 	private R_SwerveModule module4;
 	
-	public R_Base(final R_Gyro gyro, final R_SwerveModule module1, final R_SwerveModule module2, final R_SwerveModule module3, final R_SwerveModule module4) {
+	public R_DriveTrain(final R_Gyro gyro, final R_SwerveModule module1, final R_SwerveModule module2, final R_SwerveModule module3, final R_SwerveModule module4) {
 		this.gyro = gyro;
 		this.module1 = module1;
 		this.module2 = module2;
@@ -31,10 +31,10 @@ public class R_Base {
 		module3.rotateTo(direction, gyro.getCurrentAngle());
 		module4.rotateTo(direction, gyro.getCurrentAngle());
 		if (isThere(4)) {
-			double module1_fieldAngle = (double)V_Compass.validateAngle((float)(gyro.getCurrentAngle() + Module1_frontAngle));
-			double module2_fieldAngle = (double)V_Compass.validateAngle((float)(gyro.getCurrentAngle() + Module2_frontAngle));
-			double module3_fieldAngle = (double)V_Compass.validateAngle((float)(gyro.getCurrentAngle() + Module3_frontAngle));
-			double module4_fieldAngle = (double)V_Compass.validateAngle((float)(gyro.getCurrentAngle() + Module4_frontAngle));
+			double module1_fieldAngle = V_Compass.validateAngle(gyro.getCurrentAngle() + Module1_frontAngle);
+			double module2_fieldAngle = V_Compass.validateAngle(gyro.getCurrentAngle() + Module2_frontAngle);
+			double module3_fieldAngle = V_Compass.validateAngle(gyro.getCurrentAngle() + Module3_frontAngle);
+			double module4_fieldAngle = V_Compass.validateAngle(gyro.getCurrentAngle() + Module4_frontAngle);
 			double speed1 = speed*spin*Math.cos(Math.toRadians(module1_fieldAngle - 90));
 			double speed2 = speed*spin*Math.cos(Math.toRadians(module2_fieldAngle - 90));
 			double speed3 = speed*spin*Math.cos(Math.toRadians(module3_fieldAngle - 90));
