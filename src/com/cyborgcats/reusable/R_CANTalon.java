@@ -26,18 +26,14 @@ public class R_CANTalon extends CANTalon {
 	/**
 	 * This function returns the current angle based on the tare angle. If the argument is true, the output will be between 0 and 359.999...
 	**/
-	public double getCurrentAngle(final boolean wraparound) {//ANGLE
+	public double getCurrentAngle() {//ANGLE
 		if (getControlMode() != TalonControlMode.Position) {changeControlMode(TalonControlMode.Position);}
 		double currentAngle = getPosition()*360/gearRatio;
-		if (wraparound) {
-			if (0 <= V_Compass.validateAngle(currentAngle) && V_Compass.validateAngle(currentAngle) <= compass.getTareAngle()) {
-				currentAngle += 360 - compass.getTareAngle();//follows order of operations
-			}else {
-				currentAngle -= compass.getTareAngle();
-			}return V_Compass.validateAngle(currentAngle);
+		if (0 <= V_Compass.validateAngle(currentAngle) && V_Compass.validateAngle(currentAngle) <= compass.getTareAngle()) {
+			currentAngle += 360 - compass.getTareAngle();//follows order of operations
 		}else {
-			return currentAngle;
-		}
+			currentAngle -= compass.getTareAngle();
+		}return V_Compass.validateAngle(currentAngle);
 	}
 	/**
 	 * This function finds the shortest legal path from the current angle to the end angle and returns the size of that path in degrees.
@@ -46,7 +42,7 @@ public class R_CANTalon extends CANTalon {
 	**/
 	public double findNewPath(double endAngle) {//ANGLE
 		endAngle = compass.legalizeAngle(endAngle);
-		final double currentAngle = getCurrentAngle(true);
+		final double currentAngle = getCurrentAngle();
 		double currentPathVector = V_Compass.findPath(currentAngle, endAngle);
 		boolean legal = compass.legalizeAngle(currentAngle) == currentAngle;
 		if (legal) {

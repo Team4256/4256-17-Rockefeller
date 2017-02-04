@@ -92,7 +92,8 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void testPeriodic() {
-		module1.rotateTo(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), gyro.getCurrentAngle());
-		module1.set(driver.getCurrentRadius(R_Xbox.STICK_LEFT, true));
+		//module1.rotateTo(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), gyro.getCurrentAngle());
+		//module1.set(driver.getCurrentRadius(R_Xbox.STICK_LEFT, true));
+		SmartDashboard.putNumber("current angle", rotator1.getCurrentAngle());
 	}
 }
