@@ -1,7 +1,7 @@
 package org.usfirst.frc.team4256.robot;
 
 import com.cyborgcats.reusable.R_CANTalon;
-import com.cyborgcats.reusable.R_Gyrometer;
+import com.cyborgcats.reusable.R_Gyro;
 import com.cyborgcats.reusable.R_Xbox;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -23,7 +23,7 @@ public class Robot extends IterativeRobot {
 	//Human Input
 	private static final R_Xbox driverStick = new R_Xbox(0);
 	//Robot Input
-	private static final R_Gyrometer gyro = new R_Gyrometer(Parameters.Gyrometer_updateHz, 0, 0);
+	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
 	//Robot Output
 	private static final R_CANTalon rotator1 = new R_CANTalon(Parameters.Swerve_module1rotator, R_CANTalon.absolute, false, 4.2);
 	//private static final R_CANTalon rotator2 = new R_CANTalon(Parameters.Swerve_module2rotator, R_CANTalon.absolute, false, 4.2);

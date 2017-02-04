@@ -48,4 +48,8 @@ public class R_SwerveModule {
 	public double decapitateAngle(final double endAngle) {
 		return Math.abs(rotator.findNewPath(endAngle)) > 90 ? V_Compass.validateAngle(endAngle + 180) : V_Compass.validateAngle(endAngle);
 	}
+	
+	public boolean isThere(final double threshold) {
+		return Math.abs(rotator.getCurrentError()) <= threshold;
+	}
 }
