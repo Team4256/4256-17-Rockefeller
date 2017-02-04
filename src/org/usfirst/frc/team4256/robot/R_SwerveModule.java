@@ -9,6 +9,7 @@ public class R_SwerveModule {
 	private R_CANTalon rotator;//TODO if the one in robot is modified, does this get updated
 	private Talon drive1;
 	private Talon drive2;
+	private double decapitated = 1;
 	
 	public R_SwerveModule(final R_CANTalon rotator, final int drive1Port, final int drive2Port) {
 		this.rotator = rotator;
@@ -33,19 +34,22 @@ public class R_SwerveModule {
 	 * 
 	**/
 	public void rotateTo(final double wheel_fieldAngle, final double robot_fieldAngle) {
-		rotator.setDesiredAngle(decapitateAngle(convertToRobot(wheel_fieldAngle, robot_fieldAngle)));
+		final double[] decapitation = decapitateAngle(convertToRobot(wheel_fieldAngle, robot_fieldAngle));
+		decapitated = decapitation[1];
+		rotator.setDesiredAngle(decapitation[0]);
 	}
 	/**
 	 * 
 	**/
 	public void set(final double speed) {
-		drive1.set(speed);
-		drive2.set(speed);
+		drive1.set(speed*decapitated);
+		drive2.set(speed*decapitated);
 	}
 	/**
 	 * 
 	**/
-	public double decapitateAngle(final double endAngle) {
-		return Math.abs(rotator.findNewPath(endAngle)) > 90 ? V_Compass.validateAngle(endAngle + 180) : V_Compass.validateAngle(endAngle);
+	public double[] decapitateAngle(final double endAngle) {
+		final boolean necessary = Math.abs(rotator.findNewPath(endAngle)) > 90;
+		return necessary ? new double[] {V_Compass.validateAngle(endAngle + 180), -1} : new double[] {V_Compass.validateAngle(endAngle), 1};
 	}
 }
