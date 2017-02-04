@@ -15,6 +15,7 @@ public class R_Gyro extends AHRS {
 	}
 	/**
 	 * This function returns the current angle based on the tare angle.
+	 * It will ignore changes to the tare angle until hardware calibration is complete.
 	**/
 	public double getCurrentAngle() {
 		double heading = V_Compass.validateAngle((double)getFusedHeading());

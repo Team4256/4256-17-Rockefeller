@@ -112,15 +112,15 @@ public class R_Xbox extends Joystick {
 	 * This function returns the angle between the specified stick and the Y axis. If deadbanded is true, small movements in the middle are ignored.
 	**/
 	public double getCurrentAngle(final int[] stick, final boolean deadbanded) {
-		final double x = getRawAxis(stick[1]);
-		final double y = getRawAxis(stick[0]);
-		final boolean badX = Math.abs(x) <= deadbands[stick[1]];
-		final boolean badY = Math.abs(y) <= deadbands[stick[0]];
+		final double x = getRawAxis(stick[0]);
+		final double y = getRawAxis(stick[1]);
+		final boolean badX = Math.abs(x) <= deadbands[stick[0]];
+		final boolean badY = Math.abs(y) <= deadbands[stick[1]];
 		if (deadbanded && badX && badY) {
-			return V_Compass.convertToAngle(previousAxisValues[stick[1]], previousAxisValues[stick[0]]);
+			return V_Compass.convertToAngle(previousAxisValues[stick[0]], previousAxisValues[stick[1]]);
 		}else {
-			previousAxisValues[stick[1]] = x;
-			previousAxisValues[stick[0]] = y;
+			previousAxisValues[stick[0]] = x;
+			previousAxisValues[stick[1]] = y;
 			return V_Compass.convertToAngle(x, y);
 		}
 	}
@@ -128,10 +128,10 @@ public class R_Xbox extends Joystick {
 	 * This function returns the length of the hypotenuse formed by the 2 axis of the specified stick. If deadbanded is true, small movements in the middle are ignored.
 	**/
 	public double getCurrentRadius(final int[] stick, final boolean deadbanded) {
-		final double x = getRawAxis(stick[1]);
-		final double y = getRawAxis(stick[0]);
-		final boolean badX = Math.abs(x) <= deadbands[stick[1]];
-		final boolean badY = Math.abs(y) <= deadbands[stick[0]];
+		final double x = getRawAxis(stick[0]);
+		final double y = getRawAxis(stick[1]);
+		final boolean badX = Math.abs(x) <= deadbands[stick[0]];
+		final boolean badY = Math.abs(y) <= deadbands[stick[1]];
 		if (deadbanded && badX && badY) {
 			return 0;
 		}else {
