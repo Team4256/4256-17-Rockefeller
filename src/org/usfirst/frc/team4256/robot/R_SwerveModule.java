@@ -53,8 +53,7 @@ public class R_SwerveModule {
 	 * 
 	**/
 	public double decapitateAngle(final double endAngle) {
-		final double ghost = decapitated == -1 ? 180 : 0;
-		final boolean necessary = Math.abs(rotator.findNewPath(endAngle + ghost)) > 90;
+		final boolean necessary = Math.abs(rotator.findNewPath(endAngle)) > 90;
 		decapitated = necessary ? -1 : 1;
 		return necessary ? V_Compass.validateAngle(endAngle + 180) : V_Compass.validateAngle(endAngle);
 	}

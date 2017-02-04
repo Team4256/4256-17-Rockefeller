@@ -18,13 +18,12 @@ public class R_Gyro extends AHRS {
 	 * It will ignore changes to the tare angle until hardware calibration is complete.
 	**/
 	public double getCurrentAngle() {
-		double heading = V_Compass.validateAngle((double)getFusedHeading());
+		double currentAngle = V_Compass.validateAngle((double)getFusedHeading());
 		if (!isCalibrating()) {
-			double currentAngle;
-			if (0 <= heading && heading <= compass.getTareAngle()) {
-				currentAngle = 360 - compass.getTareAngle() + heading;//follows order of operations
+			if (0 <= currentAngle && currentAngle <= compass.getTareAngle()) {
+				currentAngle += 360 - compass.getTareAngle();//follows order of operations
 			}else {
-				currentAngle = heading - compass.getTareAngle();
+				currentAngle -= compass.getTareAngle();
 			}lastMeasuredAngle = V_Compass.validateAngle(currentAngle);
 		}return lastMeasuredAngle;
 	}

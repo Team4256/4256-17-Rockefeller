@@ -13,7 +13,7 @@ public class V_Compass {
 	 * This function tares the compass at the specified angle, relative to the current 0. It accepts both -'s and +'s.
 	**/
 	public void setTareAngle(final double tareAngle) {
-		this.tareAngle = validateAngle(this.tareAngle + tareAngle);
+		this.tareAngle = this.tareAngle + tareAngle;
 		protectedZoneStart = validateAngle(protectedZoneStart - tareAngle);
 	}
 	/**
@@ -86,10 +86,12 @@ public class V_Compass {
 		startAngle = legalizeAngle(startAngle);
 		endAngle = legalizeAngle(endAngle);
 		double legalPathVector = findPath(startAngle, endAngle);
-		final double borderPath = findBorderPath(startAngle);
-		if ((Math.abs(borderPath) < Math.abs(legalPathVector) && Math.signum(legalPathVector) == Math.signum(borderPath))
-		|| (borderPath == 0 && Math.signum(legalPathVector) == Math.signum(findPath(startAngle, protectedZoneStart + protectedZoneSize/2)))) {
-			legalPathVector = 360*Math.signum(-legalPathVector) + legalPathVector;
+		if (protectedZoneSize != 0) {
+			final double borderPath = findBorderPath(startAngle);
+			if ((Math.abs(borderPath) < Math.abs(legalPathVector) && Math.signum(legalPathVector) == Math.signum(borderPath))
+			|| (borderPath == 0 && Math.signum(legalPathVector) == Math.signum(findPath(startAngle, protectedZoneStart + protectedZoneSize/2)))) {
+				legalPathVector = 360*Math.signum(-legalPathVector) + legalPathVector;
+			}
 		}return legalPathVector;
 	}
 	/**
