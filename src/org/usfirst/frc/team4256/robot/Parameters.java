@@ -19,4 +19,9 @@ public abstract class Parameters {
 	
 	public static final int Swerve_module4drive1 = 6;//PWM
 	public static final int Swerve_module4drive2 = 7;//PWM
+	
+	public static final int Swerve_module1calibrator = 8;//DIO
+	public static final int Swerve_module2calibrator = 1;//DIO
+	public static final int Swerve_module3calibrator = 2;//DIO
+	public static final int Swerve_module4calibrator = 3;//DIO
 }

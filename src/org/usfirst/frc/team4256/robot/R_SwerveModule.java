@@ -1,20 +1,47 @@
 package org.usfirst.frc.team4256.robot;
 
+import com.ctre.CANTalon.TalonControlMode;
 import com.cyborgcats.reusable.R_CANTalon;
 import com.cyborgcats.reusable.V_Compass;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Talon;
 
 public class R_SwerveModule {
 	private R_CANTalon rotator;
 	private Talon drive1;
 	private Talon drive2;
+	private DigitalInput calibrator;
 	private double decapitated = 1;
 	
-	public R_SwerveModule(final R_CANTalon rotator, final int drive1Port, final int drive2Port) {
+	public R_SwerveModule(final R_CANTalon rotator, final int drive1Port, final int drive2Port, final int calibratorPort) {
 		this.rotator = rotator;
 		drive1 = new Talon(drive1Port);
 		drive2 = new Talon(drive2Port);
+		calibrator = new DigitalInput(calibratorPort);
+	}
+	/**
+	 * 
+	**/
+	private int angle = 0;
+	private double magnetPath = V_Compass.findPath(0, 140);
+	public void init() {
+		rotator.changeControlMode(TalonControlMode.Position);
+		if (calibrator.get()) {
+			rotator.set((angle)*4.2/360);
+			angle++;
+		}else {
+			rotator.compass.setTareAngle(angle + magnetPath, false);
+		}
+		
+		
+//		double pos = rotator.getPosition();
+//		if (!calibrator.get() && !previousState) {
+//			rotator.compass.setTareAngle(pos%4.2, false);
+//		}
+//		previousState = !calibrator.get();
+//		rotator.set(0);
+		
 	}
 	/**
 	 * 

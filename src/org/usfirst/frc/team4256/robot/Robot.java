@@ -25,11 +25,11 @@ public class Robot extends IterativeRobot {
 	//Robot Input
 	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
 	//Robot Output
-	private static final R_CANTalon rotator1 = new R_CANTalon(Parameters.Swerve_module1rotator, R_CANTalon.absolute, false, 4.2);
+	private static final R_CANTalon rotator1 = new R_CANTalon(Parameters.Swerve_module1rotator, R_CANTalon.absolute, true, 4.2);
 	//private static final R_CANTalon rotator2 = new R_CANTalon(Parameters.Swerve_module2rotator, R_CANTalon.absolute, false, 4.2);
 	//private static final R_CANTalon rotator3 = new R_CANTalon(Parameters.Swerve_module3rotator, R_CANTalon.absolute, false, 4.2);
 	//private static final R_CANTalon rotator4 = new R_CANTalon(Parameters.Swerve_module4rotator, R_CANTalon.absolute, false, 4.2);
-	private static final R_SwerveModule module1 = new R_SwerveModule(rotator1, Parameters.Swerve_module1drive1, Parameters.Swerve_module1drive2);
+	private static final R_SwerveModule module1 = new R_SwerveModule(rotator1, Parameters.Swerve_module1drive1, Parameters.Swerve_module1drive2, Parameters.Swerve_module1calibrator);
 	//private static final R_SwerveModule module2 = new R_SwerveModule(rotator2, Parameters.Swerve_module2drive1, Parameters.Swerve_module2drive2);
 	//private static final R_SwerveModule module3 = new R_SwerveModule(rotator3, Parameters.Swerve_module3drive1, Parameters.Swerve_module3drive2);
 	//private static final R_SwerveModule module4 = new R_SwerveModule(rotator4, Parameters.Swerve_module4drive1, Parameters.Swerve_module4drive2);
@@ -85,6 +85,7 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
+		module1.init();
 	}
 
 	/**
@@ -93,6 +94,7 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void testPeriodic() {
 		module1.rotateTo(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), gyro.getCurrentAngle());
-		module1.set(driver.getCurrentRadius(R_Xbox.STICK_LEFT, true));
+//		module1.set(driver.getCurrentRadius(R_Xbox.STICK_LEFT, true));
+		SmartDashboard.putNumber("angle", rotator1.getCurrentAngle(false));
 	}
 }

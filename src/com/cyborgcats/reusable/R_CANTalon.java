@@ -33,7 +33,9 @@ public class R_CANTalon extends CANTalon {
 			currentAngle = V_Compass.validateAngle(currentAngle);
 			if (0 <= currentAngle && currentAngle <= compass.getTareAngle()) {
 				currentAngle += 360 - compass.getTareAngle();
-			}
+			}else {
+				currentAngle -= compass.getTareAngle();
+			}currentAngle = V_Compass.validateAngle(currentAngle);
 		}else {
 			currentAngle -= compass.getTareAngle();
 		}return currentAngle;
