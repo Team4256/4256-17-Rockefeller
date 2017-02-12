@@ -24,21 +24,13 @@ public class R_CANTalon extends CANTalon {
 		compass = new V_Compass(0, 0);//0, 0 is tailored toward a swerve-ready CANTalon, but can be set to anything.
 	}
 	/**
-	 * This function returns the current angle based on the tare angle. If the argument is true, the output will be between 0 and 359.999...
+	 * This function returns the current angle based on the tare angle. If wraparound is true, the output will be between 0 and 359.999...
 	**/
 	public double getCurrentAngle(final boolean wraparound) {//ANGLE
 		if (getControlMode() != TalonControlMode.Position) {changeControlMode(TalonControlMode.Position);}
-		double currentAngle = getPosition()*360/gearRatio;
-		if (wraparound) {
-			currentAngle = V_Compass.validateAngle(currentAngle);
-			if (0 <= currentAngle && currentAngle <= compass.getTareAngle()) {
-				currentAngle += 360 - compass.getTareAngle();
-			}else {
-				currentAngle -= compass.getTareAngle();
-			}currentAngle = V_Compass.validateAngle(currentAngle);
-		}else {
-			currentAngle -= compass.getTareAngle();
-		}return currentAngle;
+		double net = getPosition()*360/gearRatio - compass.getTareAngle();
+		double currentAngle = Math.signum(net)*(Math.abs(net))%(gearRatio*360);
+		return wraparound ? V_Compass.validateAngle(currentAngle) : currentAngle;
 	}
 	/**
 	 * This function finds the shortest legal path from the current angle to the end angle and returns the size of that path in degrees.

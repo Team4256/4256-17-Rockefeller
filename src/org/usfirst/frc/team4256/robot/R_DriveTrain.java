@@ -25,7 +25,7 @@ public class R_DriveTrain {
 	private static final double Module3_frontAngle = -Module2_frontAngle;
 	private static final double Module4_frontAngle = -Module1_frontAngle;
 	
-	public void swerveDrive(final double direction, final double speed, final double spin) {
+	public void control(final double direction, final double speed, final double spin) {
 		module1.rotateTo(direction, gyro.getCurrentAngle());
 		module2.rotateTo(direction, gyro.getCurrentAngle());
 		module3.rotateTo(direction, gyro.getCurrentAngle());

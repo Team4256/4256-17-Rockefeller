@@ -9,40 +9,53 @@ import edu.wpi.first.wpilibj.Talon;
 
 public class R_SwerveModule {
 	private R_CANTalon rotator;
-	private Talon drive1;
-	private Talon drive2;
+	private Talon driver;
 	private DigitalInput calibrator;
+	private boolean calibrated = false;
 	private double decapitated = 1;
 	
-	public R_SwerveModule(final R_CANTalon rotator, final int drive1Port, final int drive2Port, final int calibratorPort) {
+	public R_SwerveModule(final R_CANTalon rotator, final int driver, final int calibrator) {
 		this.rotator = rotator;
-		drive1 = new Talon(drive1Port);
-		drive2 = new Talon(drive2Port);
-		calibrator = new DigitalInput(calibratorPort);
+		this.driver = new Talon(driver);
+		this.calibrator = new DigitalInput(calibrator);
 	}
 	/**
 	 * 
 	**/
-	private int angle = 0;
-	private double magnetPath = V_Compass.findPath(0, 140);
-	public void init() {
-		rotator.changeControlMode(TalonControlMode.Position);
-		if (calibrator.get()) {
-			rotator.set((angle)*4.2/360);
-			angle++;
-		}else {
-			rotator.compass.setTareAngle(angle + magnetPath, false);
-		}
-		
-		
-//		double pos = rotator.getPosition();
-//		if (!calibrator.get() && !previousState) {
-//			rotator.compass.setTareAngle(pos%4.2, false);
-//		}
-//		previousState = !calibrator.get();
-//		rotator.set(0);
-		
+	public boolean isCalibrated() {
+		return calibrated;
 	}
+	/**
+	 * 
+	**/
+	public void calibrate() {
+		rotator.changeControlMode(TalonControlMode.Position);
+		int iteration = 0;
+		double revs = rotator.getPosition()%4.2;
+		while (calibrator.get() && iteration < 840) {
+			revs += 0.005;
+			rotator.set(revs);
+			iteration++;
+		}
+		rotator.compass.setTareAngle(revs%4.2*360/4.2, false);//TODO should it be true or false
+		calibrated = true;//TODO make a get function to return this to other classes
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * 
 	**/
@@ -53,8 +66,7 @@ public class R_SwerveModule {
 	 * 
 	**/
 	public void set(final double speed) {
-		drive1.set(speed*decapitated);
-		drive2.set(speed*decapitated);
+		driver.set(speed*decapitated);
 	}
 	/**
 	 * 
