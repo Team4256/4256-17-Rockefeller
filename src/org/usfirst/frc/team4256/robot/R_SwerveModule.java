@@ -22,12 +22,6 @@ public class R_SwerveModule {
 	/**
 	 * 
 	**/
-	public boolean isCalibrated() {
-		return calibrated;
-	}
-	/**
-	 * 
-	**/
 	public void calibrate() {
 		rotator.changeControlMode(TalonControlMode.Position);
 		int iteration = 0;
@@ -37,30 +31,26 @@ public class R_SwerveModule {
 			rotator.set(revs);
 			iteration++;
 		}
-		rotator.compass.setTareAngle(revs%4.2*360/4.2, false);//TODO should it be true or false
-		calibrated = true;//TODO make a get function to return this to other classes
+		rotator.compass.setTareAngle(revs%4.2*360/4.2, false);
+		calibrated = true;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	/**
+	 * This function indicates whether the calibrate function has been successfully run.
+	**/
+	public boolean isCalibrated() {
+		return calibrated;
+	}
 	/**
 	 * 
 	**/
-	public void rotateTo(final double wheel_fieldAngle, final double robot_fieldAngle) {
-		rotator.setDesiredAngle(decapitateAngle(convertToRobot(wheel_fieldAngle, robot_fieldAngle)));
+	public void swivelWith(final double wheel_fieldAngle, final double chassis_fieldAngle) {
+		rotator.setAngle(decapitateAngle(convertToRobot(wheel_fieldAngle, chassis_fieldAngle)));
+	}
+	/**
+	 * 
+	**/
+	public void swivelTo(final double wheel_chassisAngle) {
+		rotator.setAngle(decapitateAngle(wheel_chassisAngle));
 	}
 	/**
 	 * 
@@ -71,22 +61,28 @@ public class R_SwerveModule {
 	/**
 	 * 
 	**/
+	public double get() {
+		return driver.get();
+	}
+	/**
+	 * 
+	**/
 	public boolean isThere(final double threshold) {
-		return Math.abs(rotator.getCurrentError()) <= threshold;
+		return Math.abs(rotator.getCurrentError()) <= threshold;//TODO speed based, where if its not moving anymore then go. or if PID output drops to 0
 	}
 	/**
 	 * This function translates angles from the robot's perspective to the field's orientation.
 	 * It requires an angle and input from the gyro.
 	**/
-	public static double convertToField(final double wheel_robotAngle, final double robot_fieldAngle) {
-		return V_Compass.validateAngle(wheel_robotAngle + robot_fieldAngle);
+	public static double convertToField(final double wheel_robotAngle, final double chassis_fieldAngle) {
+		return V_Compass.validateAngle(wheel_robotAngle + chassis_fieldAngle);
 	}
 	/**
 	 * This function translates angles from the field's orientation to the robot's perspective.
 	 * It requires an angle and input from the gyro.
 	**/
-	public static double convertToRobot(final double wheel_fieldAngle, final double robot_fieldAngle) {
-		return V_Compass.validateAngle(wheel_fieldAngle - robot_fieldAngle);
+	public static double convertToRobot(final double wheel_fieldAngle, final double chassis_fieldAngle) {
+		return V_Compass.validateAngle(wheel_fieldAngle - chassis_fieldAngle);
 	}
 	/**
 	 * 

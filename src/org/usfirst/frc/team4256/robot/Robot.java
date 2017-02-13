@@ -6,6 +6,7 @@ import com.cyborgcats.reusable.R_Xbox;
 import com.cyborgcats.reusable.V_Fridge;
 import com.cyborgcats.reusable.V_PID;
 
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -28,9 +29,10 @@ public class Robot extends IterativeRobot {
 	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
 	//Robot Output TODO servos
 	private static final R_CANTalon climber = new R_CANTalon(Parameters.Climber, R_CANTalon.absolute, false, 1);
+	private static final DoubleSolenoid gearer = new DoubleSolenoid(0, 1, 2);
 	private static final R_CANTalon intake = new R_CANTalon(Parameters.Intake, R_CANTalon.relative, false, 1);
 	private static final R_CANTalon flyWheel = new R_CANTalon(Parameters.Shooter_flyWheel, R_CANTalon.relative, false, 1);
-	private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, R_CANTalon.absolute, false, 12);
+	private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, R_CANTalon.absolute, false, 12, 135, 90);
 	private static final R_CANTalon rotator1 = new R_CANTalon(Parameters.Swerve_rotator1, R_CANTalon.absolute, false, 4.2);
 	private static final R_CANTalon rotator2 = new R_CANTalon(Parameters.Swerve_rotator2, R_CANTalon.absolute, false, 4.2);
 	private static final R_CANTalon rotator3 = new R_CANTalon(Parameters.Swerve_rotator3, R_CANTalon.absolute, false, 4.2);
@@ -49,6 +51,8 @@ public class Robot extends IterativeRobot {
 		chooser.addDefault("Default Auto", defaultAuto);
 		chooser.addObject("My Auto", customAuto);
 		SmartDashboard.putData("Auto choices", chooser);
+		
+		V_PID.set("spin", Parameters.spinP, Parameters.spinI, Parameters.spinD);
 	}
 
 	/**
@@ -107,14 +111,17 @@ public class Robot extends IterativeRobot {
 			spinError = driver.getCurrentAngle(R_Xbox.STICK_RIGHT, true) - gyro.getCurrentAngle();
 		}
 		
-		double spinOut = V_PID.get("spin", spinError, Parameters.spinP, Parameters.spinI, Parameters.spinD);
-		swerve.control(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), driver.getCurrentRadius(R_Xbox.STICK_LEFT, true), spinOut);
+		double spinOut = V_PID.get("spin", spinError);
+		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), driver.getCurrentRadius(R_Xbox.STICK_LEFT, true), spinOut);//SWERVE
 		
-		if (driver.getAxisPress(R_Xbox.AXIS_RT, .5)) {//INTAKE
-			intake.setRPM(60);//TODO no such function yet
-		}
 		if (driver.getAxisPress(R_Xbox.AXIS_LT, .5)) {//CLIMBER
-			climber.setSpeed(1);//TODO no such function yet
+			climber.setVC(.5);
+		}if (V_Fridge.freeze("RB", driver.getRawButton(R_Xbox.BUTTON_RB))) {//GEARER
+			gearer.set(DoubleSolenoid.Value.kForward);
+		}else {
+			gearer.set(DoubleSolenoid.Value.kReverse);
+		}if (driver.getAxisPress(R_Xbox.AXIS_RT, .5)) {//INTAKE
+			intake.setRPM(60);
 		}
 	}
 

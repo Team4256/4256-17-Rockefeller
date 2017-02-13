@@ -9,19 +9,35 @@ public class R_CANTalon extends CANTalon {
 	private double lastLegalDirection = 1;
 	public V_Compass compass;
 	
-	public R_CANTalon(final int deviceNumber, final FeedbackDevice deviceType, final boolean reverseSensor, final double gearRatio) {//can also have update rate
+	public R_CANTalon(final int deviceNumber, final FeedbackDevice deviceType, final boolean reverseSensor, final double gearRatio, final double protectedZoneStart, final double protectedZoneSize) {//can also have update rate
 		super(deviceNumber);
 		reverseOutput(reverseSensor);//sensor must count positively as motor spins with positive speed
 		setFeedbackDevice(deviceType);
 		configNominalOutputVoltage(+0f, -0f);//minimum voltage draw
 		configPeakOutputVoltage(+12f, -12f);//maximum voltage draw
+		setVoltageCompensationRampRate(24);//(volts per second)/10
 		setProfile(0);//choose between PID loop parameter stores
 		setAllowableClosedLoopErr(0);
 		if (isSensorPresent(deviceType) != FeedbackDeviceStatus.FeedbackStatusPresent) {
 			throw new IllegalStateException("A CANTalon4256 could not find its integrated versaplanetary encoder.");
 		}
 		this.gearRatio = gearRatio;
-		compass = new V_Compass(0, 0);//0, 0 is tailored toward a swerve-ready CANTalon, but can be set to anything.
+		compass = new V_Compass(protectedZoneStart, protectedZoneSize);
+	}
+	public R_CANTalon(final int deviceNumber, final FeedbackDevice deviceType, final boolean reverseSensor, final double gearRatio) {//can also have update rate
+		super(deviceNumber);
+		reverseOutput(reverseSensor);
+		setFeedbackDevice(deviceType);
+		configNominalOutputVoltage(+0f, -0f);
+		configPeakOutputVoltage(+12f, -12f);
+		setVoltageCompensationRampRate(24);
+		setProfile(0);
+		setAllowableClosedLoopErr(0);
+		if (isSensorPresent(deviceType) != FeedbackDeviceStatus.FeedbackStatusPresent) {
+			throw new IllegalStateException("A CANTalon4256 could not find its integrated versaplanetary encoder.");
+		}
+		this.gearRatio = gearRatio;
+		compass = new V_Compass(0, 0);
 	}
 	/**
 	 * This function returns the current angle based on the tare angle. If wraparound is true, the output will be between 0 and 359.999...
@@ -52,18 +68,48 @@ public class R_CANTalon extends CANTalon {
 	/**
 	 * This function updates the PID loop's target position such that the motor will rotate to the specified angle in the best way possible.
 	**/
-	public void setDesiredAngle(final double desiredAngle) {//ANGLE
+	public void setAngle(final double endAngle) {//ANGLE
 		if (getControlMode() != TalonControlMode.Position) {changeControlMode(TalonControlMode.Position);}
-		set((getCurrentAngle(false) + findNewPath(desiredAngle))*gearRatio/360);
+		set((getCurrentAngle(false) + findNewPath(endAngle))*gearRatio/360);
 	}
-	
-	public double getCurrentError() {//ANGLE AND SPEED
+	/**
+	 * This function updates the PID loop's target speed.
+	**/
+	public void setRPM(final double rpm) {//SPEED
+		if (getControlMode() != TalonControlMode.Speed) {changeControlMode(TalonControlMode.Speed);}
+		set(rpm);
+	}
+	/**
+	 * This function updates the PID loop's target current.
+	**/
+	public void setAmps(final double amps) {//CURRENT
+		if (getControlMode() != TalonControlMode.Current) {changeControlMode(TalonControlMode.Current);}
+		set(amps);
+	}
+	/**
+	 * This function scales the input to a voltage between 0 and 12, and then uses voltage compensation mode to maintain it.
+	**/
+	public void setVC(double speed) {//VOLTAGE
+		if (getControlMode() != TalonControlMode.Voltage) {changeControlMode(TalonControlMode.Voltage);}
+		if (Math.abs(speed) > 1) {speed = Math.signum(speed);}
+		speed *= 12;
+		set(speed);
+	}
+	/**
+	 * This function returns the PID error for the current control mode.
+	 * Position: Degrees
+	 * Speed: RPM
+	 * Current: Amperes
+	**/
+	public double getCurrentError() {//ANGLE, SPEED, CURRENT
 		if (getControlMode() == TalonControlMode.Position) {
-			return getError()*360/(4096*gearRatio);//degrees
+			return getError()*360/(4096*gearRatio);
 		}else if (getControlMode() == TalonControlMode.Speed) {
-			return getError()*600/(4096*gearRatio);//rpm
+			return getError()*600/(4096*gearRatio);
+		}else if (getControlMode() == TalonControlMode.Current){
+			return getError();
 		}else {
-			return -1;//TODO make this function work for every type of control mode
+			return -1;
 		}
 	}
 }
