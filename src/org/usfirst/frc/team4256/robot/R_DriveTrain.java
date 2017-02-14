@@ -20,6 +20,15 @@ public class R_DriveTrain {
 		this.module3 = module3;
 		this.module4 = module4;
 	}
+	/**
+	 * Set some PID defaults.
+	**/
+	public void defaults() {
+		module1.defaults();
+		module2.defaults();
+		module3.defaults();
+		module4.defaults();
+	}
 	
 	public void holonomic(final double direction, double speed, double spin) {
 		if (Math.abs(speed) > 1) {speed = Math.signum(speed);}//TODO is this necessary with the normalizer below?
@@ -58,12 +67,5 @@ public class R_DriveTrain {
 	
 	public boolean isThere(final double threshold) {//TODO if the change in my pid error has leveled out, then do..., or if speed has gone below threshold (change here and in SwerveModule)
 		return module1.isThere(threshold) && module2.isThere(threshold) && module3.isThere(threshold) && module4.isThere(threshold);
-	}
-	
-	public void lockdown() {
-		module1.swivelTo(Module1_frontAngle + 90);
-		module2.swivelTo(270 - Module1_frontAngle);
-		module3.swivelTo(Module1_frontAngle + 90);
-		module4.swivelTo(270 - Module1_frontAngle);
 	}
 }

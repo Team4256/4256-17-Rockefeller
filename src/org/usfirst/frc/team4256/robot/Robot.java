@@ -25,22 +25,19 @@ public class Robot extends IterativeRobot {
 	SendableChooser<String> chooser = new SendableChooser<>();
 	//Human Input
 	private static final R_Xbox driver = new R_Xbox(0);
+	private static final R_Xbox gunner = new R_Xbox(1);
 	//Robot Input
 	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
-	//Robot Output TODO servos
-	private static final R_CANTalon climber = new R_CANTalon(Parameters.Climber, R_CANTalon.absolute, false, 1);
+	//Robot Output TODO servos, turret not a CANTalon
+	private static final R_CANTalon climber = new R_CANTalon(Parameters.Climber, R_CANTalon.absolute, false, R_CANTalon.voltage, 1, 0, 0);
 	private static final DoubleSolenoid gearer = new DoubleSolenoid(0, 1, 2);
-	private static final R_CANTalon intake = new R_CANTalon(Parameters.Intake, R_CANTalon.relative, false, 1);
-	private static final R_CANTalon flyWheel = new R_CANTalon(Parameters.Shooter_flyWheel, R_CANTalon.relative, false, 1);
-	private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, R_CANTalon.absolute, false, 12, 135, 90);
-	private static final R_CANTalon rotator1 = new R_CANTalon(Parameters.Swerve_rotator1, R_CANTalon.absolute, false, 4.2);
-	private static final R_CANTalon rotator2 = new R_CANTalon(Parameters.Swerve_rotator2, R_CANTalon.absolute, false, 4.2);
-	private static final R_CANTalon rotator3 = new R_CANTalon(Parameters.Swerve_rotator3, R_CANTalon.absolute, false, 4.2);
-	private static final R_CANTalon rotator4 = new R_CANTalon(Parameters.Swerve_rotator4, R_CANTalon.absolute, false, 4.2);
-	private static final R_SwerveModule module1 = new R_SwerveModule(rotator1, Parameters.Swerve_drive1, Parameters.Swerve_calibrator1);
-	private static final R_SwerveModule module2 = new R_SwerveModule(rotator2, Parameters.Swerve_drive2, Parameters.Swerve_calibrator2);
-	private static final R_SwerveModule module3 = new R_SwerveModule(rotator3, Parameters.Swerve_drive3, Parameters.Swerve_calibrator3);
-	private static final R_SwerveModule module4 = new R_SwerveModule(rotator4, Parameters.Swerve_drive4, Parameters.Swerve_calibrator4);
+	private static final R_CANTalon intake = new R_CANTalon(Parameters.Intake, R_CANTalon.relative, false, R_CANTalon.speed, 1, 0, 0);
+	private static final R_CANTalon flyWheel = new R_CANTalon(Parameters.Shooter_flyWheel, R_CANTalon.relative, false, R_CANTalon.speed, 1, 0, 0);
+	private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, R_CANTalon.absolute, false, R_CANTalon.position, 12, 135, 90);
+	private static final R_SwerveModule module1 = new R_SwerveModule(Parameters.Swerve_rotator1, Parameters.Swerve_drive1, Parameters.Swerve_calibrator1);
+	private static final R_SwerveModule module2 = new R_SwerveModule(Parameters.Swerve_rotator2, Parameters.Swerve_drive2, Parameters.Swerve_calibrator2);
+	private static final R_SwerveModule module3 = new R_SwerveModule(Parameters.Swerve_rotator3, Parameters.Swerve_drive3, Parameters.Swerve_calibrator3);
+	private static final R_SwerveModule module4 = new R_SwerveModule(Parameters.Swerve_rotator4, Parameters.Swerve_drive4, Parameters.Swerve_calibrator4);
 	private static final R_DriveTrain swerve = new R_DriveTrain(gyro, module1, module2, module3, module4);
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -51,6 +48,13 @@ public class Robot extends IterativeRobot {
 		chooser.addDefault("Default Auto", defaultAuto);
 		chooser.addObject("My Auto", customAuto);
 		SmartDashboard.putData("Auto choices", chooser);
+		
+		climber.defaults();
+		climber.setVoltageCompensationRampRate(24);
+		intake.defaults();
+		flyWheel.defaults();
+		turret.defaults();
+		swerve.defaults();
 		
 		V_PID.set("spin", Parameters.spinP, Parameters.spinI, Parameters.spinD);
 	}

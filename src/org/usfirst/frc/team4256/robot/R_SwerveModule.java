@@ -1,6 +1,5 @@
 package org.usfirst.frc.team4256.robot;
 
-import com.ctre.CANTalon.TalonControlMode;
 import com.cyborgcats.reusable.R_CANTalon;
 import com.cyborgcats.reusable.V_Compass;
 
@@ -14,16 +13,22 @@ public class R_SwerveModule {
 	private boolean calibrated = false;
 	private double decapitated = 1;
 	
-	public R_SwerveModule(final R_CANTalon rotator, final int driver, final int calibrator) {
-		this.rotator = rotator;
+	public R_SwerveModule(final int rotator, final int driver, final int calibrator) {
+		this.rotator = new R_CANTalon(rotator, R_CANTalon.absolute, false, R_CANTalon.position, 4.2, 0, 0);
 		this.driver = new Talon(driver);
 		this.calibrator = new DigitalInput(calibrator);
 	}
 	/**
+	 * Set some PID defaults.
+	**/
+	public void defaults() {
+		rotator.defaults();
+		rotator.setPID(Parameters.swerveP, Parameters.swerveI, Parameters.swerveD);
+	}
+	/**
 	 * 
 	**/
-	public void calibrate() {
-		rotator.changeControlMode(TalonControlMode.Position);
+	public void calibrate() {//TODO calibrate all at once
 		int iteration = 0;
 		double revs = rotator.getPosition()%4.2;
 		while (calibrator.get() && iteration < 840) {

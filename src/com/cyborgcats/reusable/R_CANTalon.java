@@ -2,48 +2,43 @@ package com.cyborgcats.reusable;
 
 import com.ctre.CANTalon;
 
-public class R_CANTalon extends CANTalon {
+public class R_CANTalon extends CANTalon {//TODO still may be a few default params to set. see cantalon user guide
 	public static final FeedbackDevice absolute = FeedbackDevice.CtreMagEncoder_Absolute;
 	public static final FeedbackDevice relative = FeedbackDevice.CtreMagEncoder_Relative;
+	public static final TalonControlMode position = TalonControlMode.Position;
+	public static final TalonControlMode speed = TalonControlMode.Speed;
+	public static final TalonControlMode current = TalonControlMode.Current;
+	public static final TalonControlMode voltage = TalonControlMode.Voltage;
+	public static final TalonControlMode percent = TalonControlMode.PercentVbus;
 	private double gearRatio;
 	private double lastLegalDirection = 1;
 	public V_Compass compass;
 	
-	public R_CANTalon(final int deviceNumber, final FeedbackDevice deviceType, final boolean reverseSensor, final double gearRatio, final double protectedZoneStart, final double protectedZoneSize) {//can also have update rate
+	public R_CANTalon(final int deviceNumber, final FeedbackDevice deviceType, final boolean reverseSensor, final TalonControlMode controlMode, final double gearRatio, final double protectedZoneStart, final double protectedZoneSize) {
 		super(deviceNumber);
-		reverseOutput(reverseSensor);//sensor must count positively as motor spins with positive speed
 		setFeedbackDevice(deviceType);
-		configNominalOutputVoltage(+0f, -0f);//minimum voltage draw
-		configPeakOutputVoltage(+12f, -12f);//maximum voltage draw
-		setVoltageCompensationRampRate(24);//(volts per second)/10
-		setProfile(0);//choose between PID loop parameter stores
-		setAllowableClosedLoopErr(0);
+		reverseOutput(reverseSensor);//sensor must count positively as motor spins with positive speed
+		changeControlMode(controlMode);
 		if (isSensorPresent(deviceType) != FeedbackDeviceStatus.FeedbackStatusPresent) {
 			throw new IllegalStateException("A CANTalon4256 could not find its integrated versaplanetary encoder.");
 		}
 		this.gearRatio = gearRatio;
 		compass = new V_Compass(protectedZoneStart, protectedZoneSize);
 	}
-	public R_CANTalon(final int deviceNumber, final FeedbackDevice deviceType, final boolean reverseSensor, final double gearRatio) {//can also have update rate
-		super(deviceNumber);
-		reverseOutput(reverseSensor);
-		setFeedbackDevice(deviceType);
-		configNominalOutputVoltage(+0f, -0f);
-		configPeakOutputVoltage(+12f, -12f);
-		setVoltageCompensationRampRate(24);
-		setProfile(0);
+	/**
+	 * Set some PID defaults.
+	**/
+	public void defaults() {
+		setProfile(0);//choose between PID loop parameter stores
 		setAllowableClosedLoopErr(0);
-		if (isSensorPresent(deviceType) != FeedbackDeviceStatus.FeedbackStatusPresent) {
-			throw new IllegalStateException("A CANTalon4256 could not find its integrated versaplanetary encoder.");
-		}
-		this.gearRatio = gearRatio;
-		compass = new V_Compass(0, 0);
+		configNominalOutputVoltage(+0f, -0f);//minimum voltage draw
+		configPeakOutputVoltage(+12f, -12f);//maximum voltage draw
 	}
 	/**
 	 * This function returns the current angle based on the tare angle. If wraparound is true, the output will be between 0 and 359.999...
 	**/
 	public double getCurrentAngle(final boolean wraparound) {//ANGLE
-		if (getControlMode() != TalonControlMode.Position) {changeControlMode(TalonControlMode.Position);}
+		if (getControlMode() != position) {return -1;}
 		double net = getPosition()*360/gearRatio - compass.getTareAngle();
 		double currentAngle = Math.signum(net)*(Math.abs(net))%(gearRatio*360);
 		return wraparound ? V_Compass.validateAngle(currentAngle) : currentAngle;
@@ -69,31 +64,36 @@ public class R_CANTalon extends CANTalon {
 	 * This function updates the PID loop's target position such that the motor will rotate to the specified angle in the best way possible.
 	**/
 	public void setAngle(final double endAngle) {//ANGLE
-		if (getControlMode() != TalonControlMode.Position) {changeControlMode(TalonControlMode.Position);}
-		set((getCurrentAngle(false) + findNewPath(endAngle))*gearRatio/360);
+		if (getControlMode() == position) {
+			set((getCurrentAngle(false) + findNewPath(endAngle))*gearRatio/360);
+		}
 	}
 	/**
 	 * This function updates the PID loop's target speed.
 	**/
 	public void setRPM(final double rpm) {//SPEED
-		if (getControlMode() != TalonControlMode.Speed) {changeControlMode(TalonControlMode.Speed);}
-		set(rpm);
+		if (getControlMode() == speed) {
+			set(rpm);
+		}
 	}
 	/**
 	 * This function updates the PID loop's target current.
 	**/
 	public void setAmps(final double amps) {//CURRENT
-		if (getControlMode() != TalonControlMode.Current) {changeControlMode(TalonControlMode.Current);}
-		set(amps);
+		if (getControlMode() == current) {
+			set(amps);
+		}
 	}
 	/**
 	 * This function scales the input to a voltage between 0 and 12, and then uses voltage compensation mode to maintain it.
+	 * setVoltageCompensationRate(voltsPerSecondOverTen) must be run before calling this function.
 	**/
 	public void setVC(double speed) {//VOLTAGE
-		if (getControlMode() != TalonControlMode.Voltage) {changeControlMode(TalonControlMode.Voltage);}
-		if (Math.abs(speed) > 1) {speed = Math.signum(speed);}
-		speed *= 12;
-		set(speed);
+		if (getControlMode() == voltage) {
+			if (Math.abs(speed) > 1) {speed = Math.signum(speed);}
+			speed *= 12;
+			set(speed);
+		}
 	}
 	/**
 	 * This function returns the PID error for the current control mode.
@@ -102,11 +102,12 @@ public class R_CANTalon extends CANTalon {
 	 * Current: Amperes
 	**/
 	public double getCurrentError() {//ANGLE, SPEED, CURRENT
-		if (getControlMode() == TalonControlMode.Position) {
+		TalonControlMode mode = getControlMode();
+		if (mode == position) {
 			return getError()*360/(4096*gearRatio);
-		}else if (getControlMode() == TalonControlMode.Speed) {
+		}else if (mode == speed) {
 			return getError()*600/(4096*gearRatio);
-		}else if (getControlMode() == TalonControlMode.Current){
+		}else if (mode == current){
 			return getError();
 		}else {
 			return -1;

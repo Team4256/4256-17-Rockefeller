@@ -32,6 +32,10 @@ public abstract class Parameters {
 	public static final double centerGear = -90;
 	public static final double rightGear = -150;
 	
+	public static final double swerveP = .6;
+	public static final double swerveI = 0;
+	public static final double swerveD = 6;
+	
 	public static final int spinP = 0;
 	public static final int spinI = 0;
 	public static final int spinD = 0;
