@@ -29,11 +29,11 @@ public class Robot extends IterativeRobot {
 	//Robot Input
 	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
 	//Robot Output TODO servos, turret not a CANTalon
-	private static final R_CANTalon climber = new R_CANTalon(Parameters.Climber, R_CANTalon.absolute, false, R_CANTalon.voltage, 1, 0, 0);
-	private static final DoubleSolenoid gearer = new DoubleSolenoid(0, 1, 2);
-	private static final R_CANTalon intake = new R_CANTalon(Parameters.Intake, R_CANTalon.relative, false, R_CANTalon.speed, 1, 0, 0);
-	private static final R_CANTalon flyWheel = new R_CANTalon(Parameters.Shooter_flyWheel, R_CANTalon.relative, false, R_CANTalon.speed, 1, 0, 0);
-	private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, R_CANTalon.absolute, false, R_CANTalon.position, 12, 135, 90);
+	//private static final R_CANTalon climber = new R_CANTalon(Parameters.Climber, R_CANTalon.absolute, false, R_CANTalon.voltage, 1, 0, 0);
+	//private static final DoubleSolenoid gearer = new DoubleSolenoid(0, 1, 2);
+	//private static final R_CANTalon intake = new R_CANTalon(Parameters.Intake, R_CANTalon.relative, false, R_CANTalon.speed, 1, 0, 0);
+	//private static final R_CANTalon flyWheel = new R_CANTalon(Parameters.Shooter_flyWheel, R_CANTalon.relative, false, R_CANTalon.speed, 1, 0, 0);
+	//private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, R_CANTalon.absolute, false, R_CANTalon.position, 12, 135, 90);
 	private static final R_SwerveModule module1 = new R_SwerveModule(Parameters.Swerve_rotator1, Parameters.Swerve_drive1, Parameters.Swerve_calibrator1);
 	private static final R_SwerveModule module2 = new R_SwerveModule(Parameters.Swerve_rotator2, Parameters.Swerve_drive2, Parameters.Swerve_calibrator2);
 	private static final R_SwerveModule module3 = new R_SwerveModule(Parameters.Swerve_rotator3, Parameters.Swerve_drive3, Parameters.Swerve_calibrator3);
@@ -49,11 +49,11 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("My Auto", customAuto);
 		SmartDashboard.putData("Auto choices", chooser);
 		
-		climber.defaults();
-		climber.setVoltageCompensationRampRate(24);
-		intake.defaults();
-		flyWheel.defaults();
-		turret.defaults();
+//		climber.defaults();
+//		climber.setVoltageCompensationRampRate(24);
+//		intake.defaults();
+//		flyWheel.defaults();
+//		turret.defaults();
 		swerve.defaults();
 		
 		V_PID.set("spin", Parameters.spinP, Parameters.spinI, Parameters.spinD);
@@ -118,15 +118,15 @@ public class Robot extends IterativeRobot {
 		double spinOut = V_PID.get("spin", spinError);
 		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), driver.getCurrentRadius(R_Xbox.STICK_LEFT, true), spinOut);//SWERVE
 		
-		if (driver.getAxisPress(R_Xbox.AXIS_LT, .5)) {//CLIMBER
-			climber.setVC(.5);
-		}if (V_Fridge.freeze("RB", driver.getRawButton(R_Xbox.BUTTON_RB))) {//GEARER
-			gearer.set(DoubleSolenoid.Value.kForward);
-		}else {
-			gearer.set(DoubleSolenoid.Value.kReverse);
-		}if (driver.getAxisPress(R_Xbox.AXIS_RT, .5)) {//INTAKE
-			intake.setRPM(60);
-		}
+//		if (driver.getAxisPress(R_Xbox.AXIS_LT, .5)) {//CLIMBER
+//			climber.setVC(.5);
+//		}if (V_Fridge.freeze("RB", driver.getRawButton(R_Xbox.BUTTON_RB))) {//GEARER
+//			gearer.set(DoubleSolenoid.Value.kForward);
+//		}else {
+//			gearer.set(DoubleSolenoid.Value.kReverse);
+//		}if (driver.getAxisPress(R_Xbox.AXIS_RT, .5)) {//INTAKE
+//			intake.setRPM(60);
+//		}
 	}
 
 	/**
@@ -136,6 +136,15 @@ public class Robot extends IterativeRobot {
 	public void testPeriodic() {
 		if (!module1.isCalibrated()) {
 			module1.calibrate();
+		}
+		if (!module2.isCalibrated()) {
+			module2.calibrate();
+		}
+		if (!module3.isCalibrated()) {
+			module3.calibrate();
+		}
+		if (!module4.isCalibrated()) {
+			module4.calibrate();
 		}
 	}
 }
