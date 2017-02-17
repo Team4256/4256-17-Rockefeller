@@ -134,17 +134,21 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void testPeriodic() {
-		if (!module1.isCalibrated()) {
-			module1.calibrate();
-		}
-		if (!module2.isCalibrated()) {
-			module2.calibrate();
-		}
-		if (!module3.isCalibrated()) {
-			module3.calibrate();
-		}
-		if (!module4.isCalibrated()) {
-			module4.calibrate();
-		}
+//		if (!module1.isCalibrated()) {
+//			module1.calibrate();
+//		}
+//		if (!module2.isCalibrated()) {
+//			module2.calibrate();
+//		}
+//		if (!module3.isCalibrated()) {
+//			module3.calibrate();
+//		}
+//		if (!module4.isCalibrated()) {
+//			module4.calibrate();
+//		}
+		SmartDashboard.putNumber("calibrator1", module1.calibrate());
+		SmartDashboard.putNumber("calibrator2", module2.calibrate());
+		SmartDashboard.putNumber("calibrator3", module3.calibrate());
+		SmartDashboard.putNumber("calibrator4", module4.calibrate());
 	}
 }

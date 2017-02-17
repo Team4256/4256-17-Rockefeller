@@ -11,10 +11,8 @@ public class R_CANTalon extends CANTalon {//TODO still may be a few default para
 	public static final TalonControlMode voltage = TalonControlMode.Voltage;
 	public static final TalonControlMode percent = TalonControlMode.PercentVbus;
 	private double gearRatio;
-	private double lastLegalDirection = 1;
-	public V_Compass compass;
 	
-	public R_CANTalon(final int deviceNumber, final FeedbackDevice deviceType, final boolean reverseSensor, final TalonControlMode controlMode, final double gearRatio, final double protectedZoneStart, final double protectedZoneSize) {
+	public R_CANTalon(final int deviceNumber, final FeedbackDevice deviceType, final boolean reverseSensor, final TalonControlMode controlMode, final double gearRatio) {
 		super(deviceNumber);
 		setFeedbackDevice(deviceType);
 		reverseOutput(reverseSensor);//sensor must count positively as motor spins with positive speed
@@ -23,7 +21,6 @@ public class R_CANTalon extends CANTalon {//TODO still may be a few default para
 			throw new IllegalStateException("A CANTalon4256 could not find its integrated versaplanetary encoder.");
 		}
 		this.gearRatio = gearRatio;
-		compass = new V_Compass(protectedZoneStart, protectedZoneSize);
 	}
 	/**
 	 * Set some PID defaults.
@@ -39,33 +36,22 @@ public class R_CANTalon extends CANTalon {//TODO still may be a few default para
 	**/
 	public double getCurrentAngle(final boolean wraparound) {//ANGLE
 		if (getControlMode() != position) {return -1;}
-		double net = getPosition()*360/gearRatio - compass.getTareAngle();
-		double currentAngle = Math.signum(net)*(Math.abs(net))%(gearRatio*360);
-		return wraparound ? V_Compass.validateAngle(currentAngle) : currentAngle;
+		return wraparound ? V_Compass.validateAngle(getPosition()*360/4.2) : getPosition()*360/4.2;
 	}
 	/**
 	 * This function finds the shortest legal path from the current angle to the end angle and returns the size of that path in degrees.
 	 * Positive means clockwise and negative means counter-clockwise.
 	 * If the current angle is inside the protected zone, the path goes through the previously breached border.
 	**/
-	public double findNewPath(double endAngle) {//ANGLE
-		endAngle = compass.legalizeAngle(endAngle);
-		final double currentAngle = getCurrentAngle(true);
-		double currentPathVector = V_Compass.findPath(currentAngle, endAngle);
-		boolean legal = compass.legalizeAngle(currentAngle) == currentAngle;
-		if (legal) {
-			currentPathVector = compass.findLegalPath(currentAngle, endAngle);
-			lastLegalDirection = Math.signum(currentPathVector);
-		}else if (!legal && Math.signum(currentPathVector) != -lastLegalDirection) {
-			currentPathVector = 360*Math.signum(-currentPathVector) + currentPathVector;
-		}return currentPathVector;
+	public double findNewPath(double endAngle, final V_Compass compass) {
+		return compass.findNewPath(getCurrentAngle(true), endAngle);
 	}
 	/**
 	 * This function updates the PID loop's target position such that the motor will rotate to the specified angle in the best way possible.
 	**/
-	public void setAngle(final double endAngle) {//ANGLE
+	public void setAngle(final double endAngle, final V_Compass compass) {//ANGLE
 		if (getControlMode() == position) {
-			set((getCurrentAngle(false) + findNewPath(endAngle))*gearRatio/360);
+			set((getCurrentAngle(false) + findNewPath(endAngle, compass))*gearRatio/360);
 		}
 	}
 	/**

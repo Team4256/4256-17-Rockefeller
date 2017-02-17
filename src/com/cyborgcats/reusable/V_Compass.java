@@ -2,6 +2,7 @@ package com.cyborgcats.reusable;//COMPLETE
 
 public class V_Compass {
 	private double tareAngle = 0;
+	private double lastLegalDirection = 1;
 	private double protectedZoneStart; //Angles increase as the numbers on a clock increase. This value should be the first protected angle encountered by a minute hand which starts at 12:00.
 	private double protectedZoneSize; //This value should be the number of degrees the minute hand must travel before reaching the end of the protected section.
 	
@@ -21,6 +22,12 @@ public class V_Compass {
 	**/
 	public double getTareAngle() {
 		return tareAngle;
+	}
+	/**
+	 * This function returns the last legal direction.
+	**/
+	public double getLastLegalDirection() {
+		return lastLegalDirection;
 	}
 	/**
 	 * This function returns the starting angle of the protected zone.
@@ -93,6 +100,22 @@ public class V_Compass {
 				legalPathVector = 360*Math.signum(-legalPathVector) + legalPathVector;
 			}
 		}return legalPathVector;
+	}
+	/**
+	 * This function finds the shortest legal path from the current angle to the end angle and returns the size of that path in degrees.
+	 * Positive means clockwise and negative means counter-clockwise.
+	 * If the current angle is inside the protected zone, the path goes through the previously breached border.
+	**/
+	public double findNewPath(final double startAngle, double endAngle) {
+		endAngle = legalizeAngle(endAngle);
+		double currentPathVector = V_Compass.findPath(startAngle, endAngle);
+		boolean legal = legalizeAngle(startAngle) == startAngle;
+		if (legal) {
+			currentPathVector = findLegalPath(startAngle, endAngle);
+			lastLegalDirection = Math.signum(currentPathVector);
+		}else if (!legal && Math.signum(currentPathVector) != -lastLegalDirection) {
+			currentPathVector = 360*Math.signum(-currentPathVector) + currentPathVector;
+		}return currentPathVector;
 	}
 	/**
 	 * This function finds the angle between the Y axis and any Cartesian coordinate.

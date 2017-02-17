@@ -3,20 +3,22 @@ package org.usfirst.frc.team4256.robot;
 import com.cyborgcats.reusable.R_CANTalon;
 import com.cyborgcats.reusable.V_Compass;
 
-import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Talon;
 
 public class R_SwerveModule {
-	private R_CANTalon rotator;
-	private Talon driver;
-	private DigitalInput calibrator;
 	private boolean calibrated = false;
 	private double decapitated = 1;
+	private R_CANTalon rotator;
+	private Talon driver;
+	private AnalogInput calibrator;
+	private V_Compass compass;
 	
 	public R_SwerveModule(final int rotator, final int driver, final int calibrator) {
-		this.rotator = new R_CANTalon(rotator, R_CANTalon.absolute, false, R_CANTalon.position, 4.2, 0, 0);
+		this.rotator = new R_CANTalon(rotator, R_CANTalon.absolute, false, R_CANTalon.position, 4.2);
 		this.driver = new Talon(driver);
-		this.calibrator = new DigitalInput(calibrator);
+		this.calibrator = new AnalogInput(calibrator);
+		compass = new V_Compass(0, 0);
 	}
 	/**
 	 * Set some PID defaults.
@@ -28,16 +30,17 @@ public class R_SwerveModule {
 	/**
 	 * 
 	**/
-	public void calibrate() {//TODO calibrate all at once
-		int iteration = 0;
-		double revs = rotator.getPosition()%4.2;
-		while (calibrator.get() && iteration < 840) {
-			revs += 0.005;
-			rotator.set(revs);
-			iteration++;
-		}
-		rotator.compass.setTareAngle(revs%4.2*360/4.2, false);
-		calibrated = true;
+	public double calibrate() {//TODO calibrate all at once, analog
+//		int iteration = 0;
+//		double revs = rotator.getPosition()%4.2;
+//		while (calibrator.get() && iteration < 840) {
+//			revs += 0.005;
+//			rotator.set(revs);
+//			iteration++;
+//		}
+//		compass.setTareAngle(revs%4.2*360/4.2, false);
+//		calibrated = true;
+		return calibrator.getVoltage();
 	}
 	/**
 	 * This function indicates whether the calibrate function has been successfully run.
@@ -49,13 +52,13 @@ public class R_SwerveModule {
 	 * 
 	**/
 	public void swivelWith(final double wheel_fieldAngle, final double chassis_fieldAngle) {
-		rotator.setAngle(decapitateAngle(convertToRobot(wheel_fieldAngle, chassis_fieldAngle)));
+		rotator.setAngle(decapitateAngle(convertToRobot(wheel_fieldAngle - compass.getTareAngle(), chassis_fieldAngle)), compass);
 	}
 	/**
 	 * 
 	**/
 	public void swivelTo(final double wheel_chassisAngle) {
-		rotator.setAngle(decapitateAngle(wheel_chassisAngle));
+		rotator.setAngle(decapitateAngle(wheel_chassisAngle - compass.getTareAngle()), compass);
 	}
 	/**
 	 * 
@@ -93,7 +96,7 @@ public class R_SwerveModule {
 	 * 
 	**/
 	public double decapitateAngle(final double endAngle) {
-		decapitated = Math.abs(rotator.findNewPath(endAngle)) > 90 ? -1 : 1;
+		decapitated = Math.abs(rotator.findNewPath(endAngle, compass)) > 90 ? -1 : 1;
 		return decapitated == -1 ? V_Compass.validateAngle(endAngle + 180) : V_Compass.validateAngle(endAngle);
 	}
 }

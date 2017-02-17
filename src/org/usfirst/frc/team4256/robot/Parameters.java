@@ -20,10 +20,10 @@ public abstract class Parameters {
 	public static final int Swerve_drive2 = 1;//PWM, front right
 	public static final int Swerve_drive3 = 2;//PWM, aft left
 	public static final int Swerve_drive4 = 3;//PWM, aft right
-	public static final int Swerve_calibrator1 = 0;//DIO, front left
-	public static final int Swerve_calibrator2 = 1;//DIO, front right
-	public static final int Swerve_calibrator3 = 2;//DIO, aft left
-	public static final int Swerve_calibrator4 = 3;//DIO, aft right
+	public static final int Swerve_calibrator1 = 0;//AIO, front left
+	public static final int Swerve_calibrator2 = 1;//AIO, front right
+	public static final int Swerve_calibrator3 = 2;//AIO, aft left
+	public static final int Swerve_calibrator4 = 3;//AIO, aft right
 	
 	//VALUES
 	public static final byte Gyrometer_updateHz = 30;
