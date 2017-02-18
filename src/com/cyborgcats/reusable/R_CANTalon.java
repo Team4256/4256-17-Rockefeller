@@ -32,26 +32,18 @@ public class R_CANTalon extends CANTalon {//TODO still may be a few default para
 		configPeakOutputVoltage(+12f, -12f);//maximum voltage draw
 	}
 	/**
-	 * This function returns the current angle based on the tare angle. If wraparound is true, the output will be between 0 and 359.999...
+	 * This function returns the current angle. If wraparound is true, the output will be between 0 and 359.999...
 	**/
 	public double getCurrentAngle(final boolean wraparound) {//ANGLE
 		if (getControlMode() != position) {return -1;}
 		return wraparound ? V_Compass.validateAngle(getPosition()*360/4.2) : getPosition()*360/4.2;
 	}
 	/**
-	 * This function finds the shortest legal path from the current angle to the end angle and returns the size of that path in degrees.
-	 * Positive means clockwise and negative means counter-clockwise.
-	 * If the current angle is inside the protected zone, the path goes through the previously breached border.
-	**/
-	public double findNewPath(double endAngle, final V_Compass compass) {
-		return compass.findNewPath(getCurrentAngle(true), endAngle);
-	}
-	/**
 	 * This function updates the PID loop's target position such that the motor will rotate to the specified angle in the best way possible.
 	**/
 	public void setAngle(final double endAngle, final V_Compass compass) {//ANGLE
 		if (getControlMode() == position) {
-			set((getCurrentAngle(false) + findNewPath(endAngle, compass))*gearRatio/360);
+			set((getCurrentAngle(false) + compass.findNewPath(getCurrentAngle(true), endAngle))*gearRatio/360);
 		}
 	}
 	/**

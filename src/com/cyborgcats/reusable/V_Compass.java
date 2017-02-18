@@ -15,7 +15,7 @@ public class V_Compass {
 	**/
 	public void setTareAngle(final double tareAngle, final boolean relativeReference) {
 		this.tareAngle = relativeReference ? this.tareAngle + tareAngle : tareAngle;
-		protectedZoneStart = validateAngle(protectedZoneStart - this.tareAngle);//TODO I don't think this still works with tares outside of 0 to 360
+		//protectedZoneStart = validateAngle(protectedZoneStart - this.tareAngle);//TODO I don't think this still works with tares outside of 0 to 360
 	}
 	/**
 	 * This function returns the current tare angle, relative to the initialized 0.

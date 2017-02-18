@@ -6,7 +6,6 @@ public class R_DriveTrain {
 	private static final double Side = 21.85;//inches, wheel tip to wheel tip
 	private static final double Front = 25.85;
 	private static final double Radius = Math.sqrt(Side*Side + Front*Front);
-	private static final double Module1_frontAngle = Math.toDegrees(Math.atan(Front/Side));
 	private R_Gyro gyro;
 	private R_SwerveModule module1;//arranged clockwise
 	private R_SwerveModule module2;
@@ -40,8 +39,8 @@ public class R_DriveTrain {
 		double angle1 = Math.toDegrees(Math.atan2(b,c));double angle2 = Math.toDegrees(Math.atan2(a,c));double angle3 = Math.toDegrees(Math.atan2(a,d));double angle4 = Math.toDegrees(Math.atan2(b,d));
 		double chassis_fieldAngle = gyro.getCurrentAngle();
 		
-		module1.swivelWith(angle1, chassis_fieldAngle);
-		module2.swivelWith(angle2, chassis_fieldAngle);
+		module2.swivelWith(angle1, chassis_fieldAngle);
+		module1.swivelWith(angle2, chassis_fieldAngle);
 		module3.swivelWith(angle3, chassis_fieldAngle);
 		module4.swivelWith(angle4, chassis_fieldAngle);
 		
@@ -58,8 +57,8 @@ public class R_DriveTrain {
 			if (max > 1) {
 				speed1 /= max;	speed2 /= max;	speed3 /= max;	speed4 /= max;
 			}
-			module1.set(speed1);
-			module2.set(speed2);
+			module2.set(speed1);
+			module1.set(speed2);
 			module3.set(speed3);
 			module4.set(speed4);
 		}
