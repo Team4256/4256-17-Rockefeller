@@ -6,10 +6,9 @@ public abstract class Parameters {
 	
 	public static final int Intake = 15;//CAN
 	
-	public static final int Shooter_flyWheel = 16;//CAN
+	public static final int Shooter_flywheel = 16;//CAN
 	public static final int Shooter_rotator = 17;//CAN
-	public static final int Shooter_leftServo = 6;//PWM
-	public static final int Shooter_rightServo = 7;//PWM
+	public static final int Shooter_servos = 5;//PWM
 	public static final int Shooter_calibrator = 6;//DIO
 	
 	public static final int Swerve_rotator1 = 11;//CAN, front left
@@ -31,6 +30,7 @@ public abstract class Parameters {
 	public static final double leftGear = -60;
 	public static final double centerGear = -90;
 	public static final double rightGear = -150;
+	public static final double loadingStation = 30;//TODO get actual number
 	
 	public static final double swerveP = .6;
 	public static final double swerveI = 0;
