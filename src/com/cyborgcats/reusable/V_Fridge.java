@@ -6,7 +6,7 @@ import java.util.Map;
 public abstract class V_Fridge {
 	private static Map<String, Boolean> previousStates = new HashMap<String, Boolean>();
 	public static Map<String, Boolean> toggleStates = new HashMap<String, Boolean>();
-	private static Map<String, Long> stickyTimes = new HashMap<String, Long>();
+	public static Map<String, Long> stickyTimes = new HashMap<String, Long>();
 	
 	public static boolean freeze(final String key, final boolean currentState) {
 		if (previousStates.get(key) == null) {

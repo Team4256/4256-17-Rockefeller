@@ -12,19 +12,17 @@ public class R_SwerveModule {
 	private DigitalInput calibrator;
 	private R_CANTalon rotator;
 	private Talon driver;
-	private V_Compass compass;
 	
 	public R_SwerveModule(final int rotator, final int driver, final int calibrator) {
-		this.rotator = new R_CANTalon(rotator, R_CANTalon.absolute, true, R_CANTalon.position, 4.2);
+		this.rotator = new R_CANTalon(rotator, 4.2, 0, 0, true, R_CANTalon.absolute, R_CANTalon.position);
 		this.driver = new Talon(driver);
 		this.calibrator = new DigitalInput(calibrator);
-		compass = new V_Compass(0, 0);
 	}
 	/**
 	 * Set some PID defaults.
 	**/
-	public void defaults() {
-		rotator.defaults();
+	public void init() {
+		rotator.init();
 		rotator.setPID(Parameters.swerveP, Parameters.swerveI, Parameters.swerveD);
 	}
 	/**
@@ -38,20 +36,20 @@ public class R_SwerveModule {
 			rotator.set(revs);
 			iteration++;
 		}
-		compass.setTareAngle(revs%4.2*360/4.2, false);
+		rotator.compass.setTareAngle(revs%4.2*360/4.2, false);
 		calibrated = true;
 	}
 	/**
 	 * 
 	**/
-	public void swivelWith(final double wheel_fieldAngle, final double chassis_fieldAngle) {
-		rotator.setAngle(decapitateAngle(convertToRobot(wheel_fieldAngle, chassis_fieldAngle) + compass.getTareAngle()), compass);
+	public void swivelTo(final double wheel_chassisAngle) {
+		rotator.setAngle(decapitateAngle(wheel_chassisAngle));
 	}
 	/**
 	 * 
 	**/
-	public void swivelTo(final double wheel_chassisAngle) {
-		rotator.setAngle(decapitateAngle(wheel_chassisAngle + compass.getTareAngle()), compass);
+	public void swivelWith(final double wheel_fieldAngle, final double chassis_fieldAngle) {
+		swivelTo(convertToRobot(wheel_fieldAngle, chassis_fieldAngle));
 	}
 	/**
 	 * 
@@ -72,6 +70,13 @@ public class R_SwerveModule {
 		return Math.abs(rotator.getCurrentError()) <= threshold;
 	}
 	/**
+	 * 
+	**/
+	public double decapitateAngle(final double endAngle) {
+		decapitated = Math.abs(rotator.wornPath(endAngle)) > 90 ? -1 : 1;
+		return decapitated == -1 ? V_Compass.validateAngle(endAngle + 180) : V_Compass.validateAngle(endAngle);
+	}
+	/**
 	 * This function translates angles from the robot's perspective to the field's orientation.
 	 * It requires an angle and input from the gyro.
 	**/
@@ -84,12 +89,5 @@ public class R_SwerveModule {
 	**/
 	public static double convertToRobot(final double wheel_fieldAngle, final double chassis_fieldAngle) {
 		return V_Compass.validateAngle(wheel_fieldAngle - chassis_fieldAngle);
-	}
-	/**
-	 * 
-	**/
-	public double decapitateAngle(final double endAngle) {
-		decapitated = Math.abs(compass.findNewPath(rotator.getCurrentAngle(true), endAngle)) > 90 ? -1 : 1;
-		return decapitated == -1 ? V_Compass.validateAngle(endAngle + 180) : V_Compass.validateAngle(endAngle);
 	}
 }

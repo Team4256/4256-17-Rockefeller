@@ -21,7 +21,7 @@ public class R_Gyro extends AHRS {
 		double currentAngle = V_Compass.validateAngle((double)getFusedHeading());
 		if (!isCalibrating()) {
 			if (0 <= currentAngle && currentAngle <= compass.getTareAngle()) {
-				currentAngle += 360 - compass.getTareAngle();//follows order of operations
+				currentAngle += 360 - compass.getTareAngle();
 			}else {
 				currentAngle -= compass.getTareAngle();
 			}lastMeasuredAngle = V_Compass.validateAngle(currentAngle);
@@ -35,10 +35,10 @@ public class R_Gyro extends AHRS {
 	public double findNewPath(double endAngle) {
 		endAngle = compass.legalizeAngle(endAngle);
 		final double currentAngle = getCurrentAngle();
-		double currentPathVector = V_Compass.findPath(currentAngle, endAngle);
+		double currentPathVector = V_Compass.path(currentAngle, endAngle);
 		boolean legal = compass.legalizeAngle(currentAngle) == currentAngle;
 		if (legal) {
-			currentPathVector = compass.findLegalPath(currentAngle, endAngle);
+			currentPathVector = compass.legalPath(currentAngle, endAngle);
 			lastLegalDirection = Math.signum(currentPathVector);
 		}else if (!legal && Math.signum(currentPathVector) != -lastLegalDirection) {
 			currentPathVector = 360*Math.signum(-currentPathVector) + currentPathVector;

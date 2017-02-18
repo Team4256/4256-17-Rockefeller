@@ -21,8 +21,8 @@ public class R_Xbox extends Joystick {
 	public static final int BUTTON_RB = 6;
 	public static final int BUTTON_BACK = 7;
 	public static final int BUTTON_START = 8;
-	public static final int BUTTON_LEFT_STICK = 9;
-	public static final int BUTTON_RIGHT_STICK = 10;
+	public static final int BUTTON_STICK_LEFT = 9;
+	public static final int BUTTON_STICK_RIGHT = 10;
 	public static final int BUTTON_XBOX = 11;
 	public static final int BUTTON_NORTH = 12;
 	public static final int BUTTON_SOUTH = 13;

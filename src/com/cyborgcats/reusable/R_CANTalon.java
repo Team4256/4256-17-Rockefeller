@@ -2,30 +2,37 @@ package com.cyborgcats.reusable;
 
 import com.ctre.CANTalon;
 
-public class R_CANTalon extends CANTalon {//TODO still may be a few default params to set. see cantalon user guide
+public class R_CANTalon extends CANTalon {
 	public static final FeedbackDevice absolute = FeedbackDevice.CtreMagEncoder_Absolute;
 	public static final FeedbackDevice relative = FeedbackDevice.CtreMagEncoder_Relative;
+	public static final TalonControlMode current = TalonControlMode.Current;
+	public static final TalonControlMode percent = TalonControlMode.PercentVbus;
 	public static final TalonControlMode position = TalonControlMode.Position;
 	public static final TalonControlMode speed = TalonControlMode.Speed;
-	public static final TalonControlMode current = TalonControlMode.Current;
 	public static final TalonControlMode voltage = TalonControlMode.Voltage;
-	public static final TalonControlMode percent = TalonControlMode.PercentVbus;
+	private double lastLegalDirection = 1;
+	public V_Compass compass;
+	private TalonControlMode controlMode;
 	private double gearRatio;
+	private boolean reverseCounts;
 	
-	public R_CANTalon(final int deviceNumber, final FeedbackDevice deviceType, final boolean reverseSensor, final TalonControlMode controlMode, final double gearRatio) {
+	public R_CANTalon(final int deviceNumber, final double gearRatio, final double protectedZoneStart, final double protectedZoneSize, final boolean reverseCounts, final FeedbackDevice deviceType, final TalonControlMode controlMode) {
 		super(deviceNumber);
 		setFeedbackDevice(deviceType);
-		reverseOutput(reverseSensor);//sensor must count positively as motor spins with positive speed
-		changeControlMode(controlMode);
 		if (isSensorPresent(deviceType) != FeedbackDeviceStatus.FeedbackStatusPresent) {
 			throw new IllegalStateException("A CANTalon4256 could not find its integrated versaplanetary encoder.");
 		}
+		compass = new V_Compass(protectedZoneStart, protectedZoneSize);
+		this.controlMode = controlMode;
 		this.gearRatio = gearRatio;
+		this.reverseCounts = reverseCounts;
 	}
 	/**
-	 * Set some PID defaults.
+	 * Initialize.
 	**/
-	public void defaults() {
+	public void init() {
+		reverseOutput(reverseCounts);//sensor must count positively as motor spins with positive speed
+		changeControlMode(controlMode);//this comes after reverseOutput so that PID doesn't get confused
 		setProfile(0);//choose between PID loop parameter stores
 		setAllowableClosedLoopErr(0);
 		configNominalOutputVoltage(+0f, -0f);//minimum voltage draw
@@ -39,11 +46,28 @@ public class R_CANTalon extends CANTalon {//TODO still may be a few default para
 		return wraparound ? V_Compass.validateAngle(getPosition()*360/4.2) : getPosition()*360/4.2;
 	}
 	/**
+	 * This function finds the shortest legal path from the current angle to the end angle and returns the size of that path in degrees.
+	 * Positive means clockwise and negative means counter-clockwise.
+	 * If the current angle is inside the protected zone, the path goes through the previously breached border.
+	**/
+	public double wornPath(double endAngle) {
+		endAngle = compass.legalizeAngle(endAngle + compass.getTareAngle());
+		double startAngle = getCurrentAngle(true);//TODO CAN THIS GETCURRENTANGLE BE FALSE???
+		double currentPathVector = V_Compass.path(startAngle, endAngle);
+		boolean legal = compass.legalizeAngle(startAngle) == startAngle;
+		if (legal) {
+			currentPathVector = compass.legalPath(startAngle, endAngle);
+			lastLegalDirection = Math.signum(currentPathVector);
+		}else if (!legal && Math.signum(currentPathVector) != -lastLegalDirection) {
+			currentPathVector = 360*Math.signum(-currentPathVector) + currentPathVector;
+		}return currentPathVector;
+	}
+	/**
 	 * This function updates the PID loop's target position such that the motor will rotate to the specified angle in the best way possible.
 	**/
-	public void setAngle(final double endAngle, final V_Compass compass) {//ANGLE
+	public void setAngle(final double endAngle) {//ANGLE
 		if (getControlMode() == position) {
-			set((getCurrentAngle(false) + compass.findNewPath(getCurrentAngle(true), endAngle))*gearRatio/360);
+			set((getCurrentAngle(false) + wornPath(endAngle))*gearRatio/360);
 		}
 	}
 	/**
@@ -80,15 +104,11 @@ public class R_CANTalon extends CANTalon {//TODO still may be a few default para
 	 * Current: Amperes
 	**/
 	public double getCurrentError() {//ANGLE, SPEED, CURRENT
-		TalonControlMode mode = getControlMode();
-		if (mode == position) {
-			return getError()*360/(4096*gearRatio);
-		}else if (mode == speed) {
-			return getError()*600/(4096*gearRatio);
-		}else if (mode == current){
-			return getError();
-		}else {
-			return -1;
+		switch (getControlMode()) {
+		case Position:return getError()*360/(4096*gearRatio);
+		case Speed:return getError()*600/(4096*gearRatio);
+		case Current:return getError();
+		default:return -1;
 		}
 	}
 }
