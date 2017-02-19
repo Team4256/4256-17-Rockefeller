@@ -33,7 +33,7 @@ public class R_DriveTrain {
 	public void holonomic(final double direction, double speed, double spin) {
 		double chassis_fieldAngle = gyro.getCurrentAngle();
 		double forward = Math.cos(Math.toRadians(R_SwerveModule.convertToRobot(direction, chassis_fieldAngle)));
-		double strafe = - Math.sin(Math.toRadians(R_SwerveModule.convertToRobot(direction, chassis_fieldAngle)));
+		double strafe = Math.sin(Math.toRadians(R_SwerveModule.convertToRobot(direction, chassis_fieldAngle)));
 		boolean bad = speed == 0 && spin == 0;
 		if (bad) {
 			forward *= lastSpeed;strafe *= lastSpeed;
