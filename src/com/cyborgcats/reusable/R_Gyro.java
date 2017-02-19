@@ -17,7 +17,7 @@ public class R_Gyro extends AHRS {
 	 * This function returns the current angle based on the tare angle.
 	 * It will ignore changes to the tare angle until hardware calibration is complete.
 	**/
-	public double getCurrentAngle() {//TODO rethink logic because stuff in CANTalon didn't work??
+	public double getCurrentAngle() {
 		double currentAngle = V_Compass.validateAngle((double)getFusedHeading());
 		if (!isCalibrating()) {
 			if (0 <= currentAngle && currentAngle <= compass.getTareAngle()) {
@@ -32,7 +32,7 @@ public class R_Gyro extends AHRS {
 	 * Positive means clockwise and negative means counter-clockwise.
 	 * If the current angle is inside the protected zone, the path goes through the previously breached border.
 	**/
-	public double findNewPath(double endAngle) {
+	public double wornPath(double endAngle) {
 		endAngle = compass.legalizeAngle(endAngle);
 		final double currentAngle = getCurrentAngle();
 		double currentPathVector = V_Compass.path(currentAngle, endAngle);

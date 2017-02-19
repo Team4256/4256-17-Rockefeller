@@ -60,12 +60,6 @@ public class R_SwerveModule {
 	/**
 	 * 
 	**/
-	public double get() {
-		return driver.get();
-	}
-	/**
-	 * 
-	**/
 	public boolean isThere(final double threshold) {
 		return Math.abs(rotator.getCurrentError()) <= threshold;
 	}

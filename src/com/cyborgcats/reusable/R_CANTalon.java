@@ -37,6 +37,7 @@ public class R_CANTalon extends CANTalon {
 		setAllowableClosedLoopErr(0);
 		configNominalOutputVoltage(+0f, -0f);//minimum voltage draw
 		configPeakOutputVoltage(+12f, -12f);//maximum voltage draw
+		set(0);
 	}
 	/**
 	 * This function returns the current angle. If wraparound is true, the output will be between 0 and 359.999...
@@ -52,7 +53,7 @@ public class R_CANTalon extends CANTalon {
 	**/
 	public double wornPath(double endAngle) {
 		endAngle = compass.legalizeAngle(endAngle + compass.getTareAngle());
-		double startAngle = getCurrentAngle(true);//TODO CAN THIS GETCURRENTANGLE BE FALSE???
+		double startAngle = getCurrentAngle(true);
 		double currentPathVector = V_Compass.path(startAngle, endAngle);
 		boolean legal = compass.legalizeAngle(startAngle) == startAngle;
 		if (legal) {
