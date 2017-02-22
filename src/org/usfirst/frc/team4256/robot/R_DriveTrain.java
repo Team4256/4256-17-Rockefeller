@@ -8,26 +8,40 @@ public class R_DriveTrain {
 	private static final double Radius = Math.sqrt(Side*Side + Front*Front);
 	private double lastSpeed = 0;
 	private R_Gyro gyro;
-	private R_SwerveModule module1;//arranged clockwise
-	private R_SwerveModule module2;
-	private R_SwerveModule module3;
-	private R_SwerveModule module4;
+	private R_SwerveModule moduleA;//arranged clockwise//TODO
+	private R_SwerveModule moduleB;
+	private R_SwerveModule moduleC;
+	private R_SwerveModule moduleD;
 	
-	public R_DriveTrain(final R_Gyro gyro, final R_SwerveModule module1, final R_SwerveModule module2, final R_SwerveModule module3, final R_SwerveModule module4) {
+	public R_DriveTrain(final R_Gyro gyro, final boolean flippedA, final boolean flippedB, final boolean flippedC, final boolean flippedD) {
 		this.gyro = gyro;
-		this.module1 = module1;
-		this.module2 = module2;
-		this.module3 = module3;
-		this.module4 = module4;
+		this.moduleA = new R_SwerveModule(Parameters.Swerve_rotatorA, flippedA, Parameters.Swerve_driveAA, Parameters.Swerve_driveAB, Parameters.Swerve_calibratorA);
+		this.moduleB = new R_SwerveModule(Parameters.Swerve_rotatorB, flippedB, Parameters.Swerve_driveBA, Parameters.Swerve_driveBB, Parameters.Swerve_calibratorB);
+		this.moduleC = new R_SwerveModule(Parameters.Swerve_rotatorC, flippedC, Parameters.Swerve_driveCA, Parameters.Swerve_driveCB, Parameters.Swerve_calibratorC);
+		this.moduleD = new R_SwerveModule(Parameters.Swerve_rotatorD, flippedD, Parameters.Swerve_driveDA, Parameters.Swerve_driveDB, Parameters.Swerve_calibratorD);
 	}
 	/**
 	 * Set some PID defaults.
 	**/
 	public void init() {
-		module1.init();
-		module2.init();
-		module3.init();
-		module4.init();
+		moduleA.init();
+		moduleB.init();
+		moduleC.init();
+		moduleD.init();
+	}
+	/**
+	 * 
+	**/
+	public void align(final double increment) {
+		double i = 0;
+		double max = R_SwerveModule.rotatorGearRatio/increment;
+		while ((!moduleA.isAligned() || !moduleA.isAligned() || !moduleA.isAligned() || !moduleA.isAligned()) && i <= max) {
+			moduleA.align(increment);
+			moduleB.align(increment);
+			moduleC.align(increment);
+			moduleD.align(increment);
+			i++;
+		}
 	}
 	
 	public void holonomic(final double direction, double speed, double spin) {
@@ -42,26 +56,26 @@ public class R_DriveTrain {
 			lastSpeed = speed;
 		}
 		double a = strafe - spin*(Side/Radius),b = strafe + spin*(Side/Radius),c = forward - spin*(Front/Radius),d = forward + spin*(Front/Radius);
-		module1.swivelTo(Math.toDegrees(Math.atan2(b,d)));
-		module2.swivelTo(Math.toDegrees(Math.atan2(b,c)));
-		module3.swivelTo(Math.toDegrees(Math.atan2(a,d)));
-		module4.swivelTo(Math.toDegrees(Math.atan2(a,c)));
+		moduleA.swivelTo(Math.toDegrees(Math.atan2(b,d)));
+		moduleB.swivelTo(Math.toDegrees(Math.atan2(b,c)));
+		moduleC.swivelTo(Math.toDegrees(Math.atan2(a,d)));
+		moduleD.swivelTo(Math.toDegrees(Math.atan2(a,c)));
 		
 		if (isThere(5)) {
-			double speed1 = Math.sqrt(b*b + d*d),speed2 = Math.sqrt(b*b + c*c),speed3 = Math.sqrt(a*a + d*d),speed4 = Math.sqrt(a*a + c*c);
+			double speedA = Math.sqrt(b*b + d*d),speedB = Math.sqrt(b*b + c*c),speedC = Math.sqrt(a*a + d*d),speedD = Math.sqrt(a*a + c*c);
 			if (bad) {
-				module1.set(0);module2.set(0);module3.set(0);module4.set(0);
+				moduleA.set(0);	moduleB.set(0);	moduleC.set(0);	moduleD.set(0);
 			}else {
-				double max = Math.max(speed1, Math.max(speed2, Math.max(speed3, speed4)));
+				double max = Math.max(speedA, Math.max(speedB, Math.max(speedC, speedD)));
 				if (max > 1) {
-					speed1 /= max;	speed2 /= max;	speed3 /= max;	speed4 /= max;
+					speedA /= max;	speedB /= max;	speedC /= max;	speedD /= max;
 				}
-				module1.set(speed1);module2.set(0);module3.set(0);module4.set(0);
+				moduleA.set(speedA);	moduleB.set(speedB);	moduleC.set(speedC);	moduleD.set(speedD);
 			}
 		}
 	}
 	
 	public boolean isThere(final double threshold) {//TODO if the change in my pid error has leveled out, then do..., or if speed has gone below threshold (change here and in SwerveModule)
-		return module1.isThere(threshold) && module2.isThere(threshold) && module3.isThere(threshold) && module4.isThere(threshold);
+		return moduleA.isThere(threshold) && moduleB.isThere(threshold) && moduleC.isThere(threshold) && moduleD.isThere(threshold);
 	}
 }

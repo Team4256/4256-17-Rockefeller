@@ -4,46 +4,63 @@ import com.cyborgcats.reusable.R_CANTalon;
 import com.cyborgcats.reusable.V_Compass;
 
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Talon;
 
 public class R_SwerveModule {
-	public boolean calibrated = false;
+	public static final double rotatorGearRatio = 4.2;
+	public static final double tractionGearRatio = 15.6;
+	private boolean aligned = false;
+	private boolean aligning = false;
+	private double alignmentRevs = 0;//paige is the best and hayden is not jk i love u
 	private double decapitated = 1;
-	private DigitalInput calibrator;
+	public DigitalInput sensor;
 	private R_CANTalon rotator;
-	private Talon driver;
+	private R_CANTalon tractionA;
+	private R_CANTalon tractionB;
 	
-	public R_SwerveModule(final int rotator, final int driver, final int calibrator) {
-		this.rotator = new R_CANTalon(rotator, 4.2, 0, 0, true, R_CANTalon.absolute, R_CANTalon.position);
-		this.driver = new Talon(driver);
-		this.calibrator = new DigitalInput(calibrator);
+	public R_SwerveModule(final int rotatorID, final boolean flipped, final int tractionAID, final int tractionBID, final int sensorID) {
+		this.rotator = new R_CANTalon(rotatorID, rotatorGearRatio, R_CANTalon.position, flipped, R_CANTalon.absolute);
+		this.tractionA = new R_CANTalon(tractionAID, tractionGearRatio, R_CANTalon.voltage);
+		this.tractionB = new R_CANTalon(tractionBID, tractionGearRatio, R_CANTalon.follower);
+		this.sensor = new DigitalInput(sensorID);
 	}
 	/**
-	 * Set some PID defaults.
+	 * This function prepares each motor individually, including setting actual PID values for the rotator and enslaving the second traction motor.
 	**/
 	public void init() {
 		rotator.init();
 		rotator.setPID(Parameters.swerveP, Parameters.swerveI, Parameters.swerveD);
+		tractionA.init();
+		tractionB.init(tractionA.getDeviceID());
 	}
 	/**
 	 * 
 	**/
-	public void calibrate() {//TODO calibrate all at once
-		int iteration = 0;
-		double revs = rotator.getPosition()%4.2;
-		while (calibrator.get() && iteration < 8400) {
-			revs += 0.0005;
-			rotator.set(revs);
-			iteration++;
+	public boolean isAligned() {
+		return aligned;
+	}
+	public boolean isAligning() {
+		return aligning;
+	}
+	public void align(final double increment) {
+		if (sensor.get()) {
+			if (!aligning) {
+				aligned = false;
+				rotator.compass.setTareAngle(0, false);
+				aligning = true;
+				alignmentRevs = rotator.getPosition()%rotatorGearRatio;
+			}alignmentRevs += increment;
+			rotator.setPosition(alignmentRevs);
+		}else {
+			aligning = false;
+			rotator.compass.setTareAngle(alignmentRevs%rotatorGearRatio*360/4.2, false);
+			aligned = true;
 		}
-		rotator.compass.setTareAngle(revs%4.2*360/4.2, false);
-		calibrated = true;
 	}
 	/**
 	 * 
 	**/
 	public void swivelTo(final double wheel_chassisAngle) {
-		rotator.setAngle(decapitateAngle(wheel_chassisAngle));
+		rotator.set(decapitateAngle(wheel_chassisAngle));
 	}
 	/**
 	 * 
@@ -55,16 +72,17 @@ public class R_SwerveModule {
 	 * 
 	**/
 	public void set(final double speed) {
-		driver.set(speed*decapitated);
+		tractionA.set(speed*decapitated);
 	}
 	/**
-	 * 
+	 * TODO
 	**/
 	public boolean isThere(final double threshold) {
 		return Math.abs(rotator.getCurrentError()) <= threshold;
 	}
 	/**
-	 * 
+	 * This function makes sure the module rotates no more than 90 degrees from its current position.
+	 * It should be used every time a new angle is being set.
 	**/
 	public double decapitateAngle(final double endAngle) {
 		decapitated = Math.abs(rotator.wornPath(endAngle)) > 90 ? -1 : 1;

@@ -11,18 +11,22 @@ public abstract class Parameters {
 	public static final int Shooter_servos = 5;//PWM
 	public static final int Shooter_calibrator = 6;//DIO
 	
-	public static final int Swerve_rotator1 = 11;//CAN, front left
-	public static final int Swerve_rotator2 = 12;//CAN, front right
-	public static final int Swerve_rotator3 = 13;//CAN, aft left
-	public static final int Swerve_rotator4 = 14;//CAN, aft right
-	public static final int Swerve_drive1 = 0;//PWM, front left
-	public static final int Swerve_drive2 = 1;//PWM, front right
-	public static final int Swerve_drive3 = 2;//PWM, aft left
-	public static final int Swerve_drive4 = 3;//PWM, aft right
-	public static final int Swerve_calibrator1 = 0;//AIO, front left
-	public static final int Swerve_calibrator2 = 1;//AIO, front right
-	public static final int Swerve_calibrator3 = 2;//AIO, aft left
-	public static final int Swerve_calibrator4 = 3;//AIO, aft right
+	public static final int Swerve_rotatorA = 11;//CAN, front left
+	public static final int Swerve_rotatorB = 12;//CAN, front right
+	public static final int Swerve_rotatorC = 13;//CAN, aft left
+	public static final int Swerve_rotatorD = 14;//CAN, aft right
+	public static final int Swerve_driveAA = 21;//CAN, front left
+	public static final int Swerve_driveAB = 22;//CAN, front left
+	public static final int Swerve_driveBA = 23;//CAN, front right
+	public static final int Swerve_driveBB = 24;//CAN, front right
+	public static final int Swerve_driveCA = 25;//CAN, aft left
+	public static final int Swerve_driveCB = 26;//CAN, aft left
+	public static final int Swerve_driveDA = 27;//CAN, aft right
+	public static final int Swerve_driveDB = 28;//CAN, aft right
+	public static final int Swerve_calibratorA = 0;//AIO, front left
+	public static final int Swerve_calibratorB = 1;//AIO, front right
+	public static final int Swerve_calibratorC = 2;//AIO, aft left
+	public static final int Swerve_calibratorD = 3;//AIO, aft right
 	
 	//VALUES
 	public static final byte Gyrometer_updateHz = 30;

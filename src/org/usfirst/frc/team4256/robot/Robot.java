@@ -2,10 +2,11 @@ package org.usfirst.frc.team4256.robot;
 
 import com.cyborgcats.reusable.R_CANTalon;
 import com.cyborgcats.reusable.R_Gyro;
-import com.cyborgcats.reusable.R_Xbox;
+import com.cyborgcats.reusable.R_XboxV2;
 import com.cyborgcats.reusable.V_Fridge;
 import com.cyborgcats.reusable.V_PID;
 
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -23,21 +24,17 @@ public class Robot extends IterativeRobot {
 	String autoSelected;
 	SendableChooser<String> chooser = new SendableChooser<>();
 	//Human Input
-	private static final R_Xbox driver = new R_Xbox(0);
+	private static final R_XboxV2 driver = new R_XboxV2(0);
 	//Robot Input
 	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
 	//Robot Output
 	//private static final R_CANTalon climber = new R_CANTalon(Parameters.Climber, 1, 0, 0, false, R_CANTalon.absolute, R_CANTalon.voltage);
 	//private static final DoubleSolenoid gearer = new DoubleSolenoid(0, 1, 2);
-	private static final R_CANTalon intake = new R_CANTalon(Parameters.Intake, 1, 0, 0, false, R_CANTalon.relative, R_CANTalon.speed);
+	private static final R_CANTalon intake = new R_CANTalon(Parameters.Intake, 1, R_CANTalon.speed, true, R_CANTalon.relative);
 	//private static final Servo servos = new Servo(Parameters.Shooter_servos);
 	//private static final R_CANTalon flywheel = new R_CANTalon(Parameters.Shooter_flywheel, 1, 0, 0, false, R_CANTalon.relative, R_CANTalon.speed);
 	//private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, 12, 135, 90, false, R_CANTalon.absolute, R_CANTalon.position);
-	private static final R_SwerveModule module1 = new R_SwerveModule(Parameters.Swerve_rotator1, Parameters.Swerve_drive1, Parameters.Swerve_calibrator1);
-	private static final R_SwerveModule module2 = new R_SwerveModule(Parameters.Swerve_rotator2, Parameters.Swerve_drive2, Parameters.Swerve_calibrator2);
-	private static final R_SwerveModule module3 = new R_SwerveModule(Parameters.Swerve_rotator3, Parameters.Swerve_drive3, Parameters.Swerve_calibrator3);
-	private static final R_SwerveModule module4 = new R_SwerveModule(Parameters.Swerve_rotator4, Parameters.Swerve_drive4, Parameters.Swerve_calibrator4);
-	private static final R_DriveTrain swerve = new R_DriveTrain(gyro, module1, module2, module3, module4);
+	private static final R_DriveTrain swerve = new R_DriveTrain(gyro, true, true, true, true);
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -100,14 +97,14 @@ public class Robot extends IterativeRobot {
 	public void teleopPeriodic() {
 		double spinError = 0;
 		double spinOut = 0;
-		if (driver.getCurrentRadius(R_Xbox.STICK_RIGHT, true) == 0) {
-			if (V_Fridge.freeze("X", driver.getRawButton(R_Xbox.BUTTON_X))) {
+		if (driver.getCurrentRadius(R_XboxV2.STICK_RIGHT, true) == 0) {
+			if (V_Fridge.freeze("X", driver.getRawButton(R_XboxV2.BUTTON_X))) {
 				spinError = gyro.wornPath(Parameters.leftGear);
-			}else if (V_Fridge.freeze("A", driver.getRawButton(R_Xbox.BUTTON_A))) {
+			}else if (V_Fridge.freeze("A", driver.getRawButton(R_XboxV2.BUTTON_A))) {
 				spinError = gyro.wornPath(Parameters.centerGear);
-			}else if (V_Fridge.freeze("B", driver.getRawButton(R_Xbox.BUTTON_B))) {
+			}else if (V_Fridge.freeze("B", driver.getRawButton(R_XboxV2.BUTTON_B))) {
 				spinError = gyro.wornPath(Parameters.rightGear);
-			}else if (V_Fridge.freeze("Y", driver.getRawButton(R_Xbox.BUTTON_Y))) {
+			}else if (V_Fridge.freeze("Y", driver.getRawButton(R_XboxV2.BUTTON_Y))) {
 				spinError = gyro.wornPath(Parameters.loadingStation);
 			}
 			spinOut = V_PID.get("spin", spinError);
@@ -117,9 +114,11 @@ public class Robot extends IterativeRobot {
 			V_Fridge.toggleStates.replace("B", false);
 			V_Fridge.toggleStates.replace("Y", false);
 			//spinError = gyro.wornPath(driver.getCurrentAngle(R_Xbox.STICK_RIGHT, true));//for use with absolutely angled drive
-			spinOut = driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
+			spinOut = driver.getDeadbandedAxis(R_XboxV2.AXIS_RIGHT_X);
+			spinOut *= spinOut;
 		}
-		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), driver.getCurrentRadius(R_Xbox.STICK_LEFT, true), spinOut);//SWERVE
+		double speed = driver.getCurrentRadius(R_XboxV2.STICK_LEFT, true);
+		swerve.holonomic(driver.getCurrentAngle(R_XboxV2.STICK_LEFT, true), speed*speed, spinOut);//SWERVE
 		
 		/*if (driver.getAxisPress(R_Xbox.AXIS_LT, .5)) {//CLIMBER
 			climber.setVC(.5);
@@ -127,10 +126,14 @@ public class Robot extends IterativeRobot {
 			gearer.set(DoubleSolenoid.Value.kForward);
 		}else {
 			gearer.set(DoubleSolenoid.Value.kReverse);
-		}*/if (driver.getAxisPress(R_Xbox.AXIS_RT, .5)) {//INTAKE
-			intake.setRPM(60);
+		}*/if (driver.getAxisPress(R_XboxV2.AXIS_RT, .5)) {//INTAKE
+			intake.set(60);
 		}else {
-			intake.setRPM(0);
+			intake.set(0);
+		}
+		
+		if (gyro.netAcceleration() >= 1) {
+			driver.setRumble(RumbleType.kLeftRumble, 1);
 		}
 	}
 
@@ -139,17 +142,6 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void testPeriodic() {
-		if (!module1.calibrated) {
-			module1.calibrate();
-		}
-		if (!module2.calibrated) {
-			module2.calibrate();
-		}
-		if (!module3.calibrated) {
-			module3.calibrate();
-		}
-		if (!module4.calibrated) {
-			module4.calibrate();
-		}
+		swerve.align(.002);
 	}
 }

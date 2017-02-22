@@ -44,4 +44,11 @@ public class R_Gyro extends AHRS {
 			currentPathVector = 360*Math.signum(-currentPathVector) + currentPathVector;
 		}return currentPathVector;
 	}
+	/**
+	 * This function computes the magnitude of the sum of the world-based acceleration vectors.
+	**/
+	public double netAcceleration() {
+		double xy = (double)(getWorldLinearAccelX()*getWorldLinearAccelX() + getWorldLinearAccelY()*getWorldLinearAccelY());
+		return Math.sqrt(xy + (double)(getWorldLinearAccelZ()*getWorldLinearAccelZ()));
+	}
 }
