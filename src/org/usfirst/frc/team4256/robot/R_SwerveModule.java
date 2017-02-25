@@ -19,7 +19,7 @@ public class R_SwerveModule {
 	
 	public R_SwerveModule(final int rotatorID, final boolean flipped, final int tractionAID, final int tractionBID, final int sensorID) {
 		this.rotator = new R_CANTalon(rotatorID, rotatorGearRatio, R_CANTalon.position, flipped, R_CANTalon.absolute);
-		this.tractionA = new R_CANTalon(tractionAID, tractionGearRatio, R_CANTalon.voltage);
+		this.tractionA = new R_CANTalon(tractionAID, tractionGearRatio, R_CANTalon.percent);
 		this.tractionB = new R_CANTalon(tractionBID, tractionGearRatio, R_CANTalon.follower);
 		this.sensor = new DigitalInput(sensorID);
 	}
@@ -49,7 +49,7 @@ public class R_SwerveModule {
 				aligning = true;
 				alignmentRevs = rotator.getPosition()%rotatorGearRatio;
 			}alignmentRevs += increment;
-			rotator.setPosition(alignmentRevs);
+			rotator.set(alignmentRevs);
 		}else {
 			aligning = false;
 			rotator.compass.setTareAngle(alignmentRevs%rotatorGearRatio*360/4.2, false);
@@ -60,7 +60,7 @@ public class R_SwerveModule {
 	 * 
 	**/
 	public void swivelTo(final double wheel_chassisAngle) {
-		rotator.set(decapitateAngle(wheel_chassisAngle));
+		rotator.setAngle(decapitateAngle(wheel_chassisAngle));
 	}
 	/**
 	 * 

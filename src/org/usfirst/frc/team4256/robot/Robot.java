@@ -6,6 +6,8 @@ import com.cyborgcats.reusable.R_XboxV2;
 import com.cyborgcats.reusable.V_Fridge;
 import com.cyborgcats.reusable.V_PID;
 
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -25,15 +27,18 @@ public class Robot extends IterativeRobot {
 	SendableChooser<String> chooser = new SendableChooser<>();
 	//Human Input
 	private static final R_XboxV2 driver = new R_XboxV2(0);
+	private static final R_XboxV2 gunner = new R_XboxV2(1);
 	//Robot Input
 	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
 	//Robot Output
-	//private static final R_CANTalon climber = new R_CANTalon(Parameters.Climber, 1, 0, 0, false, R_CANTalon.absolute, R_CANTalon.voltage);
-	//private static final DoubleSolenoid gearer = new DoubleSolenoid(0, 1, 2);
-	private static final R_CANTalon intake = new R_CANTalon(Parameters.Intake, 1, R_CANTalon.speed, true, R_CANTalon.relative);
+	//private static final R_CANTalon climber = new R_CANTalon(Parameters.Climber, 1, 0, 0, false, R_CANTalon.absolute, R_CANTalon.voltage); //Uncommented 2/21/17
+	private static final R_CANTalon climber = new R_CANTalon(Parameters.Climber, 17, R_CANTalon.percent); //Ian 2/21/17
+	private static final DoubleSolenoid gearer = new DoubleSolenoid(0, 0, 1);
+	private static final R_CANTalon intake = new R_CANTalon(Parameters.Intake, 1, R_CANTalon.percent);
 	//private static final Servo servos = new Servo(Parameters.Shooter_servos);
-	//private static final R_CANTalon flywheel = new R_CANTalon(Parameters.Shooter_flywheel, 1, 0, 0, false, R_CANTalon.relative, R_CANTalon.speed);
-	//private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, 12, 135, 90, false, R_CANTalon.absolute, R_CANTalon.position);
+	private static final R_CANTalon flywheel = new R_CANTalon(Parameters.Shooter_flywheel, 1, R_CANTalon.percent);
+	private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, 12, R_CANTalon.percent);
+	private static final DoubleSolenoid kicker = new DoubleSolenoid(0, 2, 3);
 	private static final R_DriveTrain swerve = new R_DriveTrain(gyro, true, true, true, true);
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -113,27 +118,46 @@ public class Robot extends IterativeRobot {
 			V_Fridge.toggleStates.replace("A", false);
 			V_Fridge.toggleStates.replace("B", false);
 			V_Fridge.toggleStates.replace("Y", false);
-			//spinError = gyro.wornPath(driver.getCurrentAngle(R_Xbox.STICK_RIGHT, true));//for use with absolutely angled drive
+			//spinError = gyro.wornPath(driver.getCurrentAngle(R_XboxV2.STICK_RIGHT, true));//for use with absolutely angled drive
 			spinOut = driver.getDeadbandedAxis(R_XboxV2.AXIS_RIGHT_X);
-			spinOut *= spinOut;
+			spinOut *= spinOut * Math.signum(spinOut);
 		}
 		double speed = driver.getCurrentRadius(R_XboxV2.STICK_LEFT, true);
 		swerve.holonomic(driver.getCurrentAngle(R_XboxV2.STICK_LEFT, true), speed*speed, spinOut);//SWERVE
 		
-		/*if (driver.getAxisPress(R_Xbox.AXIS_LT, .5)) {//CLIMBER
+		/*if (driver.getAxisPress(R_XboxV2.AXIS_LT, .5)) {//CLIMBER
 			climber.setVC(.5);
-		}if (V_Fridge.freeze("RB", driver.getRawButton(R_Xbox.BUTTON_RB))) {//GEARER
+		}if (V_Fridge.freeze("RB", driver.getRawButton(R_XboxV2.BUTTON_RB))) {//GEARER
 			gearer.set(DoubleSolenoid.Value.kForward);
 		}else {
 			gearer.set(DoubleSolenoid.Value.kReverse);
-		}*/if (driver.getAxisPress(R_XboxV2.AXIS_RT, .5)) {//INTAKE
-			intake.set(60);
+		}if (driver.getAxisPress(R_XboxV2.AXIS_RT, .5)) {//INTAKE
+			intake.setRPM(60);
 		}else {
-			intake.set(0);
-		}
+			intake.setRPM(0);
+		}*/
+		if (gunner.getRawButton(R_XboxV2.BUTTON_A)) { //ian 2/21/17
+			climber.set(-1*.7);//ian 2/21/17
+		}else {//ian 2/21/17
+			climber.set(0);//ian 2/21/17
+		}//ian 2/21/17
+		turret.set(.2*gunner.getRawAxis(R_XboxV2.AXIS_LEFT_X));
 		
+		if (driver.getRawButton(R_XboxV2.BUTTON_LB)) {
+			flywheel.set(-.5);
+		}else {
+			flywheel.set(0);
+		}
+		if (V_Fridge.freeze("kicker", driver.getRawButton(R_XboxV2.BUTTON_RB))) {
+			kicker.set(Value.kForward);
+		}else {
+			kicker.set(Value.kReverse);
+		}
+	 	intake.set(gunner.getRawAxis(R_XboxV2.AXIS_RIGHT_Y));
 		if (gyro.netAcceleration() >= 1) {
 			driver.setRumble(RumbleType.kLeftRumble, 1);
+		}else {
+			driver.setRumble(RumbleType.kLeftRumble, 0);
 		}
 	}
 
@@ -142,6 +166,6 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void testPeriodic() {
-		swerve.align(.002);
+		swerve.align(.001);
 	}
 }

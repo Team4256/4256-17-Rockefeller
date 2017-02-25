@@ -35,11 +35,19 @@ public class R_DriveTrain {
 	public void align(final double increment) {
 		double i = 0;
 		double max = R_SwerveModule.rotatorGearRatio/increment;
-		while ((!moduleA.isAligned() || !moduleA.isAligned() || !moduleA.isAligned() || !moduleA.isAligned()) && i <= max) {
-			moduleA.align(increment);
-			moduleB.align(increment);
-			moduleC.align(increment);
-			moduleD.align(increment);
+		while ((!moduleA.isAligned() || !moduleB.isAligned() || !moduleC.isAligned() || !moduleD.isAligned())/* && i <= max*/) {
+			if (!moduleA.isAligned()) {
+				moduleA.align(increment);
+			}
+			if (!moduleB.isAligned()) {
+				moduleB.align(increment);
+			}
+			if (!moduleC.isAligned()) {
+				moduleC.align(increment);
+			}
+			if (!moduleD.isAligned()) {
+				moduleD.align(increment);
+			}
 			i++;
 		}
 	}

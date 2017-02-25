@@ -101,58 +101,58 @@ public class R_CANTalon extends CANTalon {
 	 * Speed: RPM
 	 * Voltage: -1 to 1 (gets scaled to -12 to 12)
 	**/
-	@Override
-	public void set(double value) {//CURRENT, ANGLE, SPEED
-		switch (getControlMode()) {
-		case Current:set(value);break;
-		case Follower:set(value);break;
-		case PercentVbus:set(value);break;
-		case Position:set((getCurrentAngle(false) + wornPath(value))*gearRatio/360);break;
-		case Speed:set(value);break;
-		case Voltage:
-			if (Math.abs(value) > 1) {value = Math.signum(value);}
-			set(value*12);
-			break;
-		default:
-			break;
+//	@Override
+//	public void set(double value) {//CURRENT, ANGLE, SPEED
+//		switch (getControlMode()) {
+//		case Current:set(value);break;
+//		case Follower:set(value);break;
+//		case PercentVbus:set(value);break;
+//		case Position:set((getCurrentAngle(false) + wornPath(value))*gearRatio/360);break;
+//		case Speed:set(value);break;
+//		case Voltage:
+//			if (Math.abs(value) > 1) {value = Math.signum(value);}
+//			set(value*12);
+//			break;
+//		default:
+//			break;
+//		}
+//	}
+	
+	/**
+	 * This function updates the PID loop's target position such that the motor will rotate to the specified angle in the best way possible.
+	**/
+	public void setAngle(final double endAngle) {//ANGLE
+		if (getControlMode() == position) {
+			set((getCurrentAngle(false) + wornPath(endAngle))*gearRatio/360);
 		}
 	}
-//	
-//	/**
-//	 * This function updates the PID loop's target position such that the motor will rotate to the specified angle in the best way possible.
-//	**/
-//	public void setAngle(final double endAngle) {//ANGLE
-//		if (getControlMode() == position) {
-//			set((getCurrentAngle(false) + wornPath(endAngle))*gearRatio/360);
-//		}
-//	}
-//	/**
-//	 * This function updates the PID loop's target speed.
-//	**/
-//	public void setRPM(final double rpm) {//SPEED
-//		if (getControlMode() == speed) {
-//			set(rpm);
-//		}
-//	}
-//	/**
-//	 * This function updates the PID loop's target current.
-//	**/
-//	public void setAmps(final double amps) {//CURRENT
-//		if (getControlMode() == current) {
-//			set(amps);
-//		}
-//	}
-//	/**
-//	 * This function scales the input to a voltage between 0 and 12, and then uses voltage compensation mode to maintain it.
-//	 * setVoltageCompensationRate(voltsPerSecondOverTen) must be run before calling this function.
-//	**/
-//	public void setVC(double speed) {//VOLTAGE
-//		if (getControlMode() == voltage) {
-//			if (Math.abs(speed) > 1) {speed = Math.signum(speed);}
-//			speed *= 12;
-//			set(speed);
-//		}
-//	}
+	/**
+	 * This function updates the PID loop's target speed.
+	**/
+	public void setRPM(final double rpm) {//SPEED
+		if (getControlMode() == speed) {
+			set(rpm);
+		}
+	}
+	/**
+	 * This function updates the PID loop's target current.
+	**/
+	public void setAmps(final double amps) {//CURRENT
+		if (getControlMode() == current) {
+			set(amps);
+		}
+	}
+	/**
+	 * This function scales the input to a voltage between 0 and 12, and then uses voltage compensation mode to maintain it.
+	 * setVoltageCompensationRate(voltsPerSecondOverTen) must be run before calling this function.
+	**/
+	public void setVC(double speed) {//VOLTAGE
+		if (getControlMode() == voltage) {
+			if (Math.abs(speed) > 1) {speed = Math.signum(speed);}
+			speed *= 12;
+			set(speed);
+		}
+	}
 	/**
 	 * This function returns the PID error for the current control mode.
 	 * Current: Milliamperes
