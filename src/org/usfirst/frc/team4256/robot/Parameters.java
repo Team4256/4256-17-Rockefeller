@@ -8,7 +8,7 @@ public abstract class Parameters {
 	
 	public static final int Shooter_flywheel = 16;//CAN
 	public static final int Shooter_rotator = 17;//CAN
-	public static final int Shooter_servos = 5;//PWM
+	public static final int Shooter_linearServos = 5;//PWM
 	public static final int Shooter_calibrator = 6;//DIO
 	
 	public static final int Swerve_rotatorA = 11;//CAN, front left

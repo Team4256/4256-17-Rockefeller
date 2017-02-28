@@ -4,6 +4,7 @@ import com.cyborgcats.reusable.R_CANTalon;
 import com.cyborgcats.reusable.V_Compass;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class R_SwerveModule {
 	public static final double rotatorGearRatio = 4.2;
@@ -45,13 +46,14 @@ public class R_SwerveModule {
 		if (sensor.get()) {
 			if (!aligning) {
 				aligned = false;
-				rotator.compass.setTareAngle(0, false);
+				//rotator.compass.setTareAngle(0, false);
 				aligning = true;
-				alignmentRevs = rotator.getPosition()%rotatorGearRatio;
+				alignmentRevs = rotator.getPosition();//%rotatorGearRatio;
 			}alignmentRevs += increment;
 			rotator.set(alignmentRevs);
 		}else {
 			aligning = false;
+			rotator.set(alignmentRevs);
 			rotator.compass.setTareAngle(alignmentRevs%rotatorGearRatio*360/4.2, false);
 			aligned = true;
 		}
