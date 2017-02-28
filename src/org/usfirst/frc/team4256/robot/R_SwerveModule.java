@@ -4,7 +4,6 @@ import com.cyborgcats.reusable.R_CANTalon;
 import com.cyborgcats.reusable.V_Compass;
 
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class R_SwerveModule {
 	public static final double rotatorGearRatio = 4.2;
@@ -30,8 +29,8 @@ public class R_SwerveModule {
 	public void init() {
 		rotator.init();
 		rotator.setPID(Parameters.swerveP, Parameters.swerveI, Parameters.swerveD);
-		tractionA.init();
-		tractionB.init(tractionA.getDeviceID());
+		tractionA.init(0, 12f);
+		tractionB.init(tractionA.getDeviceID(), 12f);
 	}
 	/**
 	 * 
@@ -62,7 +61,7 @@ public class R_SwerveModule {
 	 * 
 	**/
 	public void swivelTo(final double wheel_chassisAngle) {
-		rotator.setAngle(decapitateAngle(wheel_chassisAngle));
+		rotator.set(decapitateAngle(wheel_chassisAngle));
 	}
 	/**
 	 * 
@@ -76,6 +75,13 @@ public class R_SwerveModule {
 	public void set(final double speed) {
 		tractionA.set(speed*decapitated);
 	}
+	
+	public void completeLoopUpdate() {
+		rotator.completeLoopUpdate();
+		tractionA.completeLoopUpdate();
+		tractionB.completeLoopUpdate();
+	}
+	
 	/**
 	 * TODO
 	**/

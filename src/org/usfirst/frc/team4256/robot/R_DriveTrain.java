@@ -8,17 +8,17 @@ public class R_DriveTrain {
 	private static final double Radius = Math.sqrt(Side*Side + Front*Front);
 	private double lastSpeed = 0;
 	private R_Gyro gyro;
-	private R_SwerveModule moduleA;//arranged clockwise//TODO
+	private R_SwerveModule moduleA;
 	private R_SwerveModule moduleB;
 	private R_SwerveModule moduleC;
 	private R_SwerveModule moduleD;
 	
-	public R_DriveTrain(final R_Gyro gyro, final boolean flippedA, final boolean flippedB, final boolean flippedC, final boolean flippedD) {
+	public R_DriveTrain(final R_Gyro gyro, final R_SwerveModule moduleA, final R_SwerveModule moduleB, final R_SwerveModule moduleC, final R_SwerveModule moduleD) {
 		this.gyro = gyro;
-		this.moduleA = new R_SwerveModule(Parameters.Swerve_rotatorA, flippedA, Parameters.Swerve_driveAA, Parameters.Swerve_driveAB, Parameters.Swerve_calibratorA);
-		this.moduleB = new R_SwerveModule(Parameters.Swerve_rotatorB, flippedB, Parameters.Swerve_driveBA, Parameters.Swerve_driveBB, Parameters.Swerve_calibratorB);
-		this.moduleC = new R_SwerveModule(Parameters.Swerve_rotatorC, flippedC, Parameters.Swerve_driveCA, Parameters.Swerve_driveCB, Parameters.Swerve_calibratorC);
-		this.moduleD = new R_SwerveModule(Parameters.Swerve_rotatorD, flippedD, Parameters.Swerve_driveDA, Parameters.Swerve_driveDB, Parameters.Swerve_calibratorD);
+		this.moduleA = moduleA;
+		this.moduleB = moduleB;
+		this.moduleC = moduleC;
+		this.moduleD = moduleD;
 	}
 	/**
 	 * Set some PID defaults.

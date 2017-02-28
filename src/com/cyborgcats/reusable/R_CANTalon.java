@@ -1,5 +1,8 @@
 package com.cyborgcats.reusable;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.ctre.CANTalon;
 
 public class R_CANTalon extends CANTalon {
@@ -11,17 +14,26 @@ public class R_CANTalon extends CANTalon {
 	public static final TalonControlMode position = TalonControlMode.Position;
 	public static final TalonControlMode speed = TalonControlMode.Speed;
 	public static final TalonControlMode voltage = TalonControlMode.Voltage;
+	public static Map<String, Boolean> loopUpdateStates = new HashMap<String, Boolean>();
+	private double lastSetPoint = 0;
 	private double lastLegalDirection = 1;
 	public V_Compass compass;
+	private String key;
 	private double gearRatio;
 	//This constructor is intended for use with an encoder on a motor with limited motion.
 	public R_CANTalon(final int deviceID, final double gearRatio, final TalonControlMode controlMode, final boolean flipped, final FeedbackDevice deviceType, final double protectedZoneStart, final double protectedZoneSize) {
 		super(deviceID);
+		key = Integer.toString(deviceID);
+		if (loopUpdateStates.get(key) != null) {
+			throw new IllegalStateException("A CANTalon already exists at this device ID.");
+		}else {
+			loopUpdateStates.put(key, false);
+		}
 		this.gearRatio = gearRatio;
 		if (isSensorPresent(deviceType) == FeedbackDeviceStatus.FeedbackStatusPresent) {
 			setFeedbackDevice(deviceType);
 		}else {
-			throw new IllegalStateException("A CANTalon4256 could not find its integrated versaplanetary encoder.");
+			throw new IllegalStateException("A CANTalon could not find its integrated versaplanetary encoder.");
 		}
 		reverseOutput(flipped);
 		changeControlMode(controlMode);
@@ -30,11 +42,17 @@ public class R_CANTalon extends CANTalon {
 	//This constructor is intended for use with an encoder on a motor which can spin freely.
 	public R_CANTalon(final int deviceID, final double gearRatio, final TalonControlMode controlMode, final boolean flipped, final FeedbackDevice deviceType) {
 		super(deviceID);
+		String key = Integer.toString(deviceID);
+		if (loopUpdateStates.get(key) != null) {
+			throw new IllegalStateException("A CANTalon already exists at this device ID.");
+		}else {
+			loopUpdateStates.put(key, false);
+		}
 		this.gearRatio = gearRatio;
 		if (isSensorPresent(deviceType) == FeedbackDeviceStatus.FeedbackStatusPresent) {
 			setFeedbackDevice(deviceType);
 		}else {
-			throw new IllegalStateException("A CANTalon4256 could not find its integrated versaplanetary encoder.");
+			throw new IllegalStateException("A CANTalon could not find its integrated versaplanetary encoder.");
 		}
 		reverseOutput(flipped);
 		changeControlMode(controlMode);
@@ -43,6 +61,12 @@ public class R_CANTalon extends CANTalon {
 	//This constructor is intended for a motor without an encoder.
 	public R_CANTalon(final int deviceID, final double gearRatio, final TalonControlMode controlMode) {
 		super(deviceID);
+		String key = Integer.toString(deviceID);
+		if (loopUpdateStates.get(key) != null) {
+			throw new IllegalStateException("A CANTalon already exists at this device ID.");
+		}else {
+			loopUpdateStates.put(key, false);
+		}
 		this.gearRatio = gearRatio;
 		changeControlMode(controlMode);
 		compass = new V_Compass(0, 0);
@@ -51,11 +75,11 @@ public class R_CANTalon extends CANTalon {
 	 * This function prepares a motor by setting the PID profile, the closed loop error, and the minimum and maximum voltages.
 	 * It then gets enslaved to the motor at the specified ID.
 	**/
-	public void init(final int masterID) {
+	public void init(final int masterID, final float maxVolts) {
 		setProfile(0);//choose between PID loop parameter stores
 		setAllowableClosedLoopErr(0);
 		configNominalOutputVoltage(+0f, -0f);//minimum voltage draw
-		configPeakOutputVoltage(+12f, -12f);//maximum voltage draw
+		configPeakOutputVoltage(Math.abs(maxVolts), -Math.abs(maxVolts));//maximum voltage draw
 		if (getControlMode() == follower) {
 			set(masterID);
 		}else {
@@ -66,7 +90,7 @@ public class R_CANTalon extends CANTalon {
 	 * This function prepares a motor by setting the PID profile, the closed loop error, and the minimum and maximum voltages.
 	**/
 	public void init() {
-		init(0);
+		init(0, 12f);
 	}
 	/**
 	 * This function returns the current angle. If wraparound is true, the output will be between 0 and 359.999...
@@ -101,56 +125,30 @@ public class R_CANTalon extends CANTalon {
 	 * Speed: RPM
 	 * Voltage: -1 to 1 (gets scaled to -12 to 12)
 	**/
-//	@Override
-//	public void set(double value) {//CURRENT, ANGLE, SPEED
-//		switch (getControlMode()) {
-//		case Current:set(value);break;
-//		case Follower:set(value);break;
-//		case PercentVbus:set(value);break;
-//		case Position:set((getCurrentAngle(false) + wornPath(value))*gearRatio/360);break;
-//		case Speed:set(value);break;
-//		case Voltage:
-//			if (Math.abs(value) > 1) {value = Math.signum(value);}
-//			set(value*12);
-//			break;
-//		default:
-//			break;
-//		}
-//	}
-	
-	/**
-	 * This function updates the PID loop's target position such that the motor will rotate to the specified angle in the best way possible.
-	**/
-	public void setAngle(final double endAngle) {//ANGLE
-		if (getControlMode() == position) {
-			set((getCurrentAngle(false) + wornPath(endAngle))*gearRatio/360);
+	@Override
+	public void set(double value) {//CURRENT, ANGLE, SPEED
+		switch (getControlMode()) {
+		case Current:super.set(value);break;
+		case Follower:super.set(value);break;
+		case PercentVbus:super.set(value);break;
+		case Position:super.set((getCurrentAngle(false) + wornPath(value))*gearRatio/360);break;
+		case Speed:super.set(value);break;
+		case Voltage:
+			if (Math.abs(value) > 1) {value = Math.signum(value);}
+			super.set(value*12);
+			break;
+		default:
+			break;
 		}
+		loopUpdateStates.replace(key, true);
+		lastSetPoint = value;
 	}
-	/**
-	 * This function updates the PID loop's target speed.
-	**/
-	public void setRPM(final double rpm) {//SPEED
-		if (getControlMode() == speed) {
-			set(rpm);
-		}
-	}
-	/**
-	 * This function updates the PID loop's target current.
-	**/
-	public void setAmps(final double amps) {//CURRENT
-		if (getControlMode() == current) {
-			set(amps);
-		}
-	}
-	/**
-	 * This function scales the input to a voltage between 0 and 12, and then uses voltage compensation mode to maintain it.
-	 * setVoltageCompensationRate(voltsPerSecondOverTen) must be run before calling this function.
-	**/
-	public void setVC(double speed) {//VOLTAGE
-		if (getControlMode() == voltage) {
-			if (Math.abs(speed) > 1) {speed = Math.signum(speed);}
-			speed *= 12;
-			set(speed);
+	//TODO
+	public void completeLoopUpdate() {
+		if (!loopUpdateStates.get(key)) {
+			set(lastSetPoint);
+		}else {
+			loopUpdateStates.replace(key, false);
 		}
 	}
 	/**
