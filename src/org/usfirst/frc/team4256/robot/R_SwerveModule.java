@@ -49,10 +49,10 @@ public class R_SwerveModule {
 				aligning = true;
 				alignmentRevs = rotator.getPosition();//%rotatorGearRatio;
 			}alignmentRevs += increment;
-			rotator.set(alignmentRevs);
+			rotator.set(alignmentRevs, false);
 		}else {
 			aligning = false;
-			rotator.set(alignmentRevs);
+			rotator.set(alignmentRevs, false);
 			rotator.compass.setTareAngle(alignmentRevs%rotatorGearRatio*360/4.2, false);
 			aligned = true;
 		}

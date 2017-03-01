@@ -6,6 +6,7 @@ import com.cyborgcats.reusable.R_Xbox;
 import com.cyborgcats.reusable.V_Fridge;
 import com.cyborgcats.reusable.V_PID;
 
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -40,7 +41,7 @@ public class Robot extends IterativeRobot {
 //	private static final R_CANTalon flywheel = new R_CANTalon(Parameters.Shooter_flywheel, 1, R_CANTalon.speed, true, R_CANTalon.relative); //ian made this
 //	public static final R_CANTalon flywheel = new R_CANTalon(1, 1, R_CANTalon.percent);
 	private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, 12, R_CANTalon.position, true, R_CANTalon.absolute, 135, 90);
-//	private static final Compressor compressor = new Compressor(0);
+	private static final Compressor compressor = new Compressor(0);
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -171,13 +172,12 @@ public class Robot extends IterativeRobot {
 //		linearServo.set(gunner.getRawAxis(R_Xbox.AXIS_LEFT_Y)*.3);
 		//flywheel.set(-.48);
 		
-		if (R_CANTalon.loopUpdateStates.containsValue(false)) {
-			moduleA.completeLoopUpdate();
-			moduleB.completeLoopUpdate();
-			moduleC.completeLoopUpdate();
-			moduleD.completeLoopUpdate();
-			turret.completeLoopUpdate();
-		}
+
+		moduleA.completeLoopUpdate();
+		moduleB.completeLoopUpdate();
+		moduleC.completeLoopUpdate();
+		moduleD.completeLoopUpdate();
+		turret.completeLoopUpdate();
 	}
 
 	/**
@@ -186,12 +186,10 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void testPeriodic() {
 		swerve.align(.002);
-		if (R_CANTalon.loopUpdateStates.containsValue(false)) {
-			moduleA.completeLoopUpdate();
-			moduleB.completeLoopUpdate();
-			moduleC.completeLoopUpdate();
-			moduleD.completeLoopUpdate();
-			turret.completeLoopUpdate();
-		}
+		moduleA.completeLoopUpdate();
+		moduleB.completeLoopUpdate();
+		moduleC.completeLoopUpdate();
+		moduleD.completeLoopUpdate();
+		turret.completeLoopUpdate();
 	}
 }
