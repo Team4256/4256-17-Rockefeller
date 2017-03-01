@@ -7,6 +7,7 @@ import com.cyborgcats.reusable.V_Fridge;
 import com.cyborgcats.reusable.V_PID;
 
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -25,6 +26,7 @@ public class Robot extends IterativeRobot {
 	SendableChooser<String> chooser = new SendableChooser<>();
 	//Human Input
 	private static final R_Xbox driver = new R_Xbox(0);
+	private static final R_Xbox gunner = new R_Xbox(1);
 	//Robot Input
 	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
 	//Robot Output
@@ -36,11 +38,10 @@ public class Robot extends IterativeRobot {
 	
 //	private static final R_CANTalon climber = new R_CANTalon(Parameters.Climber, 17, R_CANTalon.voltage, true, R_CANTalon.relative); //Ian 2/21/17
 //	private static final DoubleSolenoid gearer = new DoubleSolenoid(0, 0, 1);
-//	private static final R_CANTalon intake = new R_CANTalon(Parameters.Intake, 1, R_CANTalon.percent);
+	private static final R_CANTalon intake = new R_CANTalon(Parameters.Intake, 1, R_CANTalon.percent);
 //	private static final Servo linearServo = new Servo(Parameters.Shooter_linearServo);
-//	private static final R_CANTalon flywheel = new R_CANTalon(Parameters.Shooter_flywheel, 1, R_CANTalon.speed, true, R_CANTalon.relative); //ian made this
-//	public static final R_CANTalon flywheel = new R_CANTalon(1, 1, R_CANTalon.percent);
-	private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, 12, R_CANTalon.position, true, R_CANTalon.absolute, 135, 90);
+	private static final R_CANTalon flywheel = new R_CANTalon(Parameters.Shooter_flywheel, 1, R_CANTalon.speed, true, R_CANTalon.relative);
+	private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, 12, R_CANTalon.position, false, R_CANTalon.absolute, 135, 90);
 	private static final Compressor compressor = new Compressor(0);
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -54,9 +55,11 @@ public class Robot extends IterativeRobot {
 		
 //		climber.init();
 //		climber.setVoltageCompensationRampRate(24);
-//		intake.init();
-//		flywheel.init();
-//		turret.init();
+		intake.init();
+		flywheel.init();
+		flywheel.setPID(.025, 0, .25, .01025, 0, 24, 0);
+		turret.init();
+		turret.setPID(Parameters.swerveP, Parameters.swerveI, Parameters.swerveD);
 		swerve.init();
 		
 		V_PID.set("spin", Parameters.spinP, Parameters.spinI, Parameters.spinD);
@@ -102,6 +105,7 @@ public class Robot extends IterativeRobot {
 	private static double lockedAngle = 0;
 	@Override
 	public void teleopPeriodic() {
+		swerve.align(.002);
 		double spinError = 0;
 		double spinOut = 0;
 		if (driver.getCurrentRadius(R_Xbox.STICK_RIGHT, true) == 0) {
@@ -151,33 +155,29 @@ public class Robot extends IterativeRobot {
 //		}else {//ian 2/21/17
 //			climber.set(0);//ian 2/21/17
 //		}//ian 2/21/17
-//		turret.set(.2*gunner.getRawAxis(R_Xbox.AXIS_RIGHT_X));
-//		
-//		if (gunner.getRawButton(R_Xbox.BUTTON_RB)) {
-//			flywheel.set(-.5);
-//		}else {
-//			flywheel.set(0);
-//		}
-////		if (V_Fridge.freeze("kicker", driver.getRawButton(R_Xbox.BUTTON_RB))) {
-////			kicker.set(Value.kForward);
-////		}else {
-////			kicker.set(Value.kReverse);
-////		}
-//	 	intake.set(gunner.getRawAxis(R_Xbox.AXIS_RIGHT_Y));
-//		if (gyro.netAcceleration() >= 1) {
-//			driver.setRumble(RumbleType.kLeftRumble, 1);
-//		}else {
-//			driver.setRumble(RumbleType.kLeftRumble, 0);
-//		}
-//		linearServo.set(gunner.getRawAxis(R_Xbox.AXIS_LEFT_Y)*.3);
-		//flywheel.set(-.48);
 		
+		
+		if (gunner.getRawButton(R_Xbox.BUTTON_RB)) {
+			flywheel.set(6000);
+		}else {
+			flywheel.set(0);
+		}
+	 	intake.set(gunner.getRawAxis(R_Xbox.AXIS_RIGHT_Y));
+		if (gyro.netAcceleration() >= 1) {
+			driver.setRumble(RumbleType.kLeftRumble, 1);
+		}else {
+			driver.setRumble(RumbleType.kLeftRumble, 0);
+		}
+//		linearServo.set(gunner.getRawAxis(R_Xbox.AXIS_LEFT_Y)*.3);
+		turret.set(gunner.getCurrentAngle(R_Xbox.STICK_LEFT, true));
 
 		moduleA.completeLoopUpdate();
 		moduleB.completeLoopUpdate();
 		moduleC.completeLoopUpdate();
 		moduleD.completeLoopUpdate();
 		turret.completeLoopUpdate();
+		intake.completeLoopUpdate();
+		flywheel.completeLoopUpdate();
 	}
 
 	/**
@@ -185,11 +185,5 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void testPeriodic() {
-		swerve.align(.002);
-		moduleA.completeLoopUpdate();
-		moduleB.completeLoopUpdate();
-		moduleC.completeLoopUpdate();
-		moduleD.completeLoopUpdate();
-		turret.completeLoopUpdate();
 	}
 }

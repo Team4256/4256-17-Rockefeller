@@ -53,7 +53,7 @@ public class R_SwerveModule {
 		}else {
 			aligning = false;
 			rotator.set(alignmentRevs, false);
-			rotator.compass.setTareAngle(alignmentRevs%rotatorGearRatio*360/4.2, false);
+			rotator.compass.setTareAngle(alignmentRevs%rotatorGearRatio*360/rotatorGearRatio, false);
 			aligned = true;
 		}
 	}

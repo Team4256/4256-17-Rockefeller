@@ -84,9 +84,9 @@ public class R_CANTalon extends CANTalon {
 		configNominalOutputVoltage(+0f, -0f);//minimum voltage draw
 		configPeakOutputVoltage(Math.abs(maxVolts), -Math.abs(maxVolts));//maximum voltage draw
 		if (getControlMode() == follower) {
-			set(masterID);
+			super.set(masterID);
 		}else {
-			set(0);
+			super.set(0);
 		}
 	}
 	/**
@@ -100,7 +100,7 @@ public class R_CANTalon extends CANTalon {
 	**/
 	public double getCurrentAngle(final boolean wraparound) {//ANGLE
 		if (getControlMode() != position) {return -1;}
-		return wraparound ? V_Compass.validateAngle(getPosition()*360/4.2) : getPosition()*360/4.2;
+		return wraparound ? V_Compass.validateAngle(getPosition()*360/gearRatio) : getPosition()*360/gearRatio;
 	}
 	/**
 	 * This function finds the shortest legal path from the current angle to the end angle and returns the size of that path in degrees.
