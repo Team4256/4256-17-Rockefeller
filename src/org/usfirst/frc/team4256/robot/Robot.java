@@ -7,6 +7,7 @@ import com.cyborgcats.reusable.V_Fridge;
 import com.cyborgcats.reusable.V_PID;
 
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -37,11 +38,11 @@ public class Robot extends IterativeRobot {
 	private static final R_DriveTrain swerve = new R_DriveTrain(gyro, moduleA, moduleB, moduleC, moduleD);
 	
 //	private static final R_CANTalon climber = new R_CANTalon(Parameters.Climber, 17, R_CANTalon.voltage, true, R_CANTalon.relative); //Ian 2/21/17
-//	private static final DoubleSolenoid gearer = new DoubleSolenoid(0, 0, 1);
+	private static final DoubleSolenoid gearer = new DoubleSolenoid(0, 0, 1);
 	private static final R_CANTalon intake = new R_CANTalon(Parameters.Intake, 1, R_CANTalon.percent);
 //	private static final Servo linearServo = new Servo(Parameters.Shooter_linearServo);
-	private static final R_CANTalon flywheel = new R_CANTalon(Parameters.Shooter_flywheel, 1, R_CANTalon.speed, true, R_CANTalon.relative);
-	private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, 12, R_CANTalon.position, false, R_CANTalon.absolute, 135, 90);
+//	private static final R_CANTalon flywheel = new R_CANTalon(Parameters.Shooter_flywheel, 1, R_CANTalon.speed, true, R_CANTalon.relative);
+//	private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, 12, R_CANTalon.position, false, R_CANTalon.absolute, 135, 90);
 	private static final Compressor compressor = new Compressor(0);
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -53,13 +54,14 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("My Auto", customAuto);
 		SmartDashboard.putData("Auto choices", chooser);
 		
+		compressor.clearAllPCMStickyFaults();
 //		climber.init();
 //		climber.setVoltageCompensationRampRate(24);
 		intake.init();
-		flywheel.init();
-		flywheel.setPID(.025, 0, .25, .01025, 0, 24, 0);
-		turret.init();
-		turret.setPID(Parameters.swerveP, Parameters.swerveI, Parameters.swerveD);
+//		flywheel.init();
+//		flywheel.setPID(.025, 0, .25, .01025, 0, 24, 0);
+//		turret.init();
+//		turret.setPID(Parameters.swerveP, Parameters.swerveI, Parameters.swerveD);
 		swerve.init();
 		
 		V_PID.set("spin", Parameters.spinP, Parameters.spinI, Parameters.spinD);
@@ -101,8 +103,6 @@ public class Robot extends IterativeRobot {
 	/**
 	 * This function is called periodically during operator control
 	 */
-	private static double previousAxisValue = 0;//TODO
-	private static double lockedAngle = 0;
 	@Override
 	public void teleopPeriodic() {
 		swerve.align(.002);
@@ -124,27 +124,28 @@ public class Robot extends IterativeRobot {
 			V_Fridge.toggleStates.replace("A", false);
 			V_Fridge.toggleStates.replace("B", false);
 			V_Fridge.toggleStates.replace("Y", false);
-			if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X) == 0 && previousAxisValue != 0) {
-				lockedAngle = gyro.getCurrentAngle();
-			}
-			if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X) == 0) {
-				spinError = gyro.wornPath(lockedAngle);
-				spinOut = V_PID.get("spin", spinError);
-			}else {
-				spinOut = driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
-				spinOut *= spinOut * Math.signum(spinOut);
-			}
+			spinOut = .5*driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
+//			if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X) == 0 && previousAxisValue != 0) {
+//				lockedAngle = gyro.getCurrentAngle();
+//			}previousAxisValue = driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
+//			if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X) == 0) {
+//				spinError = gyro.wornPath(lockedAngle);
+//				spinOut = V_PID.get("spin", spinError);
+//			}else {
+//				
+//			}
 		}
 		double speed = driver.getCurrentRadius(R_Xbox.STICK_LEFT, true);
-		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), speed*speed, spinOut);//SWERVE
+		if (!driver.getRawButton(R_Xbox.BUTTON_RB)) {speed *= .6;}
+		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), speed*speed, spinOut);//SWERVE//TODO max spinning speed stationary around .75
 		//if (driver.getAxisPress(R_XboxV2.AXIS_LT, .5)) {//CLIMBER
 		//	climber.setVC(.5);
 		//}
-//		if (V_Fridge.freeze("RB", driver.getRawButton(R_Xbox.BUTTON_LB))) {//GEARER changed to normal v2 changed to LB
-//			gearer.set(DoubleSolenoid.Value.kForward);
-//		}else {
-//			gearer.set(DoubleSolenoid.Value.kReverse);
-//		}
+		if (V_Fridge.freeze("LB", driver.getRawButton(R_Xbox.BUTTON_LB))) {
+			gearer.set(DoubleSolenoid.Value.kForward);
+		}else {
+			gearer.set(DoubleSolenoid.Value.kReverse);
+		}
 //		if (V_Fridge.freeze("LB", gunner.getRawButton(R_Xbox.BUTTON_LB))) {//INTAKE changed to normal v2
 //			intake.setRPM(60);
 //		}else {
@@ -157,11 +158,11 @@ public class Robot extends IterativeRobot {
 //		}//ian 2/21/17
 		
 		
-		if (gunner.getRawButton(R_Xbox.BUTTON_RB)) {
-			flywheel.set(6000);
-		}else {
-			flywheel.set(0);
-		}
+//		if (gunner.getRawButton(R_Xbox.BUTTON_RB)) {
+//			flywheel.set(6000);
+//		}else {
+//			flywheel.set(0);
+//		}
 	 	intake.set(gunner.getRawAxis(R_Xbox.AXIS_RIGHT_Y));
 		if (gyro.netAcceleration() >= 1) {
 			driver.setRumble(RumbleType.kLeftRumble, 1);
@@ -169,15 +170,15 @@ public class Robot extends IterativeRobot {
 			driver.setRumble(RumbleType.kLeftRumble, 0);
 		}
 //		linearServo.set(gunner.getRawAxis(R_Xbox.AXIS_LEFT_Y)*.3);
-		turret.set(gunner.getCurrentAngle(R_Xbox.STICK_LEFT, true));
+//		turret.set(gunner.getCurrentAngle(R_Xbox.STICK_LEFT, true));
 
 		moduleA.completeLoopUpdate();
 		moduleB.completeLoopUpdate();
 		moduleC.completeLoopUpdate();
 		moduleD.completeLoopUpdate();
-		turret.completeLoopUpdate();
+//		turret.completeLoopUpdate();
 		intake.completeLoopUpdate();
-		flywheel.completeLoopUpdate();
+//		flywheel.completeLoopUpdate();
 	}
 
 	/**

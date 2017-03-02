@@ -40,7 +40,7 @@ public abstract class Parameters {
 	public static final double swerveI = 0;
 	public static final double swerveD = 6;
 	
-	public static final double spinP = 0.0005;
-	public static final double spinI = 0;
-	public static final double spinD = 0;
+	public static final double spinP = .002;
+	public static final double spinI = .00003;
+	public static final double spinD = .0003;
 }

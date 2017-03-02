@@ -1,11 +1,6 @@
 package com.cyborgcats.reusable;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.ctre.CANTalon;
-
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class R_CANTalon extends CANTalon {
 	public static final FeedbackDevice absolute = FeedbackDevice.CtreMagEncoder_Absolute;
@@ -16,22 +11,14 @@ public class R_CANTalon extends CANTalon {
 	public static final TalonControlMode position = TalonControlMode.Position;
 	public static final TalonControlMode speed = TalonControlMode.Speed;
 	public static final TalonControlMode voltage = TalonControlMode.Voltage;
-	//public static Map<String, Boolean> loopUpdateStates = new HashMap<String, Boolean>();
 	private boolean updated = false;
 	private double lastSetPoint = 0;
 	private double lastLegalDirection = 1;
 	public V_Compass compass;
-	private String key;
 	private double gearRatio;
 	//This constructor is intended for use with an encoder on a motor with limited motion.
 	public R_CANTalon(final int deviceID, final double gearRatio, final TalonControlMode controlMode, final boolean flipped, final FeedbackDevice deviceType, final double protectedZoneStart, final double protectedZoneSize) {
 		super(deviceID);
-		key = Integer.toString(deviceID);
-//		if (loopUpdateStates.get(key) != null) {
-//			throw new IllegalStateException("A CANTalon already exists at this device ID.");
-//		}else {
-//			loopUpdateStates.put(key, false);
-//		}
 		this.gearRatio = gearRatio;
 		if (isSensorPresent(deviceType) == FeedbackDeviceStatus.FeedbackStatusPresent) {
 			setFeedbackDevice(deviceType);
@@ -45,12 +32,6 @@ public class R_CANTalon extends CANTalon {
 	//This constructor is intended for use with an encoder on a motor which can spin freely.
 	public R_CANTalon(final int deviceID, final double gearRatio, final TalonControlMode controlMode, final boolean flipped, final FeedbackDevice deviceType) {
 		super(deviceID);
-		String key = Integer.toString(deviceID);
-//		if (loopUpdateStates.get(key) != null) {
-//			throw new IllegalStateException("A CANTalon already exists at this device ID.");
-//		}else {
-//			loopUpdateStates.put(key, false);
-//		}
 		this.gearRatio = gearRatio;
 		if (isSensorPresent(deviceType) == FeedbackDeviceStatus.FeedbackStatusPresent) {
 			setFeedbackDevice(deviceType);
@@ -64,12 +45,6 @@ public class R_CANTalon extends CANTalon {
 	//This constructor is intended for a motor without an encoder.
 	public R_CANTalon(final int deviceID, final double gearRatio, final TalonControlMode controlMode) {
 		super(deviceID);
-		String key = Integer.toString(deviceID);
-//		if (loopUpdateStates.get(key) != null) {
-//			throw new IllegalStateException("A CANTalon already exists at this device ID.");
-//		}else {
-//			loopUpdateStates.put(key, false);
-//		}
 		this.gearRatio = gearRatio;
 		changeControlMode(controlMode);
 		compass = new V_Compass(0, 0);
@@ -79,14 +54,15 @@ public class R_CANTalon extends CANTalon {
 	 * It then gets enslaved to the motor at the specified ID.
 	**/
 	public void init(final int masterID, final float maxVolts) {
+		clearStickyFaults();
 		setProfile(0);//choose between PID loop parameter stores
 		setAllowableClosedLoopErr(0);
 		configNominalOutputVoltage(+0f, -0f);//minimum voltage draw
 		configPeakOutputVoltage(Math.abs(maxVolts), -Math.abs(maxVolts));//maximum voltage draw
 		if (getControlMode() == follower) {
-			super.set(masterID);
+			set(masterID);
 		}else {
-			super.set(0);
+			set(0);
 		}
 	}
 	/**
@@ -136,13 +112,15 @@ public class R_CANTalon extends CANTalon {
 	public void set(double value, final boolean convertToAngle) {//CURRENT, ANGLE, SPEED
 		switch (getControlMode()) {
 		case Current:super.set(value);break;
-		case Follower:super.set(value);break;
+		case Follower:
+			if (!updated) {//updated is treated differently for follower than for others because it should only be messed with once
+				super.set(value);
+			}updated = true;
 		case PercentVbus:super.set(value);break;
 		case Position:
 			if (convertToAngle) {
 				value = (getCurrentAngle(false) + wornPath(value))*gearRatio/360;
-			}
-			super.set(value);
+			}super.set(value);
 			break;
 		case Speed:super.set(value);break;
 		case Voltage:
@@ -157,9 +135,9 @@ public class R_CANTalon extends CANTalon {
 	}
 	//TODO
 	public void completeLoopUpdate() {
-		if (!updated) {
+		if (!updated && getControlMode() != follower) {
 			set(lastSetPoint);
-		}else {
+		}else if (getControlMode() != follower) {
 			updated = false;
 		}
 	}

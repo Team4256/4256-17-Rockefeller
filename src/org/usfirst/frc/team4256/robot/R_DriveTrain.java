@@ -38,19 +38,6 @@ public class R_DriveTrain {
 			moduleB.align(increment);
 			moduleC.align(increment);
 			moduleD.align(increment);
-			
-//			if (!moduleA.isAligned()) {
-//				moduleA.align(increment);
-//			}
-//			if (!moduleB.isAligned()) {
-//				moduleB.align(increment);
-//			}
-//			if (!moduleC.isAligned()) {
-//				moduleC.align(increment);
-//			}
-//			if (!moduleD.isAligned()) {
-//				moduleD.align(increment);
-//			}
 		}
 	}
 	

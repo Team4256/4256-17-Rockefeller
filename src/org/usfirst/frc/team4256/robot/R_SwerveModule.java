@@ -12,10 +12,10 @@ public class R_SwerveModule {
 	private boolean aligning = false;
 	private double alignmentRevs = 0;//paige is the best and hayden is not jk i love u
 	private double decapitated = 1;
-	public DigitalInput sensor;
 	private R_CANTalon rotator;
 	private R_CANTalon tractionA;
 	private R_CANTalon tractionB;
+	public DigitalInput sensor;
 	
 	public R_SwerveModule(final int rotatorID, final boolean flipped, final int tractionAID, final int tractionBID, final int sensorID) {
 		this.rotator = new R_CANTalon(rotatorID, rotatorGearRatio, R_CANTalon.position, flipped, R_CANTalon.absolute);
@@ -28,9 +28,12 @@ public class R_SwerveModule {
 	**/
 	public void init() {
 		rotator.init();
+		rotator.enableBrakeMode(false);
 		rotator.setPID(Parameters.swerveP, Parameters.swerveI, Parameters.swerveD);
 		tractionA.init(0, 12f);
+		tractionA.enableBrakeMode(false);
 		tractionB.init(tractionA.getDeviceID(), 12f);
+		tractionB.enableBrakeMode(false);
 	}
 	/**
 	 * 
@@ -79,7 +82,6 @@ public class R_SwerveModule {
 	public void completeLoopUpdate() {
 		rotator.completeLoopUpdate();
 		tractionA.completeLoopUpdate();
-		tractionB.completeLoopUpdate();
 	}
 	
 	/**
