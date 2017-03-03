@@ -6,6 +6,8 @@ public class R_DriveTrain {
 	private static final double Side = 21.85;//inches, wheel tip to wheel tip
 	private static final double Front = 25.85;
 	private static final double Radius = Math.sqrt(Side*Side + Front*Front);
+	private boolean aligned = false;
+	private boolean aligning = false;
 	private double lastSpeed = 0;
 	private R_Gyro gyro;
 	private R_SwerveModule moduleA;
@@ -29,16 +31,25 @@ public class R_DriveTrain {
 		moduleC.init();
 		moduleD.init();
 	}
+	public boolean isAligned() {
+		return aligned;
+	}
+	public boolean isAligning() {
+		return aligning;
+	}
 	/**
 	 * 
 	**/
 	public void align(final double increment) {
+		aligning = true;
 		while ((!moduleA.isAligned() || !moduleB.isAligned() || !moduleC.isAligned() || !moduleD.isAligned())) {
 			moduleA.align(increment);
 			moduleB.align(increment);
 			moduleC.align(increment);
 			moduleD.align(increment);
 		}
+		aligning = false;
+		aligned = true;
 	}
 	
 	public void holonomic(final double direction, double speed, double spin) {

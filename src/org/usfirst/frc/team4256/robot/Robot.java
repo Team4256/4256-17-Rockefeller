@@ -31,19 +31,24 @@ public class Robot extends IterativeRobot {
 	//Robot Input
 	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
 	//Robot Output
+	private static final Compressor compressor = new Compressor(0);
+	
 	private static final R_SwerveModule moduleA = new R_SwerveModule(Parameters.Swerve_rotatorA, true, Parameters.Swerve_driveAA, Parameters.Swerve_driveAB, Parameters.Swerve_calibratorA);
 	private static final R_SwerveModule moduleB = new R_SwerveModule(Parameters.Swerve_rotatorB, true, Parameters.Swerve_driveBA, Parameters.Swerve_driveBB, Parameters.Swerve_calibratorB);
 	private static final R_SwerveModule moduleC = new R_SwerveModule(Parameters.Swerve_rotatorC, true, Parameters.Swerve_driveCA, Parameters.Swerve_driveCB, Parameters.Swerve_calibratorC);
 	private static final R_SwerveModule moduleD = new R_SwerveModule(Parameters.Swerve_rotatorD, true, Parameters.Swerve_driveDA, Parameters.Swerve_driveDB, Parameters.Swerve_calibratorD);
 	private static final R_DriveTrain swerve = new R_DriveTrain(gyro, moduleA, moduleB, moduleC, moduleD);
 	
-//	private static final R_CANTalon climber = new R_CANTalon(Parameters.Climber, 17, R_CANTalon.voltage, true, R_CANTalon.relative); //Ian 2/21/17
-	private static final DoubleSolenoid gearer = new DoubleSolenoid(0, 0, 1);
+	private static final R_CANTalon climber = new R_CANTalon(Parameters.Climber, 17, R_CANTalon.voltage);
+	
+	private static final DoubleSolenoid gearer = new DoubleSolenoid(Parameters.Gearer_module, Parameters.Gearer_forward, Parameters.Gearer_reverse);
+	
 	private static final R_CANTalon intake = new R_CANTalon(Parameters.Intake, 1, R_CANTalon.percent);
-//	private static final Servo linearServo = new Servo(Parameters.Shooter_linearServo);
+	
 //	private static final R_CANTalon flywheel = new R_CANTalon(Parameters.Shooter_flywheel, 1, R_CANTalon.speed, true, R_CANTalon.relative);
 //	private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, 12, R_CANTalon.position, false, R_CANTalon.absolute, 135, 90);
-	private static final Compressor compressor = new Compressor(0);
+//	private static final Servo linearServo = new Servo(Parameters.Shooter_linearServo);
+	private static final DoubleSolenoid flap = new DoubleSolenoid(Parameters.Shooter_flapModule, Parameters.Shooter_flapForward, Parameters.Shooter_flapReverse);
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -55,16 +60,15 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putData("Auto choices", chooser);
 		
 		compressor.clearAllPCMStickyFaults();
-//		climber.init();
-//		climber.setVoltageCompensationRampRate(24);
+		swerve.init();
+		V_PID.set("spin", Parameters.spinP, Parameters.spinI, Parameters.spinD);
+		climber.init();
+		climber.setVoltageCompensationRampRate(24);
 		intake.init();
 //		flywheel.init();
 //		flywheel.setPID(.025, 0, .25, .01025, 0, 24, 0);
 //		turret.init();
 //		turret.setPID(Parameters.swerveP, Parameters.swerveI, Parameters.swerveD);
-		swerve.init();
-		
-		V_PID.set("spin", Parameters.spinP, Parameters.spinI, Parameters.spinD);
 	}
 
 	/**
@@ -105,7 +109,23 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		swerve.align(.002);
+		//DRIVER
+		//start + back: align
+		//X: left gear orientation
+		//A: center gear orientation
+		//B: right gear orientation
+		//Y: loading station orientation
+		//right axis: raw spin
+		//left axis: speed and direction
+		//RB: turbo
+		//LB: gearer
+		//LT: boolean climber
+		//RT: raw intake in
+		//dpad down: boolean intake out
+		
+		if (driver.getRawButton(R_Xbox.BUTTON_START) && driver.getRawButton(R_Xbox.BUTTON_BACK)) {
+			swerve.align(.002);
+		}
 		double spinError = 0;
 		double spinOut = 0;
 		if (driver.getCurrentRadius(R_Xbox.STICK_RIGHT, true) == 0) {
@@ -125,32 +145,32 @@ public class Robot extends IterativeRobot {
 			V_Fridge.toggleStates.replace("B", false);
 			V_Fridge.toggleStates.replace("Y", false);
 			spinOut = .5*driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
-//			if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X) == 0 && previousAxisValue != 0) {
-//				lockedAngle = gyro.getCurrentAngle();
-//			}previousAxisValue = driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
-//			if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X) == 0) {
-//				spinError = gyro.wornPath(lockedAngle);
-//				spinOut = V_PID.get("spin", spinError);
-//			}else {
-//				
-//			}
 		}
 		double speed = driver.getCurrentRadius(R_Xbox.STICK_LEFT, true);
 		if (!driver.getRawButton(R_Xbox.BUTTON_RB)) {speed *= .6;}
 		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), speed*speed, spinOut);//SWERVE//TODO max spinning speed stationary around .75
-		//if (driver.getAxisPress(R_XboxV2.AXIS_LT, .5)) {//CLIMBER
-		//	climber.setVC(.5);
-		//}
-		if (V_Fridge.freeze("LB", driver.getRawButton(R_Xbox.BUTTON_LB))) {
-			gearer.set(DoubleSolenoid.Value.kForward);
+		
+		if (driver.getAxisPress(R_Xbox.AXIS_LT, .5)) {
+			climber.set(-1);//CLIMBER
 		}else {
-			gearer.set(DoubleSolenoid.Value.kReverse);
+			climber.set(0);
 		}
-//		if (V_Fridge.freeze("LB", gunner.getRawButton(R_Xbox.BUTTON_LB))) {//INTAKE changed to normal v2
-//			intake.setRPM(60);
-//		}else {
-//			intake.setRPM(0);
-//		}
+		
+		if (V_Fridge.freeze("LB", driver.getRawButton(R_Xbox.BUTTON_LB))) {
+			gearer.set(DoubleSolenoid.Value.kReverse);//GEARER
+		}else {
+			gearer.set(DoubleSolenoid.Value.kForward);
+		}
+		
+		if (driver.getAxisPress(R_Xbox.AXIS_RT, .05)) {
+			intake.set(driver.getRawAxis(R_Xbox.AXIS_RT));//INTAKE
+		}else if (driver.getPOV(0) == R_Xbox.POV_SOUTH) {
+			intake.set(-.2);
+		}else {
+			intake.set(0);
+		}
+		
+
 //		if (gunner.getAxisPress(R_Xbox.AXIS_LT, 0.5)) { //ian 2/21/17
 //			climber.set(-1*.7);//ian 2/21/17
 //		}else {//ian 2/21/17
@@ -163,24 +183,21 @@ public class Robot extends IterativeRobot {
 //		}else {
 //			flywheel.set(0);
 //		}
-	 	intake.set(gunner.getRawAxis(R_Xbox.AXIS_RIGHT_Y));
+	 	
 		if (gyro.netAcceleration() >= 1) {
 			driver.setRumble(RumbleType.kLeftRumble, 1);
 		}else {
 			driver.setRumble(RumbleType.kLeftRumble, 0);
 		}
-//		linearServo.set(gunner.getRawAxis(R_Xbox.AXIS_LEFT_Y)*.3);
-//		turret.set(gunner.getCurrentAngle(R_Xbox.STICK_LEFT, true));
 
 		moduleA.completeLoopUpdate();
 		moduleB.completeLoopUpdate();
 		moduleC.completeLoopUpdate();
 		moduleD.completeLoopUpdate();
-//		turret.completeLoopUpdate();
+		climber.completeLoopUpdate();
 		intake.completeLoopUpdate();
-//		flywheel.completeLoopUpdate();
 	}
-
+	
 	/**
 	 * This function is called periodically during test mode
 	 */

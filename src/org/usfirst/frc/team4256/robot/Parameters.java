@@ -28,6 +28,15 @@ public abstract class Parameters {
 	public static final int Swerve_calibratorC = 2;//AIO, aft left
 	public static final int Swerve_calibratorD = 3;//AIO, aft right
 	
+	//PNEUMATICS
+	public static final int Shooter_flapModule = 0;//PCM
+	public static final int Shooter_flapForward = 2;//PCM
+	public static final int Shooter_flapReverse = 3;//PCM
+	
+	public static final int Gearer_module = 0;//PCM
+	public static final int Gearer_forward = 0;//PCM
+	public static final int Gearer_reverse = 1;//PCM
+	
 	//VALUES
 	public static final byte Gyrometer_updateHz = 30;
 	
