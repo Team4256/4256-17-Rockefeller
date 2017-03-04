@@ -10,7 +10,7 @@ public class R_SwerveModule {
 	public static final double tractionGearRatio = 15.6;
 	private boolean aligned = false;
 	private boolean aligning = false;
-	private double alignmentRevs = 0;//paige is the best and hayden is not jk i love u
+	private double alignmentRevs = 0;
 	private double decapitated = 1;
 	private R_CANTalon rotator;
 	private R_CANTalon tractionA;
@@ -36,11 +36,14 @@ public class R_SwerveModule {
 		tractionB.enableBrakeMode(false);
 	}
 	/**
-	 * 
+	 * This function indicates whether the module has been aligned.
 	**/
 	public boolean isAligned() {
 		return aligned;
 	}
+	/**
+	 * This function indicates whether the module is aligning.
+	**/
 	public boolean isAligning() {
 		return aligning;
 	}
@@ -48,9 +51,8 @@ public class R_SwerveModule {
 		if (sensor.get()) {
 			if (!aligning) {
 				aligned = false;
-				//rotator.compass.setTareAngle(0, false);
 				aligning = true;
-				alignmentRevs = rotator.getPosition();//%rotatorGearRatio;
+				alignmentRevs = rotator.getPosition();
 			}alignmentRevs += increment;
 			rotator.set(alignmentRevs, false);
 		}else {

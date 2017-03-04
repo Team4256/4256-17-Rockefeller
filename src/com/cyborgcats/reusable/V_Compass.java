@@ -22,24 +22,6 @@ public class V_Compass {
 	public double getTareAngle() {
 		return tareAngle;
 	}
-//	/**
-//	 * This function returns the last legal direction.
-//	**/
-//	public double getLastLegalDirection() {
-//		return lastLegalDirection;
-//	}
-//	/**
-//	 * This function returns the starting angle of the protected zone.
-//	**/
-//	public double getProtectedZoneStart() {
-//		return protectedZoneStart;
-//	}
-//	/**
-//	 * This function returns the size of the protected zone in degrees.
-//	**/
-//	public double getProtectedZoneSize() {
-//		return protectedZoneSize;
-//	}
 	/**
 	 * This function modifies the input to create a value between 0 and 359.999...
 	**/
