@@ -126,16 +126,16 @@ public class Robot extends IterativeRobot {
 		if (driver.getRawButton(R_Xbox.BUTTON_START) && driver.getRawButton(R_Xbox.BUTTON_BACK)) {
 			swerve.align(.002);
 		}
-		double spinError = 0;
 		double spinOut = 0;
 		if (driver.getCurrentRadius(R_Xbox.STICK_RIGHT, true) == 0) {
-			if (V_Fridge.freeze("X", driver.getRawButton(R_Xbox.BUTTON_X))) {
+			double spinError = 0;
+			if (V_Fridge.permafreeze("X", driver.getRawButton(R_Xbox.BUTTON_X))) {
 				spinError = gyro.wornPath(Parameters.leftGear);
-			}else if (V_Fridge.freeze("A", driver.getRawButton(R_Xbox.BUTTON_A))) {
+			}else if (V_Fridge.permafreeze("A", driver.getRawButton(R_Xbox.BUTTON_A))) {
 				spinError = gyro.wornPath(Parameters.centerGear);
-			}else if (V_Fridge.freeze("B", driver.getRawButton(R_Xbox.BUTTON_B))) {
+			}else if (V_Fridge.permafreeze("B", driver.getRawButton(R_Xbox.BUTTON_B))) {
 				spinError = gyro.wornPath(Parameters.rightGear);
-			}else if (V_Fridge.freeze("Y", driver.getRawButton(R_Xbox.BUTTON_Y))) {
+			}else if (V_Fridge.permafreeze("Y", driver.getRawButton(R_Xbox.BUTTON_Y))) {
 				spinError = gyro.wornPath(Parameters.loadingStation);
 			}
 			spinOut = V_PID.get("spin", spinError);
@@ -156,10 +156,18 @@ public class Robot extends IterativeRobot {
 			climber.set(0);
 		}
 		
-		if (V_Fridge.freeze("LB", driver.getRawButton(R_Xbox.BUTTON_LB))) {
+		if (V_Fridge.permafreeze("X", driver.getRawButton(R_Xbox.BUTTON_X))
+				|| V_Fridge.permafreeze("A", driver.getRawButton(R_Xbox.BUTTON_A))
+				|| V_Fridge.permafreeze("B", driver.getRawButton(R_Xbox.BUTTON_B))) {
 			gearer.set(DoubleSolenoid.Value.kReverse);//GEARER
-		}else {
+		}else if (V_Fridge.permafreeze("Y", driver.getRawButton(R_Xbox.BUTTON_Y))) {
 			gearer.set(DoubleSolenoid.Value.kForward);
+		}else {
+			if (V_Fridge.freezethaw("LB", driver.getRawButton(R_Xbox.BUTTON_LB))) {
+				gearer.set(DoubleSolenoid.Value.kReverse);
+			}else {
+				gearer.set(DoubleSolenoid.Value.kForward);
+			}
 		}
 		
 		if (driver.getAxisPress(R_Xbox.AXIS_RT, .05)) {
@@ -169,14 +177,6 @@ public class Robot extends IterativeRobot {
 		}else {
 			intake.set(0);
 		}
-		
-
-//		if (gunner.getAxisPress(R_Xbox.AXIS_LT, 0.5)) { //ian 2/21/17
-//			climber.set(-1*.7);//ian 2/21/17
-//		}else {//ian 2/21/17
-//			climber.set(0);//ian 2/21/17
-//		}//ian 2/21/17
-		
 		
 //		if (gunner.getRawButton(R_Xbox.BUTTON_RB)) {
 //			flywheel.set(6000);

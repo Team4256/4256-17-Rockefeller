@@ -4,7 +4,7 @@ import com.cyborgcats.reusable.R_Gyro;
 
 public class R_DriveTrain {
 	private static final double Side = 21.85;//inches, wheel tip to wheel tip
-	private static final double Front = 25.85;
+	private static final double Front = 25.85;//inches, wheel tip to wheel tip
 	private static final double Radius = Math.sqrt(Side*Side + Front*Front);
 	private boolean aligned = false;
 	private boolean aligning = false;
@@ -23,7 +23,7 @@ public class R_DriveTrain {
 		this.moduleD = moduleD;
 	}
 	/**
-	 * Set some PID defaults.
+	 * This function prepares each swerve module individually.
 	**/
 	public void init() {
 		moduleA.init();
@@ -31,9 +31,15 @@ public class R_DriveTrain {
 		moduleC.init();
 		moduleD.init();
 	}
+	/**
+	 * This function indicates whether the entire drive train has been aligned.
+	**/
 	public boolean isAligned() {
 		return aligned;
 	}
+	/**
+	 * This function indicates whether the entire drive train is aligning.
+	**/
 	public boolean isAligning() {
 		return aligning;
 	}
@@ -42,12 +48,12 @@ public class R_DriveTrain {
 	**/
 	public void align(final double increment) {
 		aligning = true;
-		while ((!moduleA.isAligned() || !moduleB.isAligned() || !moduleC.isAligned() || !moduleD.isAligned())) {
+		do {
 			moduleA.align(increment);
 			moduleB.align(increment);
 			moduleC.align(increment);
 			moduleD.align(increment);
-		}
+		}while ((moduleA.isAligning() || moduleB.isAligning() || moduleC.isAligning() || moduleD.isAligning()));
 		aligning = false;
 		aligned = true;
 	}
