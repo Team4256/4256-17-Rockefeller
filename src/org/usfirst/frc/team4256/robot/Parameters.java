@@ -43,13 +43,13 @@ public abstract class Parameters {
 	public static final double leftGear = -60;
 	public static final double centerGear = -90;
 	public static final double rightGear = -150;
-	public static final double loadingStation = 206.7;//TODO will change depending on side of field
+	public static final double loadingStation = 230;//TODO will change depending on side of field
 	
 	public static final double swerveP = .6;
 	public static final double swerveI = 0;
 	public static final double swerveD = 6;
 	
-	public static final double spinP = .002;
-	public static final double spinI = .00003;
-	public static final double spinD = .0003;
+	public static final double spinP = .0025;
+	public static final double spinI = .000015;
+	public static final double spinD = .02;
 }

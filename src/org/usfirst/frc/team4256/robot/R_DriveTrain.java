@@ -75,7 +75,7 @@ public class R_DriveTrain {
 		moduleC.swivelTo(Math.toDegrees(Math.atan2(a,d)));
 		moduleD.swivelTo(Math.toDegrees(Math.atan2(a,c)));
 		
-		if (isThere(5)) {
+		if (isThere(3)) {
 			double speedA = Math.sqrt(b*b + d*d),speedB = Math.sqrt(b*b + c*c),speedC = Math.sqrt(a*a + d*d),speedD = Math.sqrt(a*a + c*c);
 			if (bad) {
 				moduleA.set(0);	moduleB.set(0);	moduleC.set(0);	moduleD.set(0);

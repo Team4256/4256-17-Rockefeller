@@ -8,7 +8,7 @@ public abstract class V_Fridge {
 	public static Map<String, Boolean> toggleStates = new HashMap<String, Boolean>();
 	public static Map<String, Long> stickyTimes = new HashMap<String, Long>();
 	
-	public static boolean freezethaw(final String key, final boolean currentState) {
+	public static boolean freeze(final String key, final boolean currentState) {
 		if (previousStates.get(key) == null) {
 			previousStates.put(key, false);
 		}if (toggleStates.get(key) == null) {
@@ -18,15 +18,6 @@ public abstract class V_Fridge {
 			toggleStates.replace(key, toggleBool);
 		}
 		previousStates.replace(key, currentState);
-		return toggleStates.get(key);
-	}
-	
-	public static boolean permafreeze(final String key, final boolean currentState) {
-		if (toggleStates.get(key) == null) {
-			toggleStates.put(key, false);
-		}if (currentState) {
-			toggleStates.replace(key, true);
-		}
 		return toggleStates.get(key);
 	}
 	
