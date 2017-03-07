@@ -2,7 +2,7 @@ package org.usfirst.frc.team4256.robot;
 
 import com.cyborgcats.reusable.R_CANTalon;
 import com.cyborgcats.reusable.R_Gyro;
-import com.cyborgcats.reusable.R_XboxV2;
+import com.cyborgcats.reusable.R_Xbox;
 import com.cyborgcats.reusable.V_Fridge;
 import com.cyborgcats.reusable.V_PID;
 
@@ -26,8 +26,8 @@ public class Robot extends IterativeRobot {
 	String autoSelected;
 	SendableChooser<String> chooser = new SendableChooser<>();
 	//Human Input
-	private static final R_XboxV2 driver = new R_XboxV2(0);
-	private static final R_XboxV2 gunner = new R_XboxV2(1);
+	private static final R_Xbox driver = new R_Xbox(0);
+	//private static final R_XboxV2 gunner = new R_XboxV2(1);
 	//Robot Input
 	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
 	//Robot Output
@@ -107,6 +107,7 @@ public class Robot extends IterativeRobot {
 	/**
 	 * This function is called periodically during operator control
 	 */
+	Double gearAngle = null;
 	@Override
 	public void teleopPeriodic() {
 		//DRIVER
@@ -123,62 +124,58 @@ public class Robot extends IterativeRobot {
 		//RT: raw intake in
 		//dpad down: boolean intake out
 		
-		if (driver.getRawButton(R_XboxV2.BUTTON_START) && driver.getRawButton(R_XboxV2.BUTTON_BACK)) {
+		if (driver.getRawButton(R_Xbox.BUTTON_START) && driver.getRawButton(R_Xbox.BUTTON_BACK)) {
 			swerve.align(.002);
 		}
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		double spinOut = 0;
-		if (driver.getCurrentRadius(R_XboxV2.STICK_RIGHT, true) == 0) {
-			double spinError = 0;
-			if (V_Fridge.freeze("X", driver.getRawButton(R_XboxV2.BUTTON_X))) {
-				spinError = gyro.wornPath(Parameters.leftGear);
-				spinOut = V_PID.get("spin", spinError);
-			}else if (V_Fridge.freeze("A", driver.getRawButton(R_XboxV2.BUTTON_A))) {
-				spinError = gyro.wornPath(Parameters.centerGear);
-				spinOut = V_PID.get("spin", spinError);
-			}else if (V_Fridge.freeze("B", driver.getRawButton(R_XboxV2.BUTTON_B))) {
-				spinError = gyro.wornPath(Parameters.rightGear);
-				spinOut = V_PID.get("spin", spinError);
-			}else if (V_Fridge.freeze("Y", driver.getRawButton(R_XboxV2.BUTTON_Y))) {
-				spinError = gyro.wornPath(Parameters.loadingStation);
-				spinOut = V_PID.get("spin", spinError);
-			}else {
-				spinOut = .5*driver.getDeadbandedAxis(R_XboxV2.AXIS_RIGHT_X);
-			}
-			SmartDashboard.putNumber("error", spinError);
-		}else {
-			V_Fridge.toggleStates.replace("X", false);
-			V_Fridge.toggleStates.replace("A", false);
-			V_Fridge.toggleStates.replace("B", false);
-			V_Fridge.toggleStates.replace("Y", false);
-			spinOut = .5*driver.getDeadbandedAxis(R_XboxV2.AXIS_RIGHT_X);
+		if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X) != 0) {
+			gearAngle = null;
 		}
-		double speed = driver.getCurrentRadius(R_XboxV2.STICK_LEFT, true);
-		if (!driver.getRawButton(R_XboxV2.BUTTON_RB)) {speed *= .6;}
-		swerve.holonomic(driver.getCurrentAngle(R_XboxV2.STICK_LEFT, true), speed*speed, spinOut);//SWERVE//TODO max spinning speed stationary around .75
 		
-		if (driver.getAxisPress(R_XboxV2.AXIS_LT, .5)) {
+		if (driver.getRawButton(R_Xbox.BUTTON_X)) {
+			gearAngle = Parameters.leftGear;
+		}else if (driver.getRawButton(R_Xbox.BUTTON_A)) {
+			gearAngle = Parameters.centerGear;
+		}else if (driver.getRawButton(R_Xbox.BUTTON_B)) {
+			gearAngle = Parameters.rightGear;
+		}else if (driver.getRawButton(R_Xbox.BUTTON_Y)) {
+			gearAngle = Parameters.loadingStation;
+		}
+		
+		double spinError = 0;
+		if (gearAngle == null) {
+			spinOut = .5*driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
+		}else {
+			spinError = gyro.wornPath(gearAngle);
+			spinOut = V_PID.get("spin", spinError);
+		}
+		
+		double speed = driver.getCurrentRadius(R_Xbox.STICK_LEFT, true);
+		if (!driver.getRawButton(R_Xbox.BUTTON_RB)) {speed *= .6;}
+		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), speed*speed, spinOut);//SWERVE//TODO max spinning speed stationary around .75
+		
+		if (driver.getAxisPress(R_Xbox.AXIS_LT, .5)) {
 			climber.set(-1);//CLIMBER
 		}else {
 			climber.set(0);
 		}
 		
-		if (V_Fridge.freeze("X", driver.getRawButton(R_XboxV2.BUTTON_X))
-				|| V_Fridge.freeze("A", driver.getRawButton(R_XboxV2.BUTTON_A))
-				|| V_Fridge.freeze("B", driver.getRawButton(R_XboxV2.BUTTON_B))) {
+		if (gearAngle != null && gearAngle != Parameters.loadingStation) {
 			gearer.set(DoubleSolenoid.Value.kReverse);//GEARER
-		}else if (V_Fridge.freeze("Y", driver.getRawButton(R_XboxV2.BUTTON_Y))) {
+		}else if (gearAngle == Parameters.loadingStation) {
 			gearer.set(DoubleSolenoid.Value.kForward);
 		}else {
-			if (V_Fridge.freeze("LB", driver.getRawButton(R_XboxV2.BUTTON_LB))) {
+			if (V_Fridge.freeze("LB", driver.getRawButton(R_Xbox.BUTTON_LB))) {
 				gearer.set(DoubleSolenoid.Value.kReverse);
 			}else {
 				gearer.set(DoubleSolenoid.Value.kForward);
 			}
 		}
 		
-		if (driver.getAxisPress(R_XboxV2.AXIS_RT, .05)) {
-			intake.set(driver.getRawAxis(R_XboxV2.AXIS_RT));//INTAKE
-		}else if (driver.getPOV(0) == R_XboxV2.POV_SOUTH) {
+		if (driver.getAxisPress(R_Xbox.AXIS_RT, .05)) {
+			intake.set(driver.getRawAxis(R_Xbox.AXIS_RT));//INTAKE
+		}else if (driver.getPOV(0) == R_Xbox.POV_SOUTH) {
 			intake.set(-.2);
 		}else {
 			intake.set(0);

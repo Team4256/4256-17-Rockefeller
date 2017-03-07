@@ -8,7 +8,6 @@ public class R_DriveTrain {
 	private static final double Radius = Math.sqrt(Side*Side + Front*Front);
 	private boolean aligned = false;
 	private boolean aligning = false;
-	private double lastSpeed = 0;
 	private R_Gyro gyro;
 	private R_SwerveModule moduleA;
 	private R_SwerveModule moduleB;
@@ -62,20 +61,15 @@ public class R_DriveTrain {
 		double chassis_fieldAngle = gyro.getCurrentAngle();
 		double forward = Math.cos(Math.toRadians(R_SwerveModule.convertToRobot(direction, chassis_fieldAngle)));
 		double strafe = Math.sin(Math.toRadians(R_SwerveModule.convertToRobot(direction, chassis_fieldAngle)));
-		boolean bad = speed == 0 && spin == 0;
-		if (bad) {
-			forward *= lastSpeed;strafe *= lastSpeed;
-		}else {
-			forward *= speed;strafe *= speed;
-			lastSpeed = speed;
-		}
+		forward *= speed;strafe *= speed;
 		double a = strafe - spin*(Side/Radius),b = strafe + spin*(Side/Radius),c = forward - spin*(Front/Radius),d = forward + spin*(Front/Radius);
-		moduleA.swivelTo(Math.toDegrees(Math.atan2(b,d)));
-		moduleB.swivelTo(Math.toDegrees(Math.atan2(b,c)));
-		moduleC.swivelTo(Math.toDegrees(Math.atan2(a,d)));
-		moduleD.swivelTo(Math.toDegrees(Math.atan2(a,c)));
+		boolean bad = speed == 0 && spin == 0;
+		moduleA.swivelTo(Math.toDegrees(Math.atan2(b,d)), bad);
+		moduleB.swivelTo(Math.toDegrees(Math.atan2(b,c)), bad);
+		moduleC.swivelTo(Math.toDegrees(Math.atan2(a,d)), bad);
+		moduleD.swivelTo(Math.toDegrees(Math.atan2(a,c)), bad);
 		
-		if (isThere(3)) {
+		if (isThere(5)) {
 			double speedA = Math.sqrt(b*b + d*d),speedB = Math.sqrt(b*b + c*c),speedC = Math.sqrt(a*a + d*d),speedD = Math.sqrt(a*a + c*c);
 			if (bad) {
 				moduleA.set(0);	moduleB.set(0);	moduleC.set(0);	moduleD.set(0);

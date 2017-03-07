@@ -1,18 +1,18 @@
 package com.cyborgcats.reusable;//COMPLETE
 
-import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
 
-public class R_Xbox extends Joystick {
+public class R_Xbox extends XboxController {
 	public static final int AXIS_LEFT_X = 0;
 	public static final int AXIS_LEFT_Y = 1;
 	public static final int AXIS_LT = 2;
 	public static final int AXIS_RT = 3;
 	public static final int AXIS_RIGHT_X = 4;
 	public static final int AXIS_RIGHT_Y = 5;
-	
+
 	public static final int[] STICK_LEFT = new int[] {AXIS_LEFT_X, AXIS_LEFT_Y};
 	public static final int[] STICK_RIGHT = new int[] {AXIS_RIGHT_X, AXIS_RIGHT_Y};
-	
+
 	public static final int BUTTON_A = 1;
 	public static final int BUTTON_B = 2;
 	public static final int BUTTON_X = 3;
@@ -23,12 +23,7 @@ public class R_Xbox extends Joystick {
 	public static final int BUTTON_START = 8;
 	public static final int BUTTON_STICK_LEFT = 9;
 	public static final int BUTTON_STICK_RIGHT = 10;
-	public static final int BUTTON_XBOX = 11;
-	public static final int BUTTON_NORTH = 12;
-	public static final int BUTTON_SOUTH = 13;
-	public static final int BUTTON_WEST = 14;
-	public static final int BUTTON_EAST = 15;
-	
+
 	public static final int POV_NORTH = 0;
 	public static final int POV_NORTH_EAST = 45;
 	public static final int POV_EAST = 90;
@@ -37,15 +32,12 @@ public class R_Xbox extends Joystick {
 	public static final int POV_SOUTH_WEST = 225;
 	public static final int POV_WEST = 270;
 	public static final int POV_NORTH_WEST = 315;
-	
-	public R_Xbox(final int port) throws IllegalStateException {
+
+	public R_Xbox(final int port) {
 		super(port);
-		if (!getIsXbox()) {
-			throw new IllegalStateException("Xbox4256 was used with something other than an xbox controller.");
-		}
 	}
-	private double[] deadbands = new double[getAxisCount()];
-	private double[] previousAxisValues = new double[getAxisCount()];
+	private double[] deadbands = new double[6];
+	private double[] previousAxisValues = new double[6];
 	{
 		for (int i = 0; i  <= deadbands.length - 1; i++) {
 			deadbands[i] = 0.2;
@@ -91,12 +83,12 @@ public class R_Xbox extends Joystick {
 	 * Otherwise, it returns false.
 	**/
 	public boolean isActive() {
-		for (int i = 1; i <= getButtonCount(); i++) {
+		for (int i = 1; i <= 10 - 1; i++) {
 			if(getRawButton(i)) {
 				return true;
 			}
 		}
-		for (int i = 0; i < getAxisCount(); i++) {
+		for (int i = 0; i < deadbands.length - 1; i++) {
 			if(getAxisActivity(i)) {
 				return true;
 			}
