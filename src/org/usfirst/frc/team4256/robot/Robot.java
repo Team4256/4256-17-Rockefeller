@@ -1,6 +1,7 @@
 package org.usfirst.frc.team4256.robot;
 
 import com.cyborgcats.reusable.R_CANTalon;
+import com.cyborgcats.reusable.R_Gimbal;
 import com.cyborgcats.reusable.R_Gyro;
 import com.cyborgcats.reusable.R_Xbox;
 import com.cyborgcats.reusable.V_Fridge;
@@ -27,8 +28,9 @@ public class Robot extends IterativeRobot {
 	SendableChooser<String> chooser = new SendableChooser<>();
 	//Human Input
 	private static final R_Xbox driver = new R_Xbox(0);
-	//private static final R_XboxV2 gunner = new R_XboxV2(1);
+	private static final R_Xbox gunner = new R_Xbox(1);
 	//Robot Input
+	private static final R_Gimbal gimbal = new R_Gimbal(Parameters.Camera_servoX, Parameters.Camera_servoY, 6);
 	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
 	//Robot Output
 	private static final Compressor compressor = new Compressor(0);
@@ -151,7 +153,7 @@ public class Robot extends IterativeRobot {
 			spinError = gyro.wornPath(gearAngle);
 			spinOut = V_PID.get("spin", spinError);
 		}
-		
+		////////////////////////////////////////////////////////////////////////////////////
 		double speed = driver.getCurrentRadius(R_Xbox.STICK_LEFT, true);
 		if (!driver.getRawButton(R_Xbox.BUTTON_RB)) {speed *= .6;}
 		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), speed*speed, spinOut);//SWERVE//TODO max spinning speed stationary around .75
@@ -186,6 +188,8 @@ public class Robot extends IterativeRobot {
 //			flywheel.set(0);
 //		}
 	 	
+		gimbal.moveCamera(-gunner.getDeadbandedAxis(R_Xbox.AXIS_LEFT_X), gunner.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_Y));
+		
 		if (gyro.netAcceleration() >= 1) {
 			driver.setRumble(RumbleType.kLeftRumble, 1);
 		}else {

@@ -9,9 +9,9 @@ public class R_Gimbal {
 	private Servo x;
 	private Servo y;
 	
-	public R_Gimbal(Servo x, Servo y, int scalingFactor) {
-		this.x = x;
-		this.y = y;
+	public R_Gimbal(final int servoXPort, final int servoYPort, int scalingFactor) {
+		this.x = new Servo(servoXPort);
+		this.y = new Servo(servoYPort);
 		this.scalingFactor = scalingFactor;
 	}
 	

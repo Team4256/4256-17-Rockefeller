@@ -4,6 +4,9 @@ public abstract class Parameters {
 	//ELECTRONICS
 	public static final int Climber = 18;//CAN
 	
+	public static final int Camera_servoX = 8;//PWM
+	public static final int Camera_servoY = 9;//PWM
+	
 	public static final int Intake = 15;//CAN
 	
 	public static final int Shooter_flywheel = 16;//CAN
