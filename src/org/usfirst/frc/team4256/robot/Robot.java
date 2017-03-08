@@ -129,7 +129,7 @@ public class Robot extends IterativeRobot {
 		}
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		double spinOut = 0;
-		if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X) != 0) {
+		if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) != 0) {
 			gearAngle = null;
 		}
 		
@@ -145,7 +145,8 @@ public class Robot extends IterativeRobot {
 		
 		double spinError = 0;
 		if (gearAngle == null) {
-			spinOut = .5*driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
+			spinOut = driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
+			spinOut *= .5*spinOut*Math.signum(spinOut);
 		}else {
 			spinError = gyro.wornPath(gearAngle);
 			spinOut = V_PID.get("spin", spinError);
@@ -163,8 +164,6 @@ public class Robot extends IterativeRobot {
 		
 		if (gearAngle != null && gearAngle != Parameters.loadingStation) {
 			gearer.set(DoubleSolenoid.Value.kReverse);//GEARER
-		}else if (gearAngle == Parameters.loadingStation) {
-			gearer.set(DoubleSolenoid.Value.kForward);
 		}else {
 			if (V_Fridge.freeze("LB", driver.getRawButton(R_Xbox.BUTTON_LB))) {
 				gearer.set(DoubleSolenoid.Value.kReverse);
