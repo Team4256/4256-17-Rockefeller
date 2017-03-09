@@ -1,5 +1,8 @@
 package org.usfirst.frc.team4256.robot;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.cyborgcats.reusable.R_CANTalon;
 import com.cyborgcats.reusable.R_Gimbal;
 import com.cyborgcats.reusable.R_Gyro;
@@ -13,7 +16,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot {
 	final String defaultAuto = "Default";
@@ -23,8 +25,10 @@ public class Robot extends IterativeRobot {
 	//Human Input
 	private static final R_Xbox driver = new R_Xbox(0);
 	private static final R_Xbox gunner = new R_Xbox(1);
-	private static final int[] angleButtons = new int[] {R_Xbox.BUTTON_X, R_Xbox.BUTTON_A, R_Xbox.BUTTON_B, R_Xbox.BUTTON_Y};
+	private static final Map<Integer, Double> buttons2angle = new HashMap<Integer, Double>();
+	private static final int[] mappedButtons = new int[] {R_Xbox.BUTTON_X, R_Xbox.BUTTON_A, R_Xbox.BUTTON_B, R_Xbox.BUTTON_Y};
 	private static double lockedAngle = 0;
+	private static boolean override = false;
 	//Robot Input
 	private static final R_Gimbal gimbal = new R_Gimbal(Parameters.Camera_servoX, Parameters.Camera_servoY, 6);
 	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
@@ -72,6 +76,10 @@ public class Robot extends IterativeRobot {
 		if (DriverStation.getInstance().getAlliance() != DriverStation.Alliance.Red) {
 			Parameters.loadingStation += 90;
 		}
+		buttons2angle.put(R_Xbox.BUTTON_X, Parameters.leftGear);
+		buttons2angle.put(R_Xbox.BUTTON_A, Parameters.centerGear);
+		buttons2angle.put(R_Xbox.BUTTON_B, Parameters.rightGear);
+		buttons2angle.put(R_Xbox.BUTTON_Y, Parameters.loadingStation);
 		V_PID.clear("spin");
 		lockedAngle = gyro.getCurrentAngle();
 	}
@@ -93,15 +101,6 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void autonomousPeriodic() {
-		switch (autoSelected) {
-		case customAuto:
-			// Put custom auto code here
-			break;
-		case defaultAuto:
-		default:
-			// Put default auto code here
-			break;
-		}
 	}
 	
 	@Override
@@ -124,7 +123,6 @@ public class Robot extends IterativeRobot {
 		//right axis: gimbal x
 		//left axis: gimbal y
 		
-		
 		if (driver.getRawButton(R_Xbox.BUTTON_START) && driver.getRawButton(R_Xbox.BUTTON_BACK)) {//SWERVE ALIGNMENT
 			swerve.align(.002);//TODO limit how long this can take
 		}
@@ -134,15 +132,11 @@ public class Robot extends IterativeRobot {
 			V_PID.clear("spin");
 			lockedAngle = gyro.getCurrentAngle();
 		}if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) == 0) {
-			if (driver.getRawButton(angleButtons[0]) || driver.getRawButton(angleButtons[1])
-			|| driver.getRawButton(angleButtons[2]) || driver.getRawButton(angleButtons[3])) {
-				switch (driver.getYoungestButton(angleButtons)) {//TODO can make this all one line by mapping output of getYoungestButton to an array that corresponds to the angle params
-				case angleButtons[0]:lockedAngle = Parameters.leftGear;break;
-				case angleButtons[1]:lockedAngle = Parameters.centerGear;break;
-				case angleButtons[2]:lockedAngle = Parameters.rightGear;break;
-				case angleButtons[3]:lockedAngle = Parameters.loadingStation;break;
-				default:break;
-				}
+			buttons2angle.forEach((k, v) -> {
+				if (!override) {override = driver.getRawButton((int)k);}
+			});
+			if (override) {
+				lockedAngle = buttons2angle.get(driver.getYoungestButton(mappedButtons));
 			}spin = V_PID.get("spin", gyro.wornPath(lockedAngle));
 		}else {
 			spin = driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);

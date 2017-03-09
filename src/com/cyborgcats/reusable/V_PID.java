@@ -16,6 +16,15 @@ public abstract class V_PID {
 		}
 	}
 	
+	public static void clear(final String key) {
+		if (PIDSystems.get(key) == null) {
+			PIDSystems.put(key, new double[] {0, 0, 0, 0, 0});
+		}else {
+			double p = PIDSystems.get(key)[0], i = PIDSystems.get(key)[1], d = PIDSystems.get(key)[2];
+			PIDSystems.replace(key, new double[] {p, i, d, 0, 0});
+		}
+	}
+	
 	public static double get(final String key, final double error) {
 		if (PIDSystems.get(key) == null) {
 			return 0;
