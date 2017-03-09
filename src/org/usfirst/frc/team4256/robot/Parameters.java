@@ -43,10 +43,10 @@ public abstract class Parameters {
 	//VALUES
 	public static final byte Gyrometer_updateHz = 30;
 	
-	public static final double leftGear = -60;
-	public static final double centerGear = -90;
-	public static final double rightGear = -150;
-	public static final double loadingStation = 230;//TODO will change depending on side of field
+	public static final double leftGear = 300;
+	public static final double centerGear = 270;
+	public static final double rightGear = 210;
+	public static double loadingStation = 230;
 	
 	public static final double swerveP = .6;
 	public static final double swerveI = 0;

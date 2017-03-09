@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class V_PID {
-	private static Map<String, double[]> PIDSystems = new HashMap<String, double[]>();
+	private static final Map<String, double[]> PIDSystems = new HashMap<String, double[]>();
 	
 	public static void set(final String key, final double P, final double I, final double D) {
 		if (PIDSystems.get(key) == null) {

@@ -116,6 +116,7 @@ public class R_CANTalon extends CANTalon {
 			if (!updated) {//updated is treated differently for follower than for others because it should only be messed with once
 				super.set(value);
 			}updated = true;
+			break;
 		case PercentVbus:super.set(value);break;
 		case Position:
 			if (convertToAngle) {
@@ -127,8 +128,7 @@ public class R_CANTalon extends CANTalon {
 			if (Math.abs(value) > 1) {value = Math.signum(value);}
 			super.set(value*12);
 			break;
-		default:
-			break;
+		default:break;
 		}
 		updated = true;
 		lastSetPoint = value;
