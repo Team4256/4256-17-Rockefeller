@@ -9,18 +9,12 @@ import com.cyborgcats.reusable.V_PID;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-/**
- * The VM is configured to automatically run this class, and to call the
- * functions corresponding to each mode, as described in the IterativeRobot
- * documentation. If you change the name of this class or the package after
- * creating this project, you must also update the manifest file in the resource
- * directory.
- */
 public class Robot extends IterativeRobot {
 	final String defaultAuto = "Default";
 	final String customAuto = "My Auto";
@@ -29,6 +23,8 @@ public class Robot extends IterativeRobot {
 	//Human Input
 	private static final R_Xbox driver = new R_Xbox(0);
 	private static final R_Xbox gunner = new R_Xbox(1);
+	private static final int[] angleButtons = new int[] {R_Xbox.BUTTON_X, R_Xbox.BUTTON_A, R_Xbox.BUTTON_B, R_Xbox.BUTTON_Y};
+	private static double lockedAngle = 0;
 	//Robot Input
 	private static final R_Gimbal gimbal = new R_Gimbal(Parameters.Camera_servoX, Parameters.Camera_servoY, 6);
 	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
@@ -50,17 +46,9 @@ public class Robot extends IterativeRobot {
 //	private static final R_CANTalon flywheel = new R_CANTalon(Parameters.Shooter_flywheel, 1, R_CANTalon.speed, true, R_CANTalon.relative);
 //	private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, 12, R_CANTalon.position, false, R_CANTalon.absolute, 135, 90);
 //	private static final Servo linearServo = new Servo(Parameters.Shooter_linearServo);
-	private static final DoubleSolenoid flap = new DoubleSolenoid(Parameters.Shooter_flapModule, Parameters.Shooter_flapForward, Parameters.Shooter_flapReverse);
-	/**
-	 * This function is run when the robot is first started up and should be
-	 * used for any initialization code.
-	 */
+//	private static final DoubleSolenoid flap = new DoubleSolenoid(Parameters.Shooter_flapModule, Parameters.Shooter_flapForward, Parameters.Shooter_flapReverse);
 	@Override
-	public void robotInit() {
-		chooser.addDefault("Default Auto", defaultAuto);
-		chooser.addObject("My Auto", customAuto);
-		SmartDashboard.putData("Auto choices", chooser);
-		
+	public void robotInit() {//TODO align swerve here?
 		compressor.clearAllPCMStickyFaults();
 		swerve.init();
 		V_PID.set("spin", Parameters.spinP, Parameters.spinI, Parameters.spinD);
@@ -73,26 +61,36 @@ public class Robot extends IterativeRobot {
 //		turret.setPID(Parameters.swerveP, Parameters.swerveI, Parameters.swerveD);
 	}
 
-	/**
-	 * This autonomous (along with the chooser code above) shows how to select
-	 * between different autonomous modes using the dashboard. The sendable
-	 * chooser code works with the Java SmartDashboard. If you prefer the
-	 * LabVIEW Dashboard, remove all of the chooser code and uncomment the
-	 * getString line to get the auto name from the text box below the Gyro
-	 *
-	 * You can add additional auto modes by adding additional comparisons to the
-	 * switch structure below with additional strings. If using the
-	 * SendableChooser make sure to add them to the chooser code above as well.
-	 */
 	@Override
 	public void autonomousInit() {
-		autoSelected = chooser.getSelected();
-		System.out.println("Auto selected: " + autoSelected);
+		V_PID.clear("spin");
+		V_Instructions.placeLeftGear(swerve, gearer);//TODO only allow this to go for 15 seconds
 	}
-
-	/**
-	 * This function is called periodically during autonomous
-	 */
+	
+	@Override
+	public void teleopInit() {
+		if (DriverStation.getInstance().getAlliance() != DriverStation.Alliance.Red) {
+			Parameters.loadingStation += 90;
+		}
+		V_PID.clear("spin");
+		lockedAngle = gyro.getCurrentAngle();
+	}
+	
+	@Override
+	public void testInit() {
+		//TODO
+	}
+	
+	@Override
+	public void disabledInit() {
+		//TODO
+	}
+	
+	@Override
+	public void robotPeriodic() {
+		//TODO smart dashboard
+	}
+	
 	@Override
 	public void autonomousPeriodic() {
 		switch (autoSelected) {
@@ -105,19 +103,15 @@ public class Robot extends IterativeRobot {
 			break;
 		}
 	}
-
-	/**
-	 * This function is called periodically during operator control
-	 */
-	Double gearAngle = null;
+	
 	@Override
 	public void teleopPeriodic() {
 		//DRIVER
 		//start + back: align
-		//X: left gear orientation, gearer out
-		//A: center gear orientation, gearer out
-		//B: right gear orientation, gearer out
-		//Y: loading station orientation, gearer in
+		//X: left gear orientation
+		//A: center gear orientation
+		//B: right gear orientation
+		//Y: loading station orientation
 		//right axis: raw spin
 		//left axis: speed and direction
 		//RB: turbo
@@ -126,52 +120,50 @@ public class Robot extends IterativeRobot {
 		//RT: raw intake in
 		//dpad down: boolean intake out
 		
-		if (driver.getRawButton(R_Xbox.BUTTON_START) && driver.getRawButton(R_Xbox.BUTTON_BACK)) {
-			swerve.align(.002);
-		}
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		double spinOut = 0;
-		if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) != 0) {
-			gearAngle = null;
-		}
+		//GUNNER
+		//right axis: gimbal x
+		//left axis: gimbal y
 		
-		if (driver.getRawButton(R_Xbox.BUTTON_X)) {
-			gearAngle = Parameters.leftGear;
-		}else if (driver.getRawButton(R_Xbox.BUTTON_A)) {
-			gearAngle = Parameters.centerGear;
-		}else if (driver.getRawButton(R_Xbox.BUTTON_B)) {
-			gearAngle = Parameters.rightGear;
-		}else if (driver.getRawButton(R_Xbox.BUTTON_Y)) {
-			gearAngle = Parameters.loadingStation;
-		}
 		
-		double spinError = 0;
-		if (gearAngle == null) {
-			spinOut = driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
-			spinOut *= .5*spinOut*Math.signum(spinOut);
+		if (driver.getRawButton(R_Xbox.BUTTON_START) && driver.getRawButton(R_Xbox.BUTTON_BACK)) {//SWERVE ALIGNMENT
+			swerve.align(.002);//TODO limit how long this can take
+		}
+		//{calculating spin}
+		double spin = 0;
+		if (V_Fridge.becomesTrue("hands off", driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) == 0)) {
+			V_PID.clear("spin");
+			lockedAngle = gyro.getCurrentAngle();
+		}if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) == 0) {
+			if (driver.getRawButton(angleButtons[0]) || driver.getRawButton(angleButtons[1])
+			|| driver.getRawButton(angleButtons[2]) || driver.getRawButton(angleButtons[3])) {
+				switch (driver.getYoungestButton(angleButtons)) {//TODO can make this all one line by mapping output of getYoungestButton to an array that corresponds to the angle params
+				case angleButtons[0]:lockedAngle = Parameters.leftGear;break;
+				case angleButtons[1]:lockedAngle = Parameters.centerGear;break;
+				case angleButtons[2]:lockedAngle = Parameters.rightGear;break;
+				case angleButtons[3]:lockedAngle = Parameters.loadingStation;break;
+				default:break;
+				}
+			}spin = V_PID.get("spin", gyro.wornPath(lockedAngle));
 		}else {
-			spinError = gyro.wornPath(gearAngle);
-			spinOut = V_PID.get("spin", spinError);
+			spin = driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
+			spin *= .5*spin*Math.signum(spin);
 		}
-		////////////////////////////////////////////////////////////////////////////////////
+		//{calculating speed}
 		double speed = driver.getCurrentRadius(R_Xbox.STICK_LEFT, true);
 		if (!driver.getRawButton(R_Xbox.BUTTON_RB)) {speed *= .6;}
-		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), speed*speed, spinOut);//SWERVE//TODO max spinning speed stationary around .75
 		
-		if (driver.getAxisPress(R_Xbox.AXIS_LT, .5)) {
-			climber.set(-1);//CLIMBER
+		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), speed*speed, spin);//SWERVE DRIVE
+		
+		if (driver.getAxisPress(R_Xbox.AXIS_LT, .5)) {//CLIMBER
+			climber.set(-1);
 		}else {
 			climber.set(0);
 		}
 		
-		if (gearAngle != null && gearAngle != Parameters.loadingStation) {
-			gearer.set(DoubleSolenoid.Value.kReverse);//GEARER
-		}else {
-			if (V_Fridge.freeze("LB", driver.getRawButton(R_Xbox.BUTTON_LB))) {
+		if (V_Fridge.freeze("LB", driver.getRawButton(R_Xbox.BUTTON_LB))) {//GEARER
 				gearer.set(DoubleSolenoid.Value.kReverse);
-			}else {
+		}else {
 				gearer.set(DoubleSolenoid.Value.kForward);
-			}
 		}
 		
 		if (driver.getAxisPress(R_Xbox.AXIS_RT, .05)) {
@@ -182,20 +174,20 @@ public class Robot extends IterativeRobot {
 			intake.set(0);
 		}
 		
-//		if (gunner.getRawButton(R_XboxV2.BUTTON_RB)) {
+//		if (gunner.getRawButton(R_XboxV2.BUTTON_RB)) {//FLYWHEEL
 //			flywheel.set(6000);
 //		}else {
 //			flywheel.set(0);
 //		}
 	 	
-		gimbal.moveCamera(-gunner.getDeadbandedAxis(R_Xbox.AXIS_LEFT_X), gunner.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_Y));
+		gimbal.moveCamera(-gunner.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X), gunner.getDeadbandedAxis(R_Xbox.AXIS_LEFT_Y));//CAMERA GIMBLE
 		
 		if (gyro.netAcceleration() >= 1) {
-			driver.setRumble(RumbleType.kLeftRumble, 1);
+			driver.setRumble(RumbleType.kLeftRumble, 1);//DANGER RUMBLE
 		}else {
 			driver.setRumble(RumbleType.kLeftRumble, 0);
 		}
-
+		//{finishing loop}
 		moduleA.completeLoopUpdate();
 		moduleB.completeLoopUpdate();
 		moduleC.completeLoopUpdate();
@@ -204,10 +196,12 @@ public class Robot extends IterativeRobot {
 		intake.completeLoopUpdate();
 	}
 	
-	/**
-	 * This function is called periodically during test mode
-	 */
 	@Override
 	public void testPeriodic() {
+	}
+	
+	@Override
+	public void disabledPeriodic() {
+		//TODO
 	}
 }

@@ -32,19 +32,28 @@ public class R_Xbox extends XboxController {
 	public static final int POV_SOUTH_WEST = 225;
 	public static final int POV_WEST = 270;
 	public static final int POV_NORTH_WEST = 315;
-
+	
 	public R_Xbox(final int port) {
 		super(port);
 	}
 	private double[] deadbands = new double[6];
 	private double[] previousAxisValues = new double[6];
+	private Long[] buttonTimes = new Long[10];
 	{
-		for (int i = 0; i  <= deadbands.length - 1; i++) {
+		for (int i = 0; i  < deadbands.length; i++) {
 			deadbands[i] = 0.2;
 		}
-		for (int i = 0; i <= previousAxisValues.length - 1; i++) {
+		for (int i = 0; i < previousAxisValues.length; i++) {
 			previousAxisValues[i] = 0;
 		}
+		for (int i = 0; i < buttonTimes.length; i++) {
+			buttonTimes[i] = System.currentTimeMillis();
+		}
+	}
+	@Override
+	public boolean getRawButton(final int button) {
+		buttonTimes[button] = System.currentTimeMillis();
+		return super.getRawButton(button);
 	}
 	/**
 	 * This function updates the deadband value for the specified axis.
@@ -78,17 +87,34 @@ public class R_Xbox extends XboxController {
 		previousAxisValues[axis] = getRawAxis(axis);
 		return activityBool;
 	}
+	//TODO
+	public int getYoungestButton(final int[] buttons) {
+		int youngest = buttons[0];
+		for (int button : buttons) {
+			if (buttonTimes[youngest] < buttonTimes[button]) {youngest = button;}
+		}return youngest;
+	}
+	//TODO
+	public Long lastPressTime(final int button) {
+		return buttonTimes[button];
+	}
+	//TODO
+	public void resetButtonTimes(final int[] buttons) {
+		for (int button : buttons) {
+			buttonTimes[button] = System.currentTimeMillis();
+		}
+	}
 	/**
 	 * This function returns true if a button is pressed, if an axis value is greater than its stored deadband, or if a POV has an angle.
 	 * Otherwise, it returns false.
 	**/
 	public boolean isActive() {
-		for (int i = 1; i <= 10 - 1; i++) {
+		for (int i = 1; i < 10; i++) {
 			if(getRawButton(i)) {
 				return true;
 			}
 		}
-		for (int i = 0; i < deadbands.length - 1; i++) {
+		for (int i = 0; i < deadbands.length; i++) {
 			if(getAxisActivity(i)) {
 				return true;
 			}
