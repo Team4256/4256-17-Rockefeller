@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot {
 	final String defaultAuto = "Default";
@@ -68,7 +69,8 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void autonomousInit() {
 		V_PID.clear("spin");
-		V_Instructions.placeLeftGear(swerve, gearer);//TODO only allow this to go for 15 seconds
+		int sideMultiplier = DriverStation.getInstance().getAlliance() != DriverStation.Alliance.Red ? 1 : -1;
+		V_Instructions.placeLeftGear(swerve, gearer, sideMultiplier);//TODO only allow this to go for 15 seconds
 	}
 	
 	@Override
@@ -96,7 +98,11 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void robotPeriodic() {
-		//TODO smart dashboard
+		SmartDashboard.putBoolean("gear out", gearer.get().equals(DoubleSolenoid.Value.kForward));
+		SmartDashboard.putBoolean("A aligned", moduleA.isAligned());
+		SmartDashboard.putBoolean("B aligned", moduleB.isAligned());
+		SmartDashboard.putBoolean("C aligned", moduleC.isAligned());
+		SmartDashboard.putBoolean("D aligned", moduleD.isAligned());
 	}
 	
 	@Override
@@ -120,28 +126,39 @@ public class Robot extends IterativeRobot {
 		//dpad down: boolean intake out
 		
 		//GUNNER
+		//start + back: gyro reset
 		//right axis: gimbal x
 		//left axis: gimbal y
 		
 		if (driver.getRawButton(R_Xbox.BUTTON_START) && driver.getRawButton(R_Xbox.BUTTON_BACK)) {//SWERVE ALIGNMENT
-			swerve.align(.002);//TODO limit how long this can take
+			swerve.align(.004);//TODO limit how long this can take
+		}
+		
+		if (gunner.getRawButton(R_Xbox.BUTTON_START) && gunner.getRawButton(R_Xbox.BUTTON_BACK)) {//GYRO RESET
+			gyro.reset();
+			lockedAngle = gyro.getCurrentAngle();
 		}
 		//{calculating spin}
 		double spin = 0;
 		if (V_Fridge.becomesTrue("hands off", driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) == 0)) {
-			V_PID.clear("spin");
 			lockedAngle = gyro.getCurrentAngle();
+			V_PID.clear("spin");
 		}if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) == 0) {
 			buttons2angle.forEach((k, v) -> {
+				driver.getRawButton((int)k);
 				if (!override) {override = driver.getRawButton((int)k);}
 			});
 			if (override) {
 				lockedAngle = buttons2angle.get(driver.getYoungestButton(mappedButtons));
-			}spin = V_PID.get("spin", gyro.wornPath(lockedAngle));
+			}double spinError = Math.abs(gyro.wornPath(lockedAngle)) > 3 ? gyro.wornPath(lockedAngle) : 0;
+			spin = V_PID.get("spin", spinError);
 		}else {
+			override = false;
 			spin = driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
 			spin *= .5*spin*Math.signum(spin);
 		}
+		SmartDashboard.putNumber("lockedAngle", lockedAngle);
+		SmartDashboard.putNumber("gyro angle", gyro.getCurrentAngle());
 		//{calculating speed}
 		double speed = driver.getCurrentRadius(R_Xbox.STICK_LEFT, true);
 		if (!driver.getRawButton(R_Xbox.BUTTON_RB)) {speed *= .6;}
@@ -149,15 +166,19 @@ public class Robot extends IterativeRobot {
 		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), speed*speed, spin);//SWERVE DRIVE
 		
 		if (driver.getAxisPress(R_Xbox.AXIS_LT, .5)) {//CLIMBER
-			climber.set(-1);
+			if (driver.getRawButton(R_Xbox.BUTTON_RB)) {
+				climber.set(-1);
+			}else {
+				climber.set(-.6);
+			}
 		}else {
 			climber.set(0);
 		}
 		
 		if (V_Fridge.freeze("LB", driver.getRawButton(R_Xbox.BUTTON_LB))) {//GEARER
-				gearer.set(DoubleSolenoid.Value.kReverse);
-		}else {
 				gearer.set(DoubleSolenoid.Value.kForward);
+		}else {
+				gearer.set(DoubleSolenoid.Value.kReverse);
 		}
 		
 		if (driver.getAxisPress(R_Xbox.AXIS_RT, .05)) {

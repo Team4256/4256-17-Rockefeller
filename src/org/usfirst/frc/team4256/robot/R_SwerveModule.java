@@ -49,6 +49,7 @@ public class R_SwerveModule {
 		return aligning;
 	}
 	public void align(final double increment) {
+		set(0);
 		if (sensor.get()) {
 			if (!aligning) {
 				aligned = false;
@@ -59,7 +60,7 @@ public class R_SwerveModule {
 		}else {
 			aligning = false;
 			rotator.set(alignmentRevs, false);
-			rotator.compass.setTareAngle(alignmentRevs%rotatorGearRatio*360/rotatorGearRatio, false);
+			rotator.compass.setTareAngle(10 + alignmentRevs%rotatorGearRatio*360/rotatorGearRatio, false);//TODO do not hard code this 10 degree offset
 			aligned = true;
 		}
 	}
