@@ -54,6 +54,7 @@ public class Robot extends IterativeRobot {
 //	private static final DoubleSolenoid flap = new DoubleSolenoid(Parameters.Shooter_flapModule, Parameters.Shooter_flapForward, Parameters.Shooter_flapReverse);
 	@Override
 	public void robotInit() {//TODO align swerve here?
+		SmartDashboard.putNumber("sideColor", 0);
 		compressor.clearAllPCMStickyFaults();
 		swerve.init();
 		V_PID.set("spin", Parameters.spinP, Parameters.spinI, Parameters.spinD);
@@ -69,8 +70,9 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void autonomousInit() {
 		V_PID.clear("spin");
-		int sideMultiplier = DriverStation.getInstance().getAlliance() != DriverStation.Alliance.Red ? 1 : -1;
-		V_Instructions.placeLeftGear(swerve, gearer, sideMultiplier);//TODO only allow this to go for 15 seconds
+//		int sideMultiplier = DriverStation.getInstance().getAlliance() != DriverStation.Alliance.Red ? 1 : -1;
+		int sideMultiplier = SmartDashboard.getNumber("sideColor", 0) == 0 ? 1 : -1;//0 is red, 1 is blue
+		V_Instructions.placeLeftGear(swerve, gearer, sideMultiplier);//TODO ony allow this to go for 15 seconds
 	}
 	
 	@Override
@@ -136,32 +138,39 @@ public class Robot extends IterativeRobot {
 		
 		if (gunner.getRawButton(R_Xbox.BUTTON_START) && gunner.getRawButton(R_Xbox.BUTTON_BACK)) {//GYRO RESET
 			gyro.reset();
-			lockedAngle = gyro.getCurrentAngle();
+//			lockedAngle = gyro.getCurrentAngle();
 		}
-		//{calculating spin}
-		double spin = 0;
-		if (V_Fridge.becomesTrue("hands off", driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) == 0)) {
-			lockedAngle = gyro.getCurrentAngle();
-			V_PID.clear("spin");
-		}if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) == 0) {
-			buttons2angle.forEach((k, v) -> {
-				driver.getRawButton((int)k);
-				if (!override) {override = driver.getRawButton((int)k);}
-			});
-			if (override) {
-				lockedAngle = buttons2angle.get(driver.getYoungestButton(mappedButtons));
-			}double spinError = Math.abs(gyro.wornPath(lockedAngle)) > 3 ? gyro.wornPath(lockedAngle) : 0;
-			spin = V_PID.get("spin", spinError);
-		}else {
-			override = false;
-			spin = driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
-			spin *= .5*spin*Math.signum(spin);
-		}
-		SmartDashboard.putNumber("lockedAngle", lockedAngle);
-		SmartDashboard.putNumber("gyro angle", gyro.getCurrentAngle());
+		
 		//{calculating speed}
 		double speed = driver.getCurrentRadius(R_Xbox.STICK_LEFT, true);
 		if (!driver.getRawButton(R_Xbox.BUTTON_RB)) {speed *= .6;}
+		//{calculating spin}
+//		double spin = 0;
+//		if (V_Fridge.becomesTrue("hands off", driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) == 0)) {
+//			lockedAngle = gyro.getCurrentAngle();//TODO gyro doesn't update as quickly as Luke does
+//			V_PID.clear("spin");
+//		}if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) == 0) {
+//			buttons2angle.forEach((k, v) -> {
+//				driver.getRawButton((int)k);
+//				if (!override) {override = driver.getRawButton((int)k);}
+//			});
+//			if (override) {
+//				lockedAngle = buttons2angle.get(driver.getYoungestButton(mappedButtons));
+//			}double spinError = Math.abs(gyro.wornPath(lockedAngle)) > 3 ? gyro.wornPath(lockedAngle) : 0;
+//			spin = V_PID.get("spin", spinError);
+//		}else {
+//			override = false;
+		double spin = driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
+		spin *= .5*spin*Math.signum(spin);
+		if (driver.getRawButton(R_Xbox.BUTTON_STICK_RIGHT)) {
+			spin *= .5;
+			if (speed == 0) {
+				speed = .01;//lock everything down
+			}
+		}
+		
+//		}
+//		SmartDashboard.putNumber("lockedAngle", lockedAngle);
 		
 		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), speed*speed, spin);//SWERVE DRIVE
 		
@@ -171,6 +180,8 @@ public class Robot extends IterativeRobot {
 			}else {
 				climber.set(-.6);
 			}
+		}else if (gunner.getAxisPress(R_Xbox.AXIS_LT, .5)) {
+			climber.set(.6);
 		}else {
 			climber.set(0);
 		}
@@ -194,7 +205,7 @@ public class Robot extends IterativeRobot {
 //		}else {
 //			flywheel.set(0);
 //		}
-	 	
+		
 		gimbal.moveCamera(-gunner.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X), gunner.getDeadbandedAxis(R_Xbox.AXIS_LEFT_Y));//CAMERA GIMBLE
 		
 		if (gyro.netAcceleration() >= 1) {

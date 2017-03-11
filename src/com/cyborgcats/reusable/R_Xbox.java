@@ -52,7 +52,7 @@ public class R_Xbox extends XboxController {
 	}
 	@Override
 	public boolean getRawButton(final int button) {
-		buttonTimes[button] = System.currentTimeMillis();
+		buttonTimes[button - 1] = System.currentTimeMillis();
 		return super.getRawButton(button);
 	}
 	/**
