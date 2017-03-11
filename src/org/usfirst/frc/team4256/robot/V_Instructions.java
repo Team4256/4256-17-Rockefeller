@@ -81,10 +81,10 @@ public abstract class V_Instructions {//things that are used regardless of the d
 	private static void shooterOff(R_CANTalon flywheel) {
 		flywheel.set(0);
 	}
-	public static void placeLeftGear(R_DriveTrain swerve, DoubleSolenoid gearer, int sideMultiplier) {
+	public static void placeLeftGear(R_DriveTrain swerve, DoubleSolenoid gearer) {
 		gearer.set(Value.kForward);
 		swerve.align(.004);
-		timedMovementThree(swerve, -30, 0.2, 2450, 60, 3000, 60, 0.15, 4950, 21*sideMultiplier);
+		timedMovementThree(swerve, -30, 0.2, 2450, 60, 3000, 60, 0.15, 4950, -21);
 //		timedMovementOne(swerve, -20, 0.2, 3000);
 	}
 	public static void placeMiddleGear(R_DriveTrain swerve, DoubleSolenoid gearer) {

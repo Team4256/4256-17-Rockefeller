@@ -70,9 +70,10 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void autonomousInit() {
 		V_PID.clear("spin");
-//		int sideMultiplier = DriverStation.getInstance().getAlliance() != DriverStation.Alliance.Red ? 1 : -1;
-		int sideMultiplier = SmartDashboard.getNumber("sideColor", 0) == 0 ? 1 : -1;//0 is red, 1 is blue
-		V_Instructions.placeLeftGear(swerve, gearer, sideMultiplier);//TODO ony allow this to go for 15 seconds
+//		int sideMultiplier = DriverStation.getInstance().getAlliance() != DriverStation.Alliance.Red ? -1 : 1;
+//		int sideMultiplier = SmartDashboard.getNumber("sideColor", 0) == 0 ? 1 : -1;//0 is red, 1 is blue
+//		V_Instructions.placeLeftGear(swerve, gearer, sideMultiplier);//TODO ony allow this to go for 15 seconds
+		V_Instructions.placeLeftGear(swerve, gearer);
 	}
 	
 	@Override
