@@ -60,9 +60,12 @@ public class R_SwerveModule {
 		}else {
 			aligning = false;
 			rotator.set(alignmentRevs, false);
-			rotator.compass.setTareAngle(10 + alignmentRevs%rotatorGearRatio*360/rotatorGearRatio, false);//TODO do not hard code this 10 degree offset
+			rotator.compass.setTareAngle(alignmentRevs%rotatorGearRatio*360/rotatorGearRatio, false);
 			aligned = true;
 		}
+	}
+	public void setTareAngle(final double tareAngle, final boolean relativeReference) {
+		rotator.compass.setTareAngle(tareAngle, relativeReference);
 	}
 	/**
 	 * 

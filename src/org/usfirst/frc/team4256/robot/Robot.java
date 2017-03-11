@@ -15,14 +15,9 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot {
-	final String defaultAuto = "Default";
-	final String customAuto = "My Auto";
-	String autoSelected;
-	SendableChooser<String> chooser = new SendableChooser<>();
 	//Human Input
 	private static final R_Xbox driver = new R_Xbox(0);
 	private static final R_Xbox gunner = new R_Xbox(1);
@@ -69,8 +64,7 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void autonomousInit() {
 		V_PID.clear("spin");
-		int sideMultiplier = DriverStation.getInstance().getAlliance() != DriverStation.Alliance.Red ? 1 : -1;
-		V_Instructions.placeLeftGear(swerve, gearer, sideMultiplier);//TODO only allow this to go for 15 seconds
+		V_Instructions.placeLeftGear(swerve, gearer);//TODO only allow this to go for 15 seconds
 	}
 	
 	@Override
@@ -78,6 +72,10 @@ public class Robot extends IterativeRobot {
 		if (DriverStation.getInstance().getAlliance() != DriverStation.Alliance.Red) {
 			Parameters.loadingStation += 90;
 		}
+		moduleA.setTareAngle(10, true);
+		moduleB.setTareAngle(10, true);
+		moduleC.setTareAngle(10, true);
+		moduleD.setTareAngle(10, true);
 		buttons2angle.put(R_Xbox.BUTTON_X, Parameters.leftGear);
 		buttons2angle.put(R_Xbox.BUTTON_A, Parameters.centerGear);
 		buttons2angle.put(R_Xbox.BUTTON_B, Parameters.rightGear);
