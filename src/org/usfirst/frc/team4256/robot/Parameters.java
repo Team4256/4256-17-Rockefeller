@@ -41,7 +41,7 @@ public abstract class Parameters {
 	public static final int Gearer_reverse = 1;//PCM
 	
 	//VALUES
-	public static final byte Gyrometer_updateHz = 30;
+	public static final byte Gyrometer_updateHz = 50;
 	
 	public static final double leftGear = 300;
 	public static final double centerGear = 270;

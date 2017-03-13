@@ -83,8 +83,8 @@ public abstract class V_Instructions {//things that are used regardless of the d
 	}
 	public static void placeLeftGear(R_DriveTrain swerve, DoubleSolenoid gearer) {
 		gearer.set(Value.kForward);
-		swerve.align(.002);
-		timedMovementThree(swerve, -20, 0.2, 2500, 60, 3000, 60, 0.15, 5000, 21);
+		swerve.align(.004);
+		timedMovementThree(swerve, -20, 0.2, 2500, 60, 3000, 60, 0.15, 5000, -21);
 //		timedMovementOne(swerve, -20, 0.2, 3000);
 	}
 	public static void placeMiddleGear(R_DriveTrain swerve, DoubleSolenoid gearer) {

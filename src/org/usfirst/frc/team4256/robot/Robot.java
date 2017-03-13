@@ -1,3 +1,24 @@
+//DRIVER
+//start + back: align
+//left stick, both axis: raw speed and direction
+//right stick, x axis: raw spin
+//right stick, press: snail mode
+//LB: toggle gearer
+//LT: boolean climber
+//RB: turbo mode (drive and climber)
+//RT: raw intake in
+//dpad down: boolean intake out
+//X: left gear orientation
+//A: center gear orientation
+//B: right gear orientation
+//Y: loading station orientation
+
+//GUNNER
+//start + back: gyro reset
+//left stick, y axis: delta gimbal y
+//right stick, x axis: delta gimbal x
+//LT: reverse driver's climbing commands
+
 package org.usfirst.frc.team4256.robot;
 
 import java.util.HashMap;
@@ -22,9 +43,9 @@ public class Robot extends IterativeRobot {
 	private static final R_Xbox driver = new R_Xbox(0);
 	private static final R_Xbox gunner = new R_Xbox(1);
 	private static final Map<Integer, Double> buttons2angle = new HashMap<Integer, Double>();
-	private static final int[] mappedButtons = new int[] {R_Xbox.BUTTON_X, R_Xbox.BUTTON_A, R_Xbox.BUTTON_B, R_Xbox.BUTTON_Y};
+	private static final int[] gearButtons = new int[] {R_Xbox.BUTTON_X, R_Xbox.BUTTON_A, R_Xbox.BUTTON_B, R_Xbox.BUTTON_Y};
+	private static Long handsOffTime = System.currentTimeMillis();
 	private static double lockedAngle = 0;
-	private static boolean override = false;
 	//Robot Input
 	private static final R_Gimbal gimbal = new R_Gimbal(Parameters.Camera_servoX, Parameters.Camera_servoY, 6);
 	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
@@ -48,7 +69,7 @@ public class Robot extends IterativeRobot {
 //	private static final Servo linearServo = new Servo(Parameters.Shooter_linearServo);
 //	private static final DoubleSolenoid flap = new DoubleSolenoid(Parameters.Shooter_flapModule, Parameters.Shooter_flapForward, Parameters.Shooter_flapReverse);
 	@Override
-	public void robotInit() {//TODO align swerve here?
+	public void robotInit() {
 		compressor.clearAllPCMStickyFaults();
 		swerve.init();
 		V_PID.set("spin", Parameters.spinP, Parameters.spinI, Parameters.spinD);
@@ -69,13 +90,10 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void teleopInit() {
-		if (DriverStation.getInstance().getAlliance() != DriverStation.Alliance.Red) {
+		if (DriverStation.getInstance().getAlliance() != DriverStation.Alliance.Red) {//TODO override brake modes
 			Parameters.loadingStation += 90;
 		}
-		moduleA.setTareAngle(10, true);
-		moduleB.setTareAngle(10, true);
-		moduleC.setTareAngle(10, true);
-		moduleD.setTareAngle(10, true);
+		moduleA.setTareAngle(10, true);	moduleB.setTareAngle(10, true);	moduleC.setTareAngle(10, true);	moduleD.setTareAngle(10, true);
 		buttons2angle.put(R_Xbox.BUTTON_X, Parameters.leftGear);
 		buttons2angle.put(R_Xbox.BUTTON_A, Parameters.centerGear);
 		buttons2angle.put(R_Xbox.BUTTON_B, Parameters.rightGear);
@@ -97,10 +115,8 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void robotPeriodic() {
 		SmartDashboard.putBoolean("gear out", gearer.get().equals(DoubleSolenoid.Value.kForward));
-		SmartDashboard.putBoolean("A aligned", moduleA.isAligned());
-		SmartDashboard.putBoolean("B aligned", moduleB.isAligned());
-		SmartDashboard.putBoolean("C aligned", moduleC.isAligned());
-		SmartDashboard.putBoolean("D aligned", moduleD.isAligned());
+		SmartDashboard.putBoolean("aligning", swerve.isAligning());
+		SmartDashboard.putBoolean("aligned", swerve.isAligned());
 	}
 	
 	@Override
@@ -109,77 +125,45 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void teleopPeriodic() {
-		//DRIVER
-		//start + back: align
-		//X: left gear orientation
-		//A: center gear orientation
-		//B: right gear orientation
-		//Y: loading station orientation
-		//right axis: raw spin
-		//left axis: speed and direction
-		//RB: turbo
-		//LB: gearer
-		//LT: boolean climber
-		//RT: raw intake in
-		//dpad down: boolean intake out
-		
-		//GUNNER
-		//start + back: gyro reset
-		//right axis: gimbal x
-		//left axis: gimbal y
-		
 		if (driver.getRawButton(R_Xbox.BUTTON_START) && driver.getRawButton(R_Xbox.BUTTON_BACK)) {//SWERVE ALIGNMENT
 			swerve.align(.004);//TODO limit how long this can take
 		}
 		
 		if (gunner.getRawButton(R_Xbox.BUTTON_START) && gunner.getRawButton(R_Xbox.BUTTON_BACK)) {//GYRO RESET
 			gyro.reset();
-//			lockedAngle = gyro.getCurrentAngle();
+			lockedAngle = gyro.getCurrentAngle();
+			V_PID.clear("spin");
 		}
 		
 		//{calculating speed}
-		double speed = driver.getCurrentRadius(R_Xbox.STICK_LEFT, true);
-		if (!driver.getRawButton(R_Xbox.BUTTON_RB)) {speed *= .6;}
-		//{calculating spin}
-//		double spin = 0;
-//		if (V_Fridge.becomesTrue("hands off", driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) == 0)) {
-//			lockedAngle = gyro.getCurrentAngle();//TODO gyro doesn't update as quickly as Luke does
-//			V_PID.clear("spin");
-//		}if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) == 0) {
-//			buttons2angle.forEach((k, v) -> {
-//				driver.getRawButton((int)k);
-//				if (!override) {override = driver.getRawButton((int)k);}
-//			});
-//			if (override) {
-//				lockedAngle = buttons2angle.get(driver.getYoungestButton(mappedButtons));
-//			}double spinError = Math.abs(gyro.wornPath(lockedAngle)) > 3 ? gyro.wornPath(lockedAngle) : 0;
-//			spin = V_PID.get("spin", spinError);
-//		}else {
-//			override = false;
+		double speed = driver.getCurrentRadius(R_Xbox.STICK_LEFT, true);//--turbo mode
+		if (!driver.getRawButton(R_Xbox.BUTTON_RB)) {speed *= .6;}//--normal mode
+		//{calculating raw spin}
 		double spin = driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
-		spin *= .5*spin*Math.signum(spin);
+		spin *= spin*Math.signum(spin)*.5;//--normal mode
 		if (driver.getRawButton(R_Xbox.BUTTON_STICK_RIGHT)) {
-			spin *= .5;
-			if (speed == 0) {
-				speed = .01;//lock everything down
-			}
+			spin *= .5;//--snail mode
+			if (speed == 0) {speed = .01;}//.01 restrains coast after spinning by hacking holonomic
 		}
-		
-//		}
-//		SmartDashboard.putNumber("lockedAngle", lockedAngle);
+		//{adding driver aids}
+		if (V_Fridge.becomesTrue("hands off", driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) == 0)) {
+			handsOffTime = System.currentTimeMillis();
+			lockedAngle = gyro.getCurrentAngle();//remember angle when driver stops rotating
+			V_PID.clear("spin");
+		}if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) == 0) {
+			double spinError = 0;
+			if (speed >= .3) {spinError = gyro.wornPath(lockedAngle);}//stop rotation drift at high speeds
+			int gearButton = driver.mostRecentButton(gearButtons);
+			if (driver.lastPress(gearButton) > handsOffTime) {spinError = gyro.wornPath(buttons2angle.get(gearButton));}
+			if (Math.abs(spinError) > 3) {spin = V_PID.get("spin", spinError);}
+		}
 		
 		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), speed*speed, spin);//SWERVE DRIVE
 		
 		if (driver.getAxisPress(R_Xbox.AXIS_LT, .5)) {//CLIMBER
-			if (driver.getRawButton(R_Xbox.BUTTON_RB)) {
-				climber.set(-1);
-			}else {
-				climber.set(-.6);
-			}
-		}else if (gunner.getAxisPress(R_Xbox.AXIS_LT, .5)) {
-			climber.set(.6);
-		}else {
-			climber.set(0);
+			double climbSpeed = driver.getRawButton(R_Xbox.BUTTON_RB) ? -1 : -.6;
+			if (gunner.getAxisPress(R_Xbox.AXIS_LT, .5)) {climbSpeed *= -1;}
+			climber.set(climbSpeed);
 		}
 		
 		if (V_Fridge.freeze("LB", driver.getRawButton(R_Xbox.BUTTON_LB))) {//GEARER
@@ -188,12 +172,10 @@ public class Robot extends IterativeRobot {
 				gearer.set(DoubleSolenoid.Value.kReverse);
 		}
 		
-		if (driver.getAxisPress(R_Xbox.AXIS_RT, .05)) {
-			intake.set(driver.getRawAxis(R_Xbox.AXIS_RT));//INTAKE
-		}else if (driver.getPOV(0) == R_Xbox.POV_SOUTH) {
+		if (driver.getPOV(0) == R_Xbox.POV_SOUTH) {
 			intake.set(-.2);
 		}else {
-			intake.set(0);
+			intake.set(driver.getRawAxis(R_Xbox.AXIS_RT));//INTAKE
 		}
 		
 //		if (gunner.getRawButton(R_XboxV2.BUTTON_RB)) {//FLYWHEEL
@@ -209,7 +191,8 @@ public class Robot extends IterativeRobot {
 		}else {
 			driver.setRumble(RumbleType.kLeftRumble, 0);
 		}
-		//{finishing loop}
+		
+		//{completing Talon updates}
 		moduleA.completeLoopUpdate();
 		moduleB.completeLoopUpdate();
 		moduleC.completeLoopUpdate();

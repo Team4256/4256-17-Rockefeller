@@ -52,8 +52,9 @@ public class R_Xbox extends XboxController {
 	}
 	@Override
 	public boolean getRawButton(final int button) {
-		buttonTimes[button - 1] = System.currentTimeMillis();
-		return super.getRawButton(button);
+		boolean pressed = super.getRawButton(button);
+		if (pressed) {buttonTimes[button - 1] = System.currentTimeMillis();}
+		return pressed;
 	}
 	/**
 	 * This function updates the deadband value for the specified axis.
@@ -88,14 +89,14 @@ public class R_Xbox extends XboxController {
 		return activityBool;
 	}
 	//TODO
-	public int getYoungestButton(final int[] buttons) {
-		int youngest = buttons[0];
+	public int mostRecentButton(final int[] buttons) {
+		int recent = buttons[0];
 		for (int button : buttons) {
-			if (buttonTimes[youngest] < buttonTimes[button]) {youngest = button;}
-		}return youngest;
+			if (lastPress(recent) < lastPress(button)) {recent = button;}
+		}return recent;
 	}
 	//TODO
-	public Long lastPressTime(final int button) {
+	public Long lastPress(final int button) {
 		return buttonTimes[button];
 	}
 	//TODO
