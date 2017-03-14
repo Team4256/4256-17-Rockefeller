@@ -57,7 +57,29 @@ public class R_DriveTrain {
 		aligned = true;
 	}
 	
-	public void holonomic(final double direction, double speed, double spin) {
+	public void holonomic2(final double forward, final double strafe, final double spin) {
+		double a = strafe - spin*(Side/Radius),b = strafe + spin*(Side/Radius),c = forward - spin*(Front/Radius),d = forward + spin*(Front/Radius);
+		boolean bad = forward*forward + strafe*strafe == 0 && spin == 0;
+		moduleA.swivelTo(Math.toDegrees(Math.atan2(b,d)), bad);
+		moduleB.swivelTo(Math.toDegrees(Math.atan2(b,c)), bad);
+		moduleC.swivelTo(Math.toDegrees(Math.atan2(a,d)), bad);
+		moduleD.swivelTo(Math.toDegrees(Math.atan2(a,c)), bad);
+		
+		if (isThere(5)) {
+			double speedA = Math.sqrt(b*b + d*d),speedB = Math.sqrt(b*b + c*c),speedC = Math.sqrt(a*a + d*d),speedD = Math.sqrt(a*a + c*c);
+			if (bad) {
+				moduleA.set(0);	moduleB.set(0);	moduleC.set(0);	moduleD.set(0);
+			}else {
+				double max = Math.max(speedA, Math.max(speedB, Math.max(speedC, speedD)));
+				if (max > 1) {
+					speedA /= max;	speedB /= max;	speedC /= max;	speedD /= max;
+				}
+				moduleA.set(speedA);	moduleB.set(speedB);	moduleC.set(speedC);	moduleD.set(speedD);
+			}
+		}
+	}
+	
+	public void holonomic(final double direction, final double speed, final double spin) {//TODO could combine holonomics
 		double chassis_fieldAngle = gyro.getCurrentAngle();
 		double forward = Math.cos(Math.toRadians(R_SwerveModule.convertToRobot(direction, chassis_fieldAngle)));
 		double strafe = Math.sin(Math.toRadians(R_SwerveModule.convertToRobot(direction, chassis_fieldAngle)));

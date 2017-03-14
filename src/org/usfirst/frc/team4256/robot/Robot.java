@@ -36,20 +36,25 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot {
-	//Human Input
+	//{Human Input}
 	private static final R_Xbox driver = new R_Xbox(0);
 	private static final R_Xbox gunner = new R_Xbox(1);
 	private static final Map<Integer, Double> buttons2angle = new HashMap<Integer, Double>();
 	private static final int[] gearButtons = new int[] {R_Xbox.BUTTON_X, R_Xbox.BUTTON_A, R_Xbox.BUTTON_B, R_Xbox.BUTTON_Y};
 	private static Long handsOffTime = System.currentTimeMillis();
 	private static double lockedAngle = 0;
-	//Robot Input
+	//{Robot Input}
 	private static final R_Gimbal gimbal = new R_Gimbal(Parameters.Camera_servoX, Parameters.Camera_servoY, 6);
 	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
-	//Robot Output
+	private static NetworkTable edison;
+	private static NetworkTable tesla;
+	private static double metersX = 0;
+	private static double metersY = 0;
+	//{Robot Output}
 	private static final Compressor compressor = new Compressor(0);
 	
 	private static final R_SwerveModule moduleA = new R_SwerveModule(Parameters.Swerve_rotatorA, true, Parameters.Swerve_driveAA, Parameters.Swerve_driveAB, Parameters.Swerve_calibratorA);
@@ -70,8 +75,14 @@ public class Robot extends IterativeRobot {
 //	private static final DoubleSolenoid flap = new DoubleSolenoid(Parameters.Shooter_flapModule, Parameters.Shooter_flapForward, Parameters.Shooter_flapReverse);
 	@Override
 	public void robotInit() {
+		//{Robot Input}
+		edison = NetworkTable.getTable("edison");
+		tesla = NetworkTable.getTable("tesla");
+		//{Robot Output}
 		compressor.clearAllPCMStickyFaults();
 		swerve.init();
+		V_PID.set("forward", Parameters.forwardP, Parameters.forwardI, Parameters.forwardD);
+		V_PID.set("strafe", Parameters.strafeP, Parameters.strafeI, Parameters.strafeD);
 		V_PID.set("spin", Parameters.spinP, Parameters.spinI, Parameters.spinD);
 		climber.init();
 		climber.setVoltageCompensationRampRate(24);
@@ -84,8 +95,10 @@ public class Robot extends IterativeRobot {
 
 	@Override
 	public void autonomousInit() {
+		V_PID.clear("forward");
+		V_PID.clear("strafe");
 		V_PID.clear("spin");
-		V_Instructions.placeLeftGear(swerve, gearer);//TODO only allow this to go for 15 seconds
+//		V_Instructions.placeLeftGear(swerve, gearer);//TODO only allow this to go for 15 seconds
 	}
 	
 	@Override
@@ -93,7 +106,6 @@ public class Robot extends IterativeRobot {
 		if (DriverStation.getInstance().getAlliance() != DriverStation.Alliance.Red) {//TODO override brake modes
 			Parameters.loadingStation += 90;
 		}
-		moduleA.setTareAngle(10, true);	moduleB.setTareAngle(10, true);	moduleC.setTareAngle(10, true);	moduleD.setTareAngle(10, true);
 		buttons2angle.put(R_Xbox.BUTTON_X, Parameters.leftGear);
 		buttons2angle.put(R_Xbox.BUTTON_A, Parameters.centerGear);
 		buttons2angle.put(R_Xbox.BUTTON_B, Parameters.rightGear);
@@ -121,12 +133,27 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void autonomousPeriodic() {
+		if (!swerve.isAligned()) {
+			swerve.align(.004);
+			moduleA.setTareAngle(10, true);	moduleB.setTareAngle(10, true);	moduleC.setTareAngle(10, true);	moduleD.setTareAngle(10, true);
+		}
+		
+		metersX = edison.getNumber("x", metersX);
+		metersY = edison.getNumber("y", metersY);
+		double expectedX = edison.getNumber("expected x", metersX);
+		double expectedY = edison.getNumber("expected y", metersY);
+		double expectedAngle = edison.getNumber("expected angle", gyro.getCurrentAngle());
+		double xError = expectedX - metersX;
+		double yError = expectedY - metersY;
+		double spinError = gyro.wornPath(expectedAngle);
+		swerve.holonomic2(V_PID.get("forward", yError), V_PID.get("strafe", xError), V_PID.get("spin", spinError));
 	}
 	
 	@Override
 	public void teleopPeriodic() {
 		if (driver.getRawButton(R_Xbox.BUTTON_START) && driver.getRawButton(R_Xbox.BUTTON_BACK)) {//SWERVE ALIGNMENT
 			swerve.align(.004);//TODO limit how long this can take
+			moduleA.setTareAngle(10, true);	moduleB.setTareAngle(10, true);	moduleC.setTareAngle(10, true);	moduleD.setTareAngle(10, true);
 		}
 		
 		if (gunner.getRawButton(R_Xbox.BUTTON_START) && gunner.getRawButton(R_Xbox.BUTTON_BACK)) {//GYRO RESET

@@ -7,7 +7,7 @@ import com.cyborgcats.reusable.V_PID;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
-public abstract class V_Instructions {//things that are used regardless of the driver, yet are not specific to a physical object, just copied over some interesting code from last year
+public abstract class V_Instructions {//things that are used regardless of the driver, yet are not specific to a physical object
 	/**
 	 * Ian's auto code
 	 */
@@ -26,7 +26,7 @@ public abstract class V_Instructions {//things that are used regardless of the d
 	}
 	private static void timedMovementTwo(R_DriveTrain swerve, double directionOne, double speedOne, long timeinMillisOne, double directionTwo, double speedTwo, long timeMillisTwo, int gear) {
 		long startTimeOne = System.currentTimeMillis();		
-		while(System.currentTimeMillis()-startTimeOne < timeinMillisOne) {
+		while(System.currentTimeMillis() - startTimeOne < timeinMillisOne) {
 			swerve.holonomic(directionOne, speedOne, 0);
 		}
 		stop(swerve);
