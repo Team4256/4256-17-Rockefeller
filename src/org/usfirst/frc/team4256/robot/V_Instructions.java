@@ -15,59 +15,92 @@ public abstract class V_Instructions {//things that are used regardless of the d
 	static double spinOut = 0;
 	
 	static R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
+	private static boolean timedMovementOneDone = false;
+	private static boolean timedMovementTwoDone = false;
+	private static boolean timedMovementThreeDone = false;
 	
 	//moves a certain direction at a certain speed with a certain spin for a certain time
-	private static void timedMovementOne(R_DriveTrain swerve, double directionOne, double speedOne, long timeinMillisOne) {
-		long startTimeOne = System.currentTimeMillis();		
+	public static void timedMovementOne(R_DriveTrain swerve, double directionOne, double speedOne, long timeinMillisOne) {
+		long startTimeOne = System.currentTimeMillis();
+		long expectedTime = System.currentTimeMillis();
 		while(System.currentTimeMillis()-startTimeOne < timeinMillisOne) {
+			while(System.currentTimeMillis() < expectedTime) {
+			}
 			swerve.holonomic(directionOne, speedOne, 0);
+			expectedTime += 20;
 		}
 		stop(swerve);
+		timedMovementOneDone = true;
 	}
-	private static void timedMovementTwo(R_DriveTrain swerve, double directionOne, double speedOne, long timeinMillisOne, double directionTwo, double speedTwo, long timeMillisTwo, int gear) {
+	public static boolean timedMovementOneDone() {
+		return timedMovementOneDone;
+	}
+	public static void timedMovementTwo(R_DriveTrain swerve, double directionOne, double speedOne, long timeinMillisOne, double directionTwo, double speedTwo, long timeMillisTwo, int gear) {
 		long startTimeOne = System.currentTimeMillis();		
+		long expectedTimeOne = System.currentTimeMillis();
 		while(System.currentTimeMillis() - startTimeOne < timeinMillisOne) {
+			while(System.currentTimeMillis() < expectedTimeOne) {
+			}
 			swerve.holonomic(directionOne, speedOne, 0);
+			expectedTimeOne += 20;
 		}
 		stop(swerve);
 		long startTimeTwo = System.currentTimeMillis();
-		while(System.currentTimeMillis()-startTimeTwo < timeMillisTwo) {
+		long expectedTimeTwo = System.currentTimeMillis();
+		while(Math.abs(gyro.wornPath(gear)) < 2 && System.currentTimeMillis()-startTimeTwo < timeMillisTwo) {
+			while(System.currentTimeMillis() < expectedTimeTwo) {
+			}
 			spinError = gyro.wornPath(gear);
 			spinOut = V_PID.get("spin", spinError);
-//			if(spinOut > 0.25) {
-//				spinOut = 0.25;
-//			}
 			swerve.holonomic(directionTwo, speedTwo, spinOut);
+			expectedTimeTwo += 20;
 		}
 		stop(swerve);
+		timedMovementTwoDone = true;
 	}
-	private static void timedMovementThree(R_DriveTrain swerve, double directionOne, double speedOne, long timeinMillisOne, double directionTwo, long timeinMillisTwo, double directionThree, double speedThree, long timeinMillisThree, int gear) {
+	public static boolean timedMovementTwoDone() {
+		return timedMovementTwoDone;
+	}
+	public static void timedMovementThree(R_DriveTrain swerve, double directionOne, double speedOne, long timeinMillisOne, double directionTwo, long timeinMillisTwo, double directionThree, double speedThree, long timeinMillisThree, int gear) {
 		long startTimeOne = System.currentTimeMillis();
+		long expectedTimeOne = System.currentTimeMillis();
 		double angle = gyro.getCurrentAngle();
 		while(System.currentTimeMillis()-startTimeOne < timeinMillisOne) {
+			while(System.currentTimeMillis() < expectedTimeOne) {
+			}
 			spinError = gyro.wornPath(angle);
 			spinOut = V_PID.get("spin", spinError);
 			swerve.holonomic(directionOne, speedOne, spinOut);
+			expectedTimeOne += 20;
 		}
 		V_PID.clear("spin");
 		stop(swerve);
 		long startTimeTwo = System.currentTimeMillis();
+		long expectedTimeTwo = System.currentTimeMillis();
 		while(Math.abs(gyro.wornPath(gear)) > 2 && System.currentTimeMillis()-startTimeTwo < timeinMillisTwo) {
+			while(System.currentTimeMillis() < expectedTimeTwo) {
+			}
 			spinError = gyro.wornPath(gear);
 			spinOut = V_PID.get("spin", spinError);
-//			if(spinOut > 0.25) {
-//				spinOut = 0.25;
-//			}
 			swerve.holonomic(directionTwo, 0, spinOut);
+			expectedTimeTwo += 20;
 		}
 		stop(swerve);
 		long startTimeThree = System.currentTimeMillis();
+		long expectedTimeThree = System.currentTimeMillis();
 		while(System.currentTimeMillis()-startTimeThree < timeinMillisThree) {
+			while(System.currentTimeMillis() < expectedTimeThree) {
+			}
 			spinError = gyro.wornPath(gear);
 			spinOut = V_PID.get("spin", spinError);
 			swerve.holonomic(directionThree, speedThree, spinOut);
+			expectedTimeThree += 20;
 		}
 		stop(swerve);
+		timedMovementThreeDone = true;
+	}
+	public static boolean timedMovementThreeDone() {
+		return timedMovementThreeDone;
 	}
 	//stops swerve
 	private static void stop(R_DriveTrain swerve) {

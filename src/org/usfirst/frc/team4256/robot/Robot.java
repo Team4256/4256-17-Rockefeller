@@ -33,6 +33,7 @@ import com.cyborgcats.reusable.V_PID;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -133,27 +134,30 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void autonomousPeriodic() {
+		gearer.set(Value.kReverse);
 		if (!swerve.isAligned()) {
 			swerve.align(.004);
-			moduleA.setTareAngle(10, true);	moduleB.setTareAngle(10, true);	moduleC.setTareAngle(10, true);	moduleD.setTareAngle(10, true);
+			moduleA.setTareAngle(1, true);	moduleB.setTareAngle(1, true);	moduleC.setTareAngle(5, true);	moduleD.setTareAngle(6, true);
 		}
-		
-		metersX = edison.getNumber("x", metersX);
-		metersY = edison.getNumber("y", metersY);
-		double expectedX = edison.getNumber("expected x", metersX);
-		double expectedY = edison.getNumber("expected y", metersY);
-		double expectedAngle = edison.getNumber("expected angle", gyro.getCurrentAngle());
-		double xError = expectedX - metersX;
-		double yError = expectedY - metersY;
-		double spinError = gyro.wornPath(expectedAngle);
-		swerve.holonomic2(V_PID.get("forward", yError), V_PID.get("strafe", xError), V_PID.get("spin", spinError));
+		if (!V_Instructions.timedMovementOneDone()) {
+			V_Instructions.timedMovementOne(swerve, 90, .15, 4300);
+		}
+//		metersX = edison.getNumber("x", metersX);
+//		metersY = edison.getNumber("y", metersY);
+//		double expectedX = edison.getNumber("expected x", metersX);
+//		double expectedY = edison.getNumber("expected y", metersY);
+//		double expectedAngle = edison.getNumber("expected angle", gyro.getCurrentAngle());
+//		double xError = expectedX - metersX;
+//		double yError = expectedY - metersY;
+//		double spinError = gyro.wornPath(expectedAngle);
+//		swerve.holonomic2(V_PID.get("forward", yError), V_PID.get("strafe", xError), V_PID.get("spin", spinError));
 	}
 	
 	@Override
 	public void teleopPeriodic() {
 		if (driver.getRawButton(R_Xbox.BUTTON_START) && driver.getRawButton(R_Xbox.BUTTON_BACK)) {//SWERVE ALIGNMENT
 			swerve.align(.004);//TODO limit how long this can take
-			moduleA.setTareAngle(10, true);	moduleB.setTareAngle(10, true);	moduleC.setTareAngle(10, true);	moduleD.setTareAngle(10, true);
+			moduleA.setTareAngle(1, true);	moduleB.setTareAngle(1, true);	moduleC.setTareAngle(5, true);	moduleD.setTareAngle(6, true);
 		}
 		
 		if (gunner.getRawButton(R_Xbox.BUTTON_START) && gunner.getRawButton(R_Xbox.BUTTON_BACK)) {//GYRO RESET
@@ -191,8 +195,9 @@ public class Robot extends IterativeRobot {
 			double climbSpeed = driver.getRawButton(R_Xbox.BUTTON_RB) ? -1 : -.6;
 			if (gunner.getAxisPress(R_Xbox.AXIS_LT, .5)) {climbSpeed *= -1;}
 			climber.set(climbSpeed);
+		}else {
+			climber.set(0);
 		}
-		
 		if (V_Fridge.freeze("LB", driver.getRawButton(R_Xbox.BUTTON_LB))) {//GEARER
 				gearer.set(DoubleSolenoid.Value.kForward);
 		}else {
