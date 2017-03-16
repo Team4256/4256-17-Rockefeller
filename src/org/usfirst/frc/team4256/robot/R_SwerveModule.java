@@ -64,8 +64,8 @@ public class R_SwerveModule {
 			aligned = true;
 		}
 	}
-	public void setTareAngle(final double tareAngle, final boolean relativeReference) {
-		rotator.compass.setTareAngle(tareAngle, relativeReference);
+	public void setTareAngle(final double tareAngle) {
+		rotator.compass.setTareAngle(tareAngle, true);
 	}
 	/**
 	 * 

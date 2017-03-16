@@ -60,7 +60,7 @@ public class R_DriveTrain {
 	public void holonomic2(final double forward, final double strafe, final double spin) {
 		double a = strafe - spin*(Side/Radius),b = strafe + spin*(Side/Radius),c = forward - spin*(Front/Radius),d = forward + spin*(Front/Radius);
 		boolean bad = forward*forward + strafe*strafe == 0 && spin == 0;
-		moduleA.swivelTo(Math.toDegrees(Math.atan2(b,d)), bad);
+		moduleA.swivelTo(Math.toDegrees(Math.atan2(b,d)), bad);//TODO may need swivelWith
 		moduleB.swivelTo(Math.toDegrees(Math.atan2(b,c)), bad);
 		moduleC.swivelTo(Math.toDegrees(Math.atan2(a,d)), bad);
 		moduleD.swivelTo(Math.toDegrees(Math.atan2(a,c)), bad);

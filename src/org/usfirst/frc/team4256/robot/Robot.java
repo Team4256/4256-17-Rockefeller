@@ -48,7 +48,6 @@ public class Robot extends IterativeRobot {
 	private static Long handsOffTime = System.currentTimeMillis();
 	private static double lockedAngle = 0;
 	//{Robot Input}
-	private static final R_Gimbal gimbal = new R_Gimbal(Parameters.Camera_servoX, Parameters.Camera_servoY, 6);
 	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
 	private static NetworkTable edison;
 	private static NetworkTable tesla;
@@ -76,7 +75,7 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void robotInit() {
 		//{Robot Input}
-		gyro.setTareAngle(270, false);//gearer should become forward
+		gyro.setTareAngle(90, false);//gearer should become forward
 		edison = NetworkTable.getTable("edison");
 		tesla = NetworkTable.getTable("tesla");
 		//{Robot Output}
@@ -88,10 +87,6 @@ public class Robot extends IterativeRobot {
 		climber.init();
 		climber.setVoltageCompensationRampRate(24);
 		intake.init();
-//		flywheel.init();
-//		flywheel.setPID(.025, 0, .25, .01025, 0, 24, 0);
-//		turret.init();
-//		turret.setPID(Parameters.swerveP, Parameters.swerveI, Parameters.swerveD);
 	}
 
 	@Override
@@ -141,7 +136,7 @@ public class Robot extends IterativeRobot {
 		gearer.set(DoubleSolenoid.Value.kReverse);
 		if (!swerve.isAligned()) {
 			swerve.align(.004);
-			moduleA.setTareAngle(1, true);	moduleB.setTareAngle(1, true);	moduleC.setTareAngle(5, true);	moduleD.setTareAngle(6, true);
+			moduleA.setTareAngle(1);	moduleB.setTareAngle(1);	moduleC.setTareAngle(5);	moduleD.setTareAngle(6);
 		}
 		if (!V_Instructions.timedMovementOneDone()) {
 			V_Instructions.timedMovementOne(swerve, 90, .15, 4300);
@@ -161,7 +156,7 @@ public class Robot extends IterativeRobot {
 	public void teleopPeriodic() {
 		if (driver.getRawButton(R_Xbox.BUTTON_START) && driver.getRawButton(R_Xbox.BUTTON_BACK)) {//SWERVE ALIGNMENT
 			swerve.align(.004);//TODO limit how long this can take
-			moduleA.setTareAngle(1, true);	moduleB.setTareAngle(1, true);	moduleC.setTareAngle(5, true);	moduleD.setTareAngle(6, true);
+			moduleA.setTareAngle(1);	moduleB.setTareAngle(1);	moduleC.setTareAngle(5);	moduleD.setTareAngle(6);
 		}
 		
 		if (gunner.getRawButton(R_Xbox.BUTTON_START) && gunner.getRawButton(R_Xbox.BUTTON_BACK)) {//GYRO RESET
@@ -173,6 +168,7 @@ public class Robot extends IterativeRobot {
 		//{calculating speed}
 		double speed = driver.getCurrentRadius(R_Xbox.STICK_LEFT, true);//--turbo mode
 		if (!driver.getRawButton(R_Xbox.BUTTON_RB)) {speed *= .6;}//--normal mode
+		speed *= speed;
 		//{calculating raw spin}
 		double spin = driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
 		spin *= spin*Math.signum(spin)*.5;//--normal mode
@@ -181,11 +177,11 @@ public class Robot extends IterativeRobot {
 			if (speed == 0) {speed = .01;}//.01 restrains coast after spinning by hacking holonomic
 		}
 		//{adding driver aids}
-		if (V_Fridge.becomesTrue("hands off", driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) == 0)) {
+		if (V_Fridge.becomesTrue("hands off", spin == 0)) {
 			handsOffTime = System.currentTimeMillis();
 			lockedAngle = gyro.getCurrentAngle();//remember angle when driver stops rotating
 			V_PID.clear("spin");
-		}if (driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X, .1) == 0) {
+		}if (spin == 0) {
 			double spinError = 0;
 			if (speed >= .3) {spinError = gyro.wornPath(lockedAngle);}//stop rotation drift at high speeds
 			int gearButton = driver.mostRecentButton(gearButtons);
@@ -193,7 +189,7 @@ public class Robot extends IterativeRobot {
 			if (Math.abs(spinError) > 3) {spin = V_PID.get("spin", spinError);}
 		}
 		
-		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), speed*speed, spin);//SWERVE DRIVE
+		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), speed, spin);//SWERVE DRIVE
 		
 		if (driver.getAxisPress(R_Xbox.AXIS_LT, .5)) {//CLIMBER
 			double climbSpeed = driver.getRawButton(R_Xbox.BUTTON_RB) ? -1 : -.6;
@@ -213,14 +209,6 @@ public class Robot extends IterativeRobot {
 		}else {
 			intake.set(driver.getRawAxis(R_Xbox.AXIS_RT));//INTAKE
 		}
-		
-//		if (gunner.getRawButton(R_XboxV2.BUTTON_RB)) {//FLYWHEEL
-//			flywheel.set(6000);
-//		}else {
-//			flywheel.set(0);
-//		}
-		
-		gimbal.moveCamera(-gunner.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X), gunner.getDeadbandedAxis(R_Xbox.AXIS_LEFT_Y));//CAMERA GIMBLE
 		
 		if (gyro.netAcceleration() >= 1) {
 			driver.setRumble(RumbleType.kLeftRumble, 1);//DANGER RUMBLE

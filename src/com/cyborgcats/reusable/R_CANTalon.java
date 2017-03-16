@@ -109,7 +109,7 @@ public class R_CANTalon extends CANTalon {
 		set(value, true);
 	}
 	
-	public void set(double value, final boolean convertToAngle) {//CURRENT, ANGLE, SPEED
+	public void set(double value, final boolean convertAngle) {//CURRENT, ANGLE, SPEED
 		switch (getControlMode()) {
 		case Current:super.set(value);break;
 		case Follower:
@@ -119,7 +119,7 @@ public class R_CANTalon extends CANTalon {
 			break;
 		case PercentVbus:super.set(value);break;
 		case Position:
-			if (convertToAngle) {
+			if (convertAngle) {
 				value = (getCurrentAngle(false) + wornPath(value))*gearRatio/360;
 			}super.set(value);
 			break;
