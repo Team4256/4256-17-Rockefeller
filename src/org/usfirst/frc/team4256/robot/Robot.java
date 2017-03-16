@@ -33,7 +33,6 @@ import com.cyborgcats.reusable.V_PID;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -77,6 +76,7 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void robotInit() {
 		//{Robot Input}
+		gyro.setTareAngle(270, false);//gearer should become forward
 		edison = NetworkTable.getTable("edison");
 		tesla = NetworkTable.getTable("tesla");
 		//{Robot Output}
@@ -99,7 +99,6 @@ public class Robot extends IterativeRobot {
 		V_PID.clear("forward");
 		V_PID.clear("strafe");
 		V_PID.clear("spin");
-//		V_Instructions.placeLeftGear(swerve, gearer);//TODO only allow this to go for 15 seconds
 	}
 	
 	@Override
@@ -118,6 +117,11 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void testInit() {
 		//TODO
+		tesla.putNumber("x", 0);
+		tesla.putNumber("y", 0);
+		tesla.putNumber("expected x", 0);
+		tesla.putNumber("expected y", 0);
+		tesla.putNumber("expected angle", 0);
 	}
 	
 	@Override
@@ -134,7 +138,7 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void autonomousPeriodic() {
-		gearer.set(Value.kReverse);
+		gearer.set(DoubleSolenoid.Value.kReverse);
 		if (!swerve.isAligned()) {
 			swerve.align(.004);
 			moduleA.setTareAngle(1, true);	moduleB.setTareAngle(1, true);	moduleC.setTareAngle(5, true);	moduleD.setTareAngle(6, true);
@@ -142,11 +146,11 @@ public class Robot extends IterativeRobot {
 		if (!V_Instructions.timedMovementOneDone()) {
 			V_Instructions.timedMovementOne(swerve, 90, .15, 4300);
 		}
-//		metersX = edison.getNumber("x", metersX);
-//		metersY = edison.getNumber("y", metersY);
-//		double expectedX = edison.getNumber("expected x", metersX);
-//		double expectedY = edison.getNumber("expected y", metersY);
-//		double expectedAngle = edison.getNumber("expected angle", gyro.getCurrentAngle());
+//		metersX = tesla.getNumber("x", metersX);
+//		metersY = tesla.getNumber("y", metersY);
+//		double expectedX = tesla.getNumber("expected x", metersX);
+//		double expectedY = tesla.getNumber("expected y", metersY);
+//		double expectedAngle = tesla.getNumber("expected angle", gyro.getCurrentAngle());
 //		double xError = expectedX - metersX;
 //		double yError = expectedY - metersY;
 //		double spinError = gyro.wornPath(expectedAngle);
@@ -234,7 +238,16 @@ public class Robot extends IterativeRobot {
 	}
 	
 	@Override
-	public void testPeriodic() {
+	public void testPeriodic() {//TODO must test this extensively
+		metersX = tesla.getNumber("x", metersX);
+		metersY = tesla.getNumber("y", metersY);
+		double expectedX = tesla.getNumber("expected x", metersX);
+		double expectedY = tesla.getNumber("expected y", metersY);
+		double expectedAngle = tesla.getNumber("expected angle", gyro.getCurrentAngle());
+		double xError = expectedX - metersX;
+		double yError = expectedY - metersY;
+		double spinError = gyro.wornPath(expectedAngle);
+		swerve.holonomic2(V_PID.get("forward", yError), V_PID.get("strafe", xError), V_PID.get("spin", spinError));
 	}
 	
 	@Override

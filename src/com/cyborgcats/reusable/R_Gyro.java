@@ -14,6 +14,12 @@ public class R_Gyro extends AHRS {
 		compass = new V_Compass(protectedZoneStart, protectedZoneSize);
 	}
 	/**
+	 * Just calls the function of the same name from V_Compass.
+	**/
+	public void setTareAngle(final double tareAngle, final boolean relativeReference) {
+		compass.setTareAngle(tareAngle, relativeReference);
+	}
+	/**
 	 * This function returns the current angle based on the tare angle.
 	 * It will ignore changes to the tare angle until hardware calibration is complete.
 	**/
