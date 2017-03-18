@@ -76,7 +76,7 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void robotInit() {//TODO init clamper and lifter
 		//{Robot Input}
-		gyro.setTareAngle(90, false);//gearer should become forward
+//		gyro.setTareAngle(90, false);//gearer should become forward
 		edison = NetworkTable.getTable("edison");
 		tesla = NetworkTable.getTable("tesla");
 		//{Robot Output}
@@ -138,7 +138,7 @@ public class Robot extends IterativeRobot {
 		gearer.set(DoubleSolenoid.Value.kReverse);
 		if (!swerve.isAligned()) {
 			swerve.align(.004);
-			moduleA.setTareAngle(1);	moduleB.setTareAngle(1);	moduleC.setTareAngle(5);	moduleD.setTareAngle(6);
+			moduleA.setTareAngle(9);	moduleB.setTareAngle(-3);	moduleC.setTareAngle(6);	moduleD.setTareAngle(8);
 		}
 		if (!V_Instructions.timedMovementOneDone()) {
 			V_Instructions.timedMovementOne(swerve, 90, .15, 4300);
@@ -201,19 +201,19 @@ public class Robot extends IterativeRobot {
 			climber.set(0);
 		}
 		
-		if (V_Fridge.freeze("LB", driver.getRawButton(R_Xbox.BUTTON_LB))) {//GEARER
+		if (V_Fridge.freeze("POVSOUTH", driver.getPOV(0) == R_Xbox.POV_SOUTH)) {//GEARER
 			gearer.set(DoubleSolenoid.Value.kForward);
 		}else {
 			gearer.set(DoubleSolenoid.Value.kReverse);
 		}
 		
-		if (V_Fridge.freeze("clamper", driver.getAxisPress(R_Xbox.AXIS_RT, .5))) {//CLAMPER
+		if (V_Fridge.freeze("AXISRT", driver.getAxisPress(R_Xbox.AXIS_RT, .5))) {//CLAMPER
 			clamper.set(DoubleSolenoid.Value.kForward);
 		}else {
 			clamper.set(DoubleSolenoid.Value.kReverse);
 		}
 		
-		if (V_Fridge.freeze("lifter", driver.getPOV(0) == R_Xbox.POV_SOUTH)) {//LIFTER
+		if (V_Fridge.freeze("LB", driver.getRawButton(R_Xbox.BUTTON_LB))) {//LIFTER
 			if (!lifterRaised) {
 				lifter.set(-.13);
 			}else {
