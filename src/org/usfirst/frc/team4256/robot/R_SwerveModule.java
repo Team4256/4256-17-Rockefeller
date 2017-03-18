@@ -55,10 +55,10 @@ public class R_SwerveModule {
 				aligning = true;
 				alignmentRevs = rotator.getPosition();
 			}alignmentRevs += increment;
-			rotator.set(alignmentRevs, false);
+			rotator.set(alignmentRevs, false, true);
 		}else {
 			aligning = false;
-			rotator.set(alignmentRevs, false);
+			rotator.set(alignmentRevs, false, true);
 			rotator.compass.setTareAngle(alignmentRevs%rotatorGearRatio*360/rotatorGearRatio);
 			aligned = true;
 		}
@@ -76,7 +76,7 @@ public class R_SwerveModule {
 	 * 
 	**/
 	public void swivelTo(final double wheel_chassisAngle, final boolean ignore) {
-		if (!ignore) {rotator.set(wheel_chassisAngle);}//if this doesn't run, complete loop update will eventually set it to be the last angle
+		if (!ignore) {rotator.set(decapitateAngle(wheel_chassisAngle));}//if this doesn't run, complete loop update will eventually set it to be the last angle
 	}
 	/**
 	 * 

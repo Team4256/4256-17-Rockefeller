@@ -106,11 +106,11 @@ public class R_CANTalon extends CANTalon {
 	**/
 	@Override
 	public void set(final double value) {
-		set(value, true);
+		set(value, true, true);
 	}
 	
-	public void set(double value, final boolean convertAngle) {//CURRENT, ANGLE, SPEED
-		lastSetPoint = value;
+	public void set(double value, final boolean treatAsAngle, final boolean setupdated) {//CURRENT, ANGLE, SPEED
+		if (setupdated) {lastSetPoint = value;}
 		switch (getControlMode()) {
 		case Current:super.set(value);break;
 		case Follower:
@@ -120,10 +120,12 @@ public class R_CANTalon extends CANTalon {
 			break;
 		case PercentVbus:super.set(value);break;
 		case Position:
-			lastSetPoint = value*gearRatio/360;//TODO modulus?? need this because default set function expects angles (convertAngle is true)
-			if (convertAngle) {
-				value = (getCurrentAngle(false) + wornPath(value))*gearRatio/360;
-			}super.set(value);
+			if (treatAsAngle) {
+				super.set((getCurrentAngle(false) + wornPath(value))*gearRatio/360);
+			}else {
+				lastSetPoint = value*360/gearRatio;
+				super.set(value);
+			}
 			break;
 		case Speed:super.set(value);break;
 		case Voltage:
@@ -132,12 +134,14 @@ public class R_CANTalon extends CANTalon {
 			break;
 		default:break;
 		}
-		updated = true;
+		if (getControlMode() != follower) {
+			updated = setupdated;
+		}
 	}
 	//TODO
 	public void completeLoopUpdate() {
 		if (!updated && getControlMode() != follower) {
-			set(lastSetPoint);
+			set(lastSetPoint, true, false);
 		}else if (getControlMode() != follower) {
 			updated = false;
 		}

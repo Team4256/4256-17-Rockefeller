@@ -7,7 +7,7 @@ public abstract class Parameters {
 	public static final int Camera_servoX = 8;//PWM
 	public static final int Camera_servoY = 9;//PWM
 	
-	public static final int Intake = 15;//CAN
+	public static final int Lifter = 15;//CAN
 	
 	public static final int Shooter_flywheel = 16;//CAN
 	public static final int Shooter_rotator = 17;//CAN

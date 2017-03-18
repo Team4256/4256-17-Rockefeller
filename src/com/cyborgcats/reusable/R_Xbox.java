@@ -97,12 +97,12 @@ public class R_Xbox extends XboxController {
 	}
 	//TODO
 	public Long lastPress(final int button) {
-		return buttonTimes[button];
+		return buttonTimes[button - 1];
 	}
 	//TODO
 	public void resetButtonTimes(final int[] buttons) {
 		for (int button : buttons) {
-			buttonTimes[button] = System.currentTimeMillis();
+			buttonTimes[button - 1] = System.currentTimeMillis();
 		}
 	}
 	/**

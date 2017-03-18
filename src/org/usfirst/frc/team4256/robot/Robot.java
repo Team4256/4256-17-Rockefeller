@@ -52,6 +52,7 @@ public class Robot extends IterativeRobot {
 	private static NetworkTable tesla;
 	private static double metersX = 0;
 	private static double metersY = 0;
+	private static boolean lifterRaised = false;
 	//{Robot Output}
 	private static final Compressor compressor = new Compressor(0);
 	
@@ -64,15 +65,16 @@ public class Robot extends IterativeRobot {
 	private static final R_CANTalon climber = new R_CANTalon(Parameters.Climber, 17, R_CANTalon.voltage);
 	
 	private static final DoubleSolenoid gearer = new DoubleSolenoid(Parameters.Gearer_module, Parameters.Gearer_forward, Parameters.Gearer_reverse);
+	private static final DoubleSolenoid clamper = new DoubleSolenoid(Parameters.Gearer_module, 2, 3);
 	
-	private static final R_CANTalon intake = new R_CANTalon(Parameters.Intake, 1, R_CANTalon.percent);
+	private static final R_CANTalon lifter = new R_CANTalon(Parameters.Lifter, 1, R_CANTalon.voltage);//.position, true, R_CANTalon.absolute);
 	
 //	private static final R_CANTalon flywheel = new R_CANTalon(Parameters.Shooter_flywheel, 1, R_CANTalon.speed, true, R_CANTalon.relative);
 //	private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, 12, R_CANTalon.position, false, R_CANTalon.absolute, 135, 90);
 //	private static final Servo linearServo = new Servo(Parameters.Shooter_linearServo);
 //	private static final DoubleSolenoid flap = new DoubleSolenoid(Parameters.Shooter_flapModule, Parameters.Shooter_flapForward, Parameters.Shooter_flapReverse);
 	@Override
-	public void robotInit() {
+	public void robotInit() {//TODO init clamper and lifter
 		//{Robot Input}
 		gyro.setTareAngle(90, false);//gearer should become forward
 		edison = NetworkTable.getTable("edison");
@@ -85,7 +87,8 @@ public class Robot extends IterativeRobot {
 		V_PID.set("spin", Parameters.spinP, Parameters.spinI, Parameters.spinD);
 		climber.init();
 		climber.setVoltageCompensationRampRate(24);
-		intake.init();
+		lifter.init();
+		lifter.compass.setTareAngle(lifter.getPosition()*360);//TODO test, PID
 	}
 
 	@Override
@@ -197,16 +200,37 @@ public class Robot extends IterativeRobot {
 		}else {
 			climber.set(0);
 		}
+		
 		if (V_Fridge.freeze("LB", driver.getRawButton(R_Xbox.BUTTON_LB))) {//GEARER
-				gearer.set(DoubleSolenoid.Value.kForward);
+			gearer.set(DoubleSolenoid.Value.kForward);
 		}else {
-				gearer.set(DoubleSolenoid.Value.kReverse);
+			gearer.set(DoubleSolenoid.Value.kReverse);
 		}
 		
-		if (driver.getPOV(0) == R_Xbox.POV_SOUTH) {
-			intake.set(-.2);
+		if (V_Fridge.freeze("clamper", driver.getAxisPress(R_Xbox.AXIS_RT, .5))) {//CLAMPER
+			clamper.set(DoubleSolenoid.Value.kForward);
 		}else {
-			intake.set(driver.getRawAxis(R_Xbox.AXIS_RT));//INTAKE
+			clamper.set(DoubleSolenoid.Value.kReverse);
+		}
+		
+		if (V_Fridge.freeze("lifter", driver.getPOV(0) == R_Xbox.POV_SOUTH)) {//LIFTER
+			if (!lifterRaised) {
+				lifter.set(-.13);
+			}else {
+				lifter.set(-.08);
+			}
+			if (lifter.getOutputCurrent() > 1.5) {
+				lifterRaised = true;
+			}
+		}else {
+			if (lifterRaised) {
+				lifter.set(.13);
+			}else {
+				lifter.set(0);
+			}
+			if (lifter.getOutputCurrent() > 1.5) {
+				lifterRaised = false;
+			}
 		}
 		
 		if (gyro.netAcceleration() >= 1) {
@@ -221,7 +245,7 @@ public class Robot extends IterativeRobot {
 		moduleC.completeLoopUpdate();
 		moduleD.completeLoopUpdate();
 		climber.completeLoopUpdate();
-		intake.completeLoopUpdate();
+		lifter.completeLoopUpdate();
 	}
 	
 	@Override
