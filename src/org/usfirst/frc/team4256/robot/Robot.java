@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.cyborgcats.reusable.R_CANTalon;
-import com.cyborgcats.reusable.R_Gimbal;
 import com.cyborgcats.reusable.R_Gyro;
 import com.cyborgcats.reusable.R_Xbox;
 import com.cyborgcats.reusable.V_Fridge;

@@ -16,8 +16,9 @@ public class R_Gyro extends AHRS {
 	/**
 	 * Just calls the function of the same name from V_Compass.
 	**/
-	public void setTareAngle(final double tareAngle, final boolean relativeReference) {
-		compass.setTareAngle(tareAngle, relativeReference);
+	public void setTareAngle(double tareAngle, final boolean relativeReference) {
+		if (relativeReference) {tareAngle += compass.getTareAngle();}
+		compass.setTareAngle(tareAngle);
 	}
 	/**
 	 * This function returns the current angle based on the tare angle.

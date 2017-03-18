@@ -110,6 +110,7 @@ public class R_CANTalon extends CANTalon {
 	}
 	
 	public void set(double value, final boolean convertAngle) {//CURRENT, ANGLE, SPEED
+		lastSetPoint = value;
 		switch (getControlMode()) {
 		case Current:super.set(value);break;
 		case Follower:
@@ -119,6 +120,7 @@ public class R_CANTalon extends CANTalon {
 			break;
 		case PercentVbus:super.set(value);break;
 		case Position:
+			lastSetPoint = value*gearRatio/360;//TODO modulus?? need this because default set function expects angles (convertAngle is true)
 			if (convertAngle) {
 				value = (getCurrentAngle(false) + wornPath(value))*gearRatio/360;
 			}super.set(value);
@@ -131,7 +133,6 @@ public class R_CANTalon extends CANTalon {
 		default:break;
 		}
 		updated = true;
-		lastSetPoint = value;
 	}
 	//TODO
 	public void completeLoopUpdate() {

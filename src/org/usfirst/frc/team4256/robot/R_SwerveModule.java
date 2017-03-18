@@ -10,7 +10,6 @@ public class R_SwerveModule {
 	public static final double tractionGearRatio = 15.6;
 	private boolean aligned = false;
 	private boolean aligning = false;
-	private double lastAngle = 0;
 	private double alignmentRevs = 0;
 	private double decapitated = 1;
 	private R_CANTalon rotator;
@@ -60,12 +59,12 @@ public class R_SwerveModule {
 		}else {
 			aligning = false;
 			rotator.set(alignmentRevs, false);
-			rotator.compass.setTareAngle(alignmentRevs%rotatorGearRatio*360/rotatorGearRatio, false);
+			rotator.compass.setTareAngle(alignmentRevs%rotatorGearRatio*360/rotatorGearRatio);
 			aligned = true;
 		}
 	}
 	public void setTareAngle(final double tareAngle) {
-		rotator.compass.setTareAngle(tareAngle, true);
+		rotator.compass.setTareAngle(rotator.compass.getTareAngle() + tareAngle);
 	}
 	/**
 	 * 
@@ -77,8 +76,7 @@ public class R_SwerveModule {
 	 * 
 	**/
 	public void swivelTo(final double wheel_chassisAngle, final boolean ignore) {
-		if (!ignore) {lastAngle = decapitateAngle(wheel_chassisAngle);}
-		rotator.set(lastAngle);
+		if (!ignore) {rotator.set(wheel_chassisAngle);}//if this doesn't run, complete loop update will eventually set it to be the last angle
 	}
 	/**
 	 * 
