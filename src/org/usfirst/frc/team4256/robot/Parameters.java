@@ -7,7 +7,7 @@ public abstract class Parameters {
 	public static final int Camera_servoX = 8;//PWM
 	public static final int Camera_servoY = 9;//PWM
 	
-	public static final int Lifter = 15;//CAN
+	public static final int Lift = 15;//CAN
 	
 	public static final int Shooter_flywheel = 16;//CAN
 	public static final int Shooter_rotator = 17;//CAN
@@ -39,6 +39,24 @@ public abstract class Parameters {
 	public static final int Gearer_module = 0;//PCM
 	public static final int Gearer_forward = 0;//PCM
 	public static final int Gearer_reverse = 1;//PCM
+	
+	public static final int Clamp_module = 0;//PCM
+	public static final int Clamp_forward = 2;//PCM
+	public static final int Clamp_reverse = 3;//PCM
+	
+	//AUTONOMOUS
+	public static final double[][] leftInstructions = new double[][] {
+		//time ms, direction, speed, orientation
+		{2500, -20, .2, 0}
+	};
+	public static final double[][] middleInstructions = new double[][] {
+		//time ms, direction, speed, orientation
+		{4000, -5, .2, -5}
+	};
+	public static final double[][] rightInstructions = new double[][] {
+		//time ms, direction, speed, orientation
+		{2500, 20, .2, 0}
+	};
 	
 	//VALUES
 	public static final byte Gyrometer_updateHz = 50;

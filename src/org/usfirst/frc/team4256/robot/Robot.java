@@ -3,15 +3,15 @@
 //left stick, both axis: raw speed and direction
 //right stick, x axis: raw spin
 //right stick, press: snail mode
-//LB: toggle gearer
-//LT: boolean climber
+//LB: boolean climber
+//LT: toggle clamp
 //RB: turbo mode (drive and climber)
-//RT: raw intake in
-//dpad down: boolean intake out
+//RT: toggle lift
 //X: left gear orientation
 //A: center gear orientation
 //B: right gear orientation
 //Y: loading station orientation
+//dpad down: toggle gearer
 
 //GUNNER
 //start + back: gyro reset
@@ -35,8 +35,8 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot {
 	//{Human Input}
@@ -48,11 +48,15 @@ public class Robot extends IterativeRobot {
 	private static double lockedAngle = 0;
 	//{Robot Input}
 	private static final R_Gyro gyro = new R_Gyro(Parameters.Gyrometer_updateHz, 0, 0);
+	private static NetworkTable rockefeller;
 	private static NetworkTable edison;
 	private static NetworkTable tesla;
 	private static double metersX = 0;
 	private static double metersY = 0;
+	
 	private static boolean lifterRaised = false;
+	private static int autoMode = 1;
+	private static int autoStep = 0;
 	//{Robot Output}
 	private static final Compressor compressor = new Compressor(0);
 	
@@ -64,19 +68,14 @@ public class Robot extends IterativeRobot {
 	
 	private static final R_CANTalon climber = new R_CANTalon(Parameters.Climber, 17, R_CANTalon.voltage);
 	
+	private static final R_CANTalon lift = new R_CANTalon(Parameters.Lift, 1, R_CANTalon.voltage);
+	private static final DoubleSolenoid clamp = new DoubleSolenoid(Parameters.Clamp_module, Parameters.Clamp_forward, Parameters.Clamp_reverse);
 	private static final DoubleSolenoid gearer = new DoubleSolenoid(Parameters.Gearer_module, Parameters.Gearer_forward, Parameters.Gearer_reverse);
-	private static final DoubleSolenoid clamper = new DoubleSolenoid(Parameters.Gearer_module, 2, 3);
 	
-	private static final R_CANTalon lifter = new R_CANTalon(Parameters.Lifter, 1, R_CANTalon.voltage);//.position, true, R_CANTalon.absolute);
-	
-//	private static final R_CANTalon flywheel = new R_CANTalon(Parameters.Shooter_flywheel, 1, R_CANTalon.speed, true, R_CANTalon.relative);
-//	private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, 12, R_CANTalon.position, false, R_CANTalon.absolute, 135, 90);
-//	private static final Servo linearServo = new Servo(Parameters.Shooter_linearServo);
-//	private static final DoubleSolenoid flap = new DoubleSolenoid(Parameters.Shooter_flapModule, Parameters.Shooter_flapForward, Parameters.Shooter_flapReverse);
 	@Override
-	public void robotInit() {//TODO init clamper and lifter
+	public void robotInit() {
 		//{Robot Input}
-//		gyro.setTareAngle(90, false);//gearer should become forward
+		rockefeller = NetworkTable.getTable("rockefeller");
 		edison = NetworkTable.getTable("edison");
 		tesla = NetworkTable.getTable("tesla");
 		//{Robot Output}
@@ -87,12 +86,14 @@ public class Robot extends IterativeRobot {
 		V_PID.set("spin", Parameters.spinP, Parameters.spinI, Parameters.spinD);
 		climber.init();
 		climber.setVoltageCompensationRampRate(24);
-		lifter.init();
-		lifter.compass.setTareAngle(lifter.getPosition()*360);//TODO test, PID
+		lift.init();
 	}
 
 	@Override
 	public void autonomousInit() {
+		gyro.reset();
+		autoMode = (int)rockefeller.getNumber("auto mode", 1);
+		autoStep = 0;
 		V_PID.clear("forward");
 		V_PID.clear("strafe");
 		V_PID.clear("spin");
@@ -112,8 +113,7 @@ public class Robot extends IterativeRobot {
 	}
 	
 	@Override
-	public void testInit() {
-		//TODO
+	public void testInit() {//TODO these numbers should come from the ZED/TK1
 		tesla.putNumber("x", 0);
 		tesla.putNumber("y", 0);
 		tesla.putNumber("expected x", 0);
@@ -123,42 +123,79 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void disabledInit() {
-		//TODO
 	}
 	
 	@Override
 	public void robotPeriodic() {
-		SmartDashboard.putBoolean("gear out", gearer.get().equals(DoubleSolenoid.Value.kForward));
-		SmartDashboard.putBoolean("aligning", swerve.isAligning());
-		SmartDashboard.putBoolean("aligned", swerve.isAligned());
+		rockefeller.putBoolean("old gear out", gearer.get().equals(DoubleSolenoid.Value.kForward));
+		rockefeller.putBoolean("clamp open", clamp.get().equals(DoubleSolenoid.Value.kForward));
+		rockefeller.putBoolean("lift down", lifterRaised);
+		rockefeller.putBoolean("aligning", swerve.isAligning());
+		rockefeller.putBoolean("aligned", swerve.isAligned());
 	}
 	
 	@Override
 	public void autonomousPeriodic() {
-		gearer.set(DoubleSolenoid.Value.kReverse);
-		if (!swerve.isAligned()) {
-			swerve.align(.004);
-			moduleA.setTareAngle(9);	moduleB.setTareAngle(-3);	moduleC.setTareAngle(6);	moduleD.setTareAngle(8);
+		if (RobotState.isAutonomous()) {
+			if (!swerve.isAligned()) {//ALIGN
+				swerve.align(.004);
+				moduleA.setTareAngle(9);	moduleB.setTareAngle(-3);	moduleC.setTareAngle(6);	moduleD.setTareAngle(8);
+			}
+			if (!lifterRaised) {//RAISE LIFTER
+				lift.set(-.16);
+			}else {
+				lift.set(-.08);
+			}
+			if (lift.getOutputCurrent() > 2) {lifterRaised = true;}
+			
+			switch (autoMode) {
+			case 0://LEFT GEAR
+				V_Instructions.follow(Parameters.leftInstructions, autoStep, swerve, gyro);
+				if (V_Instructions.readyToMoveOn() && V_Instructions.canMoveOn()) {
+					autoStep++;
+				}else if (!V_Instructions.canMoveOn()) {
+					clamp.set(DoubleSolenoid.Value.kForward);
+					lift.set(0);
+					//timedMovementOne(swerve, 180, .2, 2000);
+				}
+				break;
+			case 1://MIDDLE GEAR
+				V_Instructions.follow(Parameters.middleInstructions, autoStep, swerve, gyro);
+				if (V_Instructions.readyToMoveOn() && V_Instructions.canMoveOn()) {
+					autoStep++;
+				}else if (!V_Instructions.canMoveOn()) {
+					clamp.set(DoubleSolenoid.Value.kForward);
+					lift.set(0);
+					//timedMovementOne(swerve, 180, .2, 2000);
+				}
+				break;
+			case 2://RIGHT GEAR
+				V_Instructions.follow(Parameters.rightInstructions, autoStep, swerve, gyro);
+				if (V_Instructions.readyToMoveOn() && V_Instructions.canMoveOn()) {
+					autoStep++;
+				}else if (!V_Instructions.canMoveOn()) {
+					clamp.set(DoubleSolenoid.Value.kForward);
+					lift.set(0);
+					//timedMovementOne(swerve, 180, .2, 2000);
+				}
+				break;
+			default:break;
+			}
+//			//{completing Talon updates}
+//			moduleA.completeLoopUpdate();
+//			moduleB.completeLoopUpdate();
+//			moduleC.completeLoopUpdate();
+//			moduleD.completeLoopUpdate();
+//			climber.completeLoopUpdate();
+//			lift.completeLoopUpdate();
 		}
-		if (!V_Instructions.timedMovementOneDone()) {
-			V_Instructions.timedMovementOne(swerve, 90, .15, 4300);
-		}
-//		metersX = tesla.getNumber("x", metersX);
-//		metersY = tesla.getNumber("y", metersY);
-//		double expectedX = tesla.getNumber("expected x", metersX);
-//		double expectedY = tesla.getNumber("expected y", metersY);
-//		double expectedAngle = tesla.getNumber("expected angle", gyro.getCurrentAngle());
-//		double xError = expectedX - metersX;
-//		double yError = expectedY - metersY;
-//		double spinError = gyro.wornPath(expectedAngle);
-//		swerve.holonomic2(V_PID.get("forward", yError), V_PID.get("strafe", xError), V_PID.get("spin", spinError));
 	}
 	
 	@Override
 	public void teleopPeriodic() {
 		if (driver.getRawButton(R_Xbox.BUTTON_START) && driver.getRawButton(R_Xbox.BUTTON_BACK)) {//SWERVE ALIGNMENT
 			swerve.align(.004);//TODO limit how long this can take
-			moduleA.setTareAngle(1);	moduleB.setTareAngle(1);	moduleC.setTareAngle(5);	moduleD.setTareAngle(6);
+			moduleA.setTareAngle(9);	moduleB.setTareAngle(-3);	moduleC.setTareAngle(6);	moduleD.setTareAngle(8);//TODO add to parameters
 		}
 		
 		if (gunner.getRawButton(R_Xbox.BUTTON_START) && gunner.getRawButton(R_Xbox.BUTTON_BACK)) {//GYRO RESET
@@ -193,7 +230,7 @@ public class Robot extends IterativeRobot {
 		
 		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), speed, spin);//SWERVE DRIVE
 		
-		if (driver.getAxisPress(R_Xbox.AXIS_LT, .5)) {//CLIMBER
+		if (driver.getRawButton(R_Xbox.BUTTON_LB)) {//CLIMBER
 			double climbSpeed = driver.getRawButton(R_Xbox.BUTTON_RB) ? -1 : -.6;
 			if (gunner.getAxisPress(R_Xbox.AXIS_LT, .5)) {climbSpeed *= -1;}
 			climber.set(climbSpeed);
@@ -208,29 +245,25 @@ public class Robot extends IterativeRobot {
 		}
 		
 		if (V_Fridge.freeze("AXISRT", driver.getAxisPress(R_Xbox.AXIS_RT, .5))) {//CLAMPER
-			clamper.set(DoubleSolenoid.Value.kForward);
+			clamp.set(DoubleSolenoid.Value.kForward);
 		}else {
-			clamper.set(DoubleSolenoid.Value.kReverse);
+			clamp.set(DoubleSolenoid.Value.kReverse);
 		}
 		
-		if (V_Fridge.freeze("LB", driver.getRawButton(R_Xbox.BUTTON_LB))) {//LIFTER
+		if (V_Fridge.freeze("AXISLT", driver.getAxisPress(R_Xbox.AXIS_LT, .5))) {//LIFTER
 			if (!lifterRaised) {
-				lifter.set(-.13);
+				lift.set(-.16);
 			}else {
-				lifter.set(-.08);
+				lift.set(-.08);
 			}
-			if (lifter.getOutputCurrent() > 1.5) {
-				lifterRaised = true;
-			}
+			if (lift.getOutputCurrent() > 2) {lifterRaised = true;}
 		}else {
 			if (lifterRaised) {
-				lifter.set(.13);
+				lift.set(.13);
 			}else {
-				lifter.set(0);
+				lift.set(0);
 			}
-			if (lifter.getOutputCurrent() > 1.5) {
-				lifterRaised = false;
-			}
+			if (lift.getOutputCurrent() > 2) {lifterRaised = false;}
 		}
 		
 		if (gyro.netAcceleration() >= 1) {
@@ -245,11 +278,11 @@ public class Robot extends IterativeRobot {
 		moduleC.completeLoopUpdate();
 		moduleD.completeLoopUpdate();
 		climber.completeLoopUpdate();
-		lifter.completeLoopUpdate();
+		lift.completeLoopUpdate();
 	}
 	
 	@Override
-	public void testPeriodic() {//TODO must test this extensively
+	public void testPeriodic() {
 		metersX = tesla.getNumber("x", metersX);
 		metersY = tesla.getNumber("y", metersY);
 		double expectedX = tesla.getNumber("expected x", metersX);
@@ -263,6 +296,5 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void disabledPeriodic() {
-		//TODO
 	}
 }
