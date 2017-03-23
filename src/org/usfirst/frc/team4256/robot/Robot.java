@@ -156,7 +156,6 @@ public class Robot extends IterativeRobot {
 				}else if (!V_Instructions.canMoveOn()) {
 					clamp.set(DoubleSolenoid.Value.kForward);
 					lift.set(0);
-					//timedMovementOne(swerve, 180, .2, 2000);
 				}
 				break;
 			case 1://MIDDLE GEAR
@@ -164,9 +163,17 @@ public class Robot extends IterativeRobot {
 				if (V_Instructions.readyToMoveOn() && V_Instructions.canMoveOn()) {
 					autoStep++;
 				}else if (!V_Instructions.canMoveOn()) {
-					clamp.set(DoubleSolenoid.Value.kForward);
-					lift.set(0);
-					//timedMovementOne(swerve, 180, .2, 2000);
+					double pegX = edison.getNumber("peg x", 0);
+					if (edison.getNumber("targets", 0) > 0 && edison.getNumber("peg y", 0) < 210) {
+						double xError = pegX - 170;//TODO what is actual center?
+						double angleError = xError*45/100;//TODO tune
+						swerve.holonomic(0 + angleError, 0.15, 0);//0 is there as a placeholder for values at other gears
+					}else {
+						//TODO need to move that last little bit still
+						clamp.set(DoubleSolenoid.Value.kForward);
+						lift.set(0);
+					}
+					//TODO could backup and cross line
 				}
 				break;
 			case 2://RIGHT GEAR
@@ -176,7 +183,6 @@ public class Robot extends IterativeRobot {
 				}else if (!V_Instructions.canMoveOn()) {
 					clamp.set(DoubleSolenoid.Value.kForward);
 					lift.set(0);
-					//timedMovementOne(swerve, 180, .2, 2000);
 				}
 				break;
 			default:break;

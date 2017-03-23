@@ -51,7 +51,7 @@ public abstract class Parameters {
 	};
 	public static final double[][] middleInstructions = new double[][] {
 		//time ms, direction, speed, orientation
-		{4000, -5, .2, -5}
+		{1000, -5, .15, -5}
 	};
 	public static final double[][] rightInstructions = new double[][] {
 		//time ms, direction, speed, orientation
@@ -61,10 +61,10 @@ public abstract class Parameters {
 	//VALUES
 	public static final byte Gyrometer_updateHz = 50;
 	
-	public static final double leftGear = 300;
-	public static final double centerGear = 270;
-	public static final double rightGear = 210;
-	public static double loadingStation = 230;
+	public static final double leftGear = 30;
+	public static final double centerGear = 0;
+	public static final double rightGear = 330;
+	public static double loadingStation = 320;
 	
 	public static final double swerveP = .6;
 	public static final double swerveI = 0;
