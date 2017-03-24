@@ -35,7 +35,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 public class Robot extends IterativeRobot {
@@ -51,10 +51,12 @@ public class Robot extends IterativeRobot {
 	private static NetworkTable rockefeller;
 	private static NetworkTable edison;
 	private static NetworkTable tesla;
-	private static double metersX = 0;
-	private static double metersY = 0;
+//	private static double metersX = 0;
+//	private static double metersY = 0;
 	
-	private static boolean lifterRaised = false;
+	private static Long highAmpTimer = System.currentTimeMillis();
+	public static enum LiftState {up, middle, down}
+	public static LiftState liftState = LiftState.down;
 	private static int autoMode = 1;
 	private static int autoStep = 0;
 	//{Robot Output}
@@ -87,6 +89,7 @@ public class Robot extends IterativeRobot {
 		climber.init();
 		climber.setVoltageCompensationRampRate(24);
 		lift.init();
+		lift.setVoltageRampRate(8);
 	}
 
 	@Override
@@ -129,24 +132,29 @@ public class Robot extends IterativeRobot {
 	public void robotPeriodic() {
 		rockefeller.putBoolean("old gear out", gearer.get().equals(DoubleSolenoid.Value.kForward));
 		rockefeller.putBoolean("clamp open", clamp.get().equals(DoubleSolenoid.Value.kForward));
-		rockefeller.putBoolean("lift down", lifterRaised);
+		rockefeller.putBoolean("lift down", liftState.equals(LiftState.down));
 		rockefeller.putBoolean("aligning", swerve.isAligning());
 		rockefeller.putBoolean("aligned", swerve.isAligned());
 	}
 	
 	@Override
 	public void autonomousPeriodic() {
-		if (RobotState.isAutonomous()) {
+		if (Timer.getMatchTime() <= 15) {
 			if (!swerve.isAligned()) {//ALIGN
 				swerve.align(.004);
-				moduleA.setTareAngle(9);	moduleB.setTareAngle(-3);	moduleC.setTareAngle(6);	moduleD.setTareAngle(8);
+				moduleA.setTareAngle(5);	moduleB.setTareAngle(3);	moduleC.setTareAngle(4);	moduleD.setTareAngle(5);
+				//comp robot: 5, 3, 4, 5
+				//practice robot: 9, -3, 6, 8
 			}
-			if (!lifterRaised) {//RAISE LIFTER
-				lift.set(-.16);
+			if (!liftState.equals(LiftState.up)) {//RAISE LIFTER
+				lift.set(-.23);
+				liftState = LiftState.middle;
 			}else {
-				lift.set(-.08);
+				lift.set(-.1);
 			}
-			if (lift.getOutputCurrent() > 2) {lifterRaised = true;}
+			if (lift.getOutputCurrent() < 3) {
+				highAmpTimer = System.currentTimeMillis();
+			}else if (System.currentTimeMillis() - highAmpTimer > 500) {liftState = LiftState.up;}
 			
 			switch (autoMode) {
 			case 0://LEFT GEAR
@@ -164,16 +172,20 @@ public class Robot extends IterativeRobot {
 					autoStep++;
 				}else if (!V_Instructions.canMoveOn()) {
 					double pegX = edison.getNumber("peg x", 0);
-					if (edison.getNumber("targets", 0) > 0 && edison.getNumber("peg y", 0) < 210) {
+					if (edison.getNumber("targets", 0) > 0 && edison.getNumber("peg y", 0) < 208) {
 						double xError = pegX - 170;//TODO what is actual center?
 						double angleError = xError*45/100;//TODO tune
-						swerve.holonomic(0 + angleError, 0.15, 0);//0 is there as a placeholder for values at other gears
+						swerve.holonomic(Parameters.centerGear + angleError, 0.15, 0);
 					}else {
-						//TODO need to move that last little bit still
-						clamp.set(DoubleSolenoid.Value.kForward);
-						lift.set(0);
+						if (Timer.getMatchTime() < 9) {
+							swerve.holonomic(0, .15, 0);
+						}else if (Timer.getMatchTime() < 10){
+							clamp.set(DoubleSolenoid.Value.kForward);
+							lift.set(0);
+						}else {
+							swerve.holonomic(0, -.25, 0);//TODO could backup and cross line
+						}
 					}
-					//TODO could backup and cross line
 				}
 				break;
 			case 2://RIGHT GEAR
@@ -201,7 +213,9 @@ public class Robot extends IterativeRobot {
 	public void teleopPeriodic() {
 		if (driver.getRawButton(R_Xbox.BUTTON_START) && driver.getRawButton(R_Xbox.BUTTON_BACK)) {//SWERVE ALIGNMENT
 			swerve.align(.004);//TODO limit how long this can take
-			moduleA.setTareAngle(9);	moduleB.setTareAngle(-3);	moduleC.setTareAngle(6);	moduleD.setTareAngle(8);//TODO add to parameters
+			moduleA.setTareAngle(5);	moduleB.setTareAngle(3);	moduleC.setTareAngle(4);	moduleD.setTareAngle(5);//TODO add to parameters
+			//comp robot: 5, 3, 4, 5
+			//practice robot: 9, -3, 6, 8
 		}
 		
 		if (gunner.getRawButton(R_Xbox.BUTTON_START) && gunner.getRawButton(R_Xbox.BUTTON_BACK)) {//GYRO RESET
@@ -257,19 +271,25 @@ public class Robot extends IterativeRobot {
 		}
 		
 		if (V_Fridge.freeze("AXISLT", driver.getAxisPress(R_Xbox.AXIS_LT, .5))) {//LIFTER
-			if (!lifterRaised) {
-				lift.set(-.16);
+			if (!liftState.equals(LiftState.up)) {
+				lift.set(-.23);
+				liftState = LiftState.middle;
 			}else {
-				lift.set(-.08);
+				lift.set(-.1);
 			}
-			if (lift.getOutputCurrent() > 2) {lifterRaised = true;}
+			if (lift.getOutputCurrent() < 3) {
+				highAmpTimer = System.currentTimeMillis();
+			}else if (System.currentTimeMillis() - highAmpTimer > 500) {liftState = LiftState.up;}
 		}else {
-			if (lifterRaised) {
-				lift.set(.13);
+			if (!liftState.equals(LiftState.down)) {
+				lift.set(.15);
+				liftState = LiftState.middle;
 			}else {
 				lift.set(0);
 			}
-			if (lift.getOutputCurrent() > 2) {lifterRaised = false;}
+			if (lift.getOutputCurrent() < 4) {
+				highAmpTimer = System.currentTimeMillis();
+			}if (System.currentTimeMillis() - highAmpTimer > 500) {liftState = LiftState.down;}
 		}
 		
 		if (gyro.netAcceleration() >= 1) {
@@ -289,15 +309,19 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void testPeriodic() {
-		metersX = tesla.getNumber("x", metersX);
-		metersY = tesla.getNumber("y", metersY);
-		double expectedX = tesla.getNumber("expected x", metersX);
-		double expectedY = tesla.getNumber("expected y", metersY);
-		double expectedAngle = tesla.getNumber("expected angle", gyro.getCurrentAngle());
-		double xError = expectedX - metersX;
-		double yError = expectedY - metersY;
-		double spinError = gyro.wornPath(expectedAngle);
-		swerve.holonomic2(V_PID.get("forward", yError), V_PID.get("strafe", xError), V_PID.get("spin", spinError));
+		moduleA.swivelTo(0);
+		moduleB.swivelTo(0);
+		moduleC.swivelTo(0);
+		moduleD.swivelTo(0);
+//		metersX = tesla.getNumber("x", metersX);
+//		metersY = tesla.getNumber("y", metersY);
+//		double expectedX = tesla.getNumber("expected x", metersX);
+//		double expectedY = tesla.getNumber("expected y", metersY);
+//		double expectedAngle = tesla.getNumber("expected angle", gyro.getCurrentAngle());
+//		double xError = expectedX - metersX;
+//		double yError = expectedY - metersY;
+//		double spinError = gyro.wornPath(expectedAngle);
+//		swerve.holonomic2(V_PID.get("forward", yError), V_PID.get("strafe", xError), V_PID.get("spin", spinError));
 	}
 	
 	@Override

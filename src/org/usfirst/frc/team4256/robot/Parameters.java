@@ -51,7 +51,7 @@ public abstract class Parameters {
 	};
 	public static final double[][] middleInstructions = new double[][] {
 		//time ms, direction, speed, orientation
-		{1000, -5, .15, -5}
+		{1000, 0, .15, 0}
 	};
 	public static final double[][] rightInstructions = new double[][] {
 		//time ms, direction, speed, orientation
