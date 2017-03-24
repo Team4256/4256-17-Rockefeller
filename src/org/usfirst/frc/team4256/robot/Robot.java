@@ -161,7 +161,8 @@ public class Robot extends IterativeRobot {
 				V_Instructions.follow(Parameters.leftInstructions, autoStep, swerve, gyro);
 				if (V_Instructions.readyToMoveOn() && V_Instructions.canMoveOn()) {
 					autoStep++;
-				}else if (!V_Instructions.canMoveOn()) {
+				}else if (V_Instructions.readyToMoveOn() && !V_Instructions.canMoveOn()) {
+					swerve.holonomic(0, 0, 0);
 					clamp.set(DoubleSolenoid.Value.kForward);
 					lift.set(0);
 				}
@@ -170,9 +171,9 @@ public class Robot extends IterativeRobot {
 				V_Instructions.follow(Parameters.middleInstructions, autoStep, swerve, gyro);
 				if (V_Instructions.readyToMoveOn() && V_Instructions.canMoveOn()) {
 					autoStep++;
-				}else if (!V_Instructions.canMoveOn()) {
+				}else if (V_Instructions.readyToMoveOn() && !V_Instructions.canMoveOn()) {
 					double pegX = edison.getNumber("peg x", 0);
-					if (edison.getNumber("targets", 0) > 0 && edison.getNumber("peg y", 0) < 208) {
+					if (edison.getNumber("targets", 0) > 0 && edison.getNumber("peg y", 0) < 205) {
 						double xError = pegX - 170;//TODO what is actual center?
 						double angleError = xError*45/100;//TODO tune
 						swerve.holonomic(Parameters.centerGear + angleError, 0.15, 0);
@@ -192,20 +193,20 @@ public class Robot extends IterativeRobot {
 				V_Instructions.follow(Parameters.rightInstructions, autoStep, swerve, gyro);
 				if (V_Instructions.readyToMoveOn() && V_Instructions.canMoveOn()) {
 					autoStep++;
-				}else if (!V_Instructions.canMoveOn()) {
+				}else if (V_Instructions.readyToMoveOn() && !V_Instructions.canMoveOn()) {
 					clamp.set(DoubleSolenoid.Value.kForward);
 					lift.set(0);
 				}
 				break;
 			default:break;
 			}
-//			//{completing Talon updates}
-//			moduleA.completeLoopUpdate();
-//			moduleB.completeLoopUpdate();
-//			moduleC.completeLoopUpdate();
-//			moduleD.completeLoopUpdate();
-//			climber.completeLoopUpdate();
-//			lift.completeLoopUpdate();
+			//{completing Talon updates}
+			moduleA.completeLoopUpdate();
+			moduleB.completeLoopUpdate();
+			moduleC.completeLoopUpdate();
+			moduleD.completeLoopUpdate();
+			climber.completeLoopUpdate();
+			lift.completeLoopUpdate();
 		}
 	}
 	
@@ -287,7 +288,7 @@ public class Robot extends IterativeRobot {
 			}else {
 				lift.set(0);
 			}
-			if (lift.getOutputCurrent() < 4) {
+			if (lift.getOutputCurrent() < 1.7) {
 				highAmpTimer = System.currentTimeMillis();
 			}if (System.currentTimeMillis() - highAmpTimer > 500) {liftState = LiftState.down;}
 		}

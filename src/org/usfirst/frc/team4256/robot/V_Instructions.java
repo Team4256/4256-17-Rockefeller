@@ -18,7 +18,11 @@ public abstract class V_Instructions {
 			previousStep = autoStep;
 			V_PID.clear("spin");
 		}
-		swerve.holonomic(currentInstructions[1], currentInstructions[2], V_PID.get("spin", gyro.wornPath(currentInstructions[3])));
+		if (System.currentTimeMillis() - stepStart < currentInstructions[0]) {
+			double spinError = gyro.wornPath(currentInstructions[3]);
+			if (Math.abs(spinError) < 3) {spinError = 0;}
+			swerve.holonomic(currentInstructions[1], currentInstructions[2], V_PID.get("spin", spinError));
+		}
 	}
 	
 	public static boolean readyToMoveOn() {
