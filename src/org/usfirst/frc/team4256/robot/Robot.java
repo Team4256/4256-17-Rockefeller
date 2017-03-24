@@ -2,7 +2,8 @@
 //start + back: align
 //left stick, both axis: raw speed and direction
 //right stick, x axis: raw spin
-//right stick, press: snail mode
+//left stick, press: snail mode drive
+//right stick, press: snail mode spin
 //LB: boolean climber
 //LT: toggle clamp
 //RB: turbo mode (drive and climber)
@@ -178,13 +179,12 @@ public class Robot extends IterativeRobot {
 						double angleError = xError*45/100;//TODO tune
 						swerve.holonomic(Parameters.centerGear + angleError, 0.15, 0);
 					}else {
+						swerve.holonomic(0, 0, 0);
 						if (Timer.getMatchTime() < 9) {
 							swerve.holonomic(0, .15, 0);
-						}else if (Timer.getMatchTime() < 10){
+						}else if (Timer.getMatchTime() < 10) {
 							clamp.set(DoubleSolenoid.Value.kForward);
 							lift.set(0);
-						}else {
-							swerve.holonomic(0, -.25, 0);//TODO could backup and cross line
 						}
 					}
 				}
@@ -228,6 +228,7 @@ public class Robot extends IterativeRobot {
 		//{calculating speed}
 		double speed = driver.getCurrentRadius(R_Xbox.STICK_LEFT, true);//--turbo mode
 		if (!driver.getRawButton(R_Xbox.BUTTON_RB)) {speed *= .6;}//--normal mode
+		if (driver.getRawButton(R_Xbox.BUTTON_STICK_LEFT)) {speed *= .5;}//--snail mode
 		speed *= speed;
 		//{calculating raw spin}
 		double spin = driver.getDeadbandedAxis(R_Xbox.AXIS_RIGHT_X);
