@@ -137,6 +137,7 @@ public class Robot extends IterativeRobot {
 		rockefeller.putBoolean("lift down", liftState.equals(LiftState.down));
 		rockefeller.putBoolean("aligning", swerve.isAligning());
 		rockefeller.putBoolean("aligned", swerve.isAligned());
+		rockefeller.putNumber("match timer", V_Instructions.getSeconds());
 	}
 	
 	@Override
@@ -170,11 +171,11 @@ public class Robot extends IterativeRobot {
 					double pegX = edison.getNumber("peg x", 0);
 					if (edison.getNumber("targets", 0) > 1 && edison.getNumber("peg y", 0) < 198) {
 						double xError = pegX - 170;//TODO what is actual center?
-						double angleError = xError*45/100;//TODO tune
+						double angleError = xError*40/100;//TODO tune
 						swerve.holonomic(Parameters.leftGear + angleError, 0.12, 0);
 					}else {
-						if (V_Instructions.getSeconds() < 9) {
-							swerve.holonomic(Parameters.leftGear, .12, 0);
+						if (V_Instructions.getSeconds() < 10.25) {
+							swerve.holonomic(Parameters.leftGear, .18, -.06);
 						}else {
 							swerve.holonomic(Parameters.leftGear, 0, 0);
 							clamp.set(DoubleSolenoid.Value.kForward);
@@ -194,13 +195,13 @@ public class Robot extends IterativeRobot {
 						double angleError = xError*45/100;//TODO tune
 						swerve.holonomic(Parameters.centerGear + angleError, 0.15, 0);
 					}else {
-						if (V_Instructions.getSeconds() < 9) {
+						if (V_Instructions.getSeconds() < 8) {
 							swerve.holonomic(Parameters.centerGear, .15, 0);
-						}else if (V_Instructions.getSeconds() < 10) {
+						}else if (V_Instructions.getSeconds() < 9) {
 							swerve.holonomic(Parameters.centerGear, 0, 0);
 							clamp.set(DoubleSolenoid.Value.kForward);
 							lift.set(0);
-						}else if (V_Instructions.getSeconds() < 11) {
+						}else if (V_Instructions.getSeconds() < 10) {
 							swerve.holonomic(Parameters.centerGear, -.15, 0);
 						}else {
 							swerve.holonomic(Parameters.centerGear, 0, 0);
@@ -213,8 +214,20 @@ public class Robot extends IterativeRobot {
 				if (V_Instructions.readyToMoveOn() && V_Instructions.canMoveOn()) {
 					autoStep++;
 				}else if (V_Instructions.readyToMoveOn() && !V_Instructions.canMoveOn()) {
-					clamp.set(DoubleSolenoid.Value.kForward);
-					lift.set(0);
+					double pegX = edison.getNumber("peg x", 0);
+					if (edison.getNumber("targets", 0) > 1 && edison.getNumber("peg y", 0) < 198) {
+						double xError = pegX - 170;//TODO what is actual center?
+						double angleError = xError*45/100;//TODO tune
+						swerve.holonomic(Parameters.rightGear + angleError, 0.12, 0);
+					}else {
+						if (V_Instructions.getSeconds() < 9) {
+							swerve.holonomic(Parameters.rightGear, .12, 0);
+						}else {
+							swerve.holonomic(Parameters.rightGear, 0, 0);
+							clamp.set(DoubleSolenoid.Value.kForward);
+							lift.set(0);
+						}
+					}
 				}
 				break;
 			default:break;

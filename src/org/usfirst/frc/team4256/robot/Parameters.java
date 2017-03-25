@@ -47,9 +47,9 @@ public abstract class Parameters {
 	//AUTONOMOUS
 	public static final double[][] leftInstructions = new double[][] {
 		//time ms, direction, speed, orientation
-		{2500, -20, .2, Parameters.leftGear},
-		{500, 0.01, 0, Parameters.leftGear},
-		{300, Parameters.leftGear, .15, Parameters.leftGear}
+		{2150, -20, .2, Parameters.leftGear},
+		{700, 0, 0, Parameters.leftGear},
+		{250, Parameters.leftGear, .15, Parameters.leftGear}
 	};
 	public static final double[][] middleInstructions = new double[][] {
 		//time ms, direction, speed, orientation
@@ -57,13 +57,15 @@ public abstract class Parameters {
 	};
 	public static final double[][] rightInstructions = new double[][] {
 		//time ms, direction, speed, orientation
-		{2500, 20, .2, 0}
+		{2000, 20, .2, Parameters.rightGear},
+		{500, 0.01, 0, Parameters.rightGear},
+		{300, Parameters.rightGear, .15, Parameters.rightGear}
 	};
 	
 	//VALUES
 	public static final byte Gyrometer_updateHz = 50;
 	
-	public static final double leftGear = 43;
+	public static final double leftGear = 60;
 	public static final double centerGear = 0;
 	public static final double rightGear = 330;
 	public static double loadingStation = 320;
