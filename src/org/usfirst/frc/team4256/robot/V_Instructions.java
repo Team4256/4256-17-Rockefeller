@@ -8,6 +8,8 @@ public abstract class V_Instructions {
 	private static Long stepStart = System.currentTimeMillis();
 	private static double[] currentInstructions;
 	private static boolean canMoveOn = true;
+	private static Long autoTimer;
+	private static boolean startedTimer;
 	
 	public static void follow(final double[][] instructions, final int autoStep, final R_DriveTrain swerve, final R_Gyro gyro) {
 		if (autoStep != previousStep) {
@@ -31,5 +33,22 @@ public abstract class V_Instructions {
 	
 	public static boolean canMoveOn() {
 		return canMoveOn;
+	}
+	
+	public static void startTimer() {
+		autoTimer = System.currentTimeMillis();
+		startedTimer = true;
+	}
+	
+	public static void resetTimer() {
+		startedTimer = false;
+	}
+	
+	public static boolean startedTimer() {
+		return startedTimer;
+	}
+	
+	public static double getSeconds() {
+		return (System.currentTimeMillis() - autoTimer)/1000;
 	}
 }

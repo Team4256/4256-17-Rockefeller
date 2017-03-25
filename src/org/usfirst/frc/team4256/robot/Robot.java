@@ -101,6 +101,7 @@ public class Robot extends IterativeRobot {
 		V_PID.clear("forward");
 		V_PID.clear("strafe");
 		V_PID.clear("spin");
+		V_Instructions.resetTimer();
 	}
 	
 	@Override
@@ -140,6 +141,9 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void autonomousPeriodic() {
+		if (!V_Instructions.startedTimer()) {
+			V_Instructions.startTimer();
+		}
 		if (Timer.getMatchTime() <= 15) {
 			if (!swerve.isAligned()) {//ALIGN
 				swerve.align(.004);
@@ -163,9 +167,20 @@ public class Robot extends IterativeRobot {
 				if (V_Instructions.readyToMoveOn() && V_Instructions.canMoveOn()) {
 					autoStep++;
 				}else if (V_Instructions.readyToMoveOn() && !V_Instructions.canMoveOn()) {
-					swerve.holonomic(0, 0, 0);
-					clamp.set(DoubleSolenoid.Value.kForward);
-					lift.set(0);
+					double pegX = edison.getNumber("peg x", 0);
+					if (edison.getNumber("targets", 0) > 1 && edison.getNumber("peg y", 0) < 198) {
+						double xError = pegX - 170;//TODO what is actual center?
+						double angleError = xError*45/100;//TODO tune
+						swerve.holonomic(Parameters.leftGear + angleError, 0.12, 0);
+					}else {
+						if (V_Instructions.getSeconds() < 9) {
+							swerve.holonomic(Parameters.leftGear, .12, 0);
+						}else {
+							swerve.holonomic(Parameters.leftGear, 0, 0);
+							clamp.set(DoubleSolenoid.Value.kForward);
+							lift.set(0);
+						}
+					}
 				}
 				break;
 			case 1://MIDDLE GEAR
@@ -179,12 +194,16 @@ public class Robot extends IterativeRobot {
 						double angleError = xError*45/100;//TODO tune
 						swerve.holonomic(Parameters.centerGear + angleError, 0.15, 0);
 					}else {
-						swerve.holonomic(0, 0, 0);
-						if (Timer.getMatchTime() < 9) {
-							swerve.holonomic(0, .15, 0);
-						}else if (Timer.getMatchTime() < 10) {
+						if (V_Instructions.getSeconds() < 9) {
+							swerve.holonomic(Parameters.centerGear, .15, 0);
+						}else if (V_Instructions.getSeconds() < 10) {
+							swerve.holonomic(Parameters.centerGear, 0, 0);
 							clamp.set(DoubleSolenoid.Value.kForward);
 							lift.set(0);
+						}else if (V_Instructions.getSeconds() < 11) {
+							swerve.holonomic(Parameters.centerGear, -.15, 0);
+						}else {
+							swerve.holonomic(Parameters.centerGear, 0, 0);
 						}
 					}
 				}
