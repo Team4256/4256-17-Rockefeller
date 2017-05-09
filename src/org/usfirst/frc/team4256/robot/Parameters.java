@@ -2,7 +2,8 @@ package org.usfirst.frc.team4256.robot;
 
 public abstract class Parameters {
 	//ELECTRONICS
-	public static final int Climber = 18;//CAN
+	public static final int ClimberA = 18;//CAN, master
+	public static final int ClimberB = 19;//CAN, slave
 	
 	public static final int Camera_servoX = 8;//PWM
 	public static final int Camera_servoY = 9;//PWM
