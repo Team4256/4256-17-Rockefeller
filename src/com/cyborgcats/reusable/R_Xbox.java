@@ -1,4 +1,4 @@
-package com.cyborgcats.reusable;//COMPLETE
+package com.cyborgcats.reusable;//COMPLETE 2017
 
 import edu.wpi.first.wpilibj.XboxController;
 
@@ -50,7 +50,7 @@ public class R_Xbox extends XboxController {
 			buttonTimes[i] = System.currentTimeMillis();
 		}
 	}
-	@Override
+	@Override//necessary so that lastPress() works
 	public boolean getRawButton(final int button) {
 		boolean pressed = super.getRawButton(button);
 		if (pressed) {buttonTimes[button - 1] = System.currentTimeMillis();}
@@ -88,18 +88,24 @@ public class R_Xbox extends XboxController {
 		previousAxisValues[axis] = getRawAxis(axis);
 		return activityBool;
 	}
-	//TODO
+	/**
+	 * This function returns the index of the most recently pressed button in an array of buttons.
+	**/
 	public int mostRecentButton(final int[] buttons) {
 		int recent = buttons[0];
 		for (int button : buttons) {
 			if (lastPress(recent) < lastPress(button)) {recent = button;}
 		}return recent;
 	}
-	//TODO
+	/**
+	 * This function returns the time at which the specified button was last pressed.
+	**/
 	public Long lastPress(final int button) {
 		return buttonTimes[button - 1];
 	}
-	//TODO
+	/**
+	 * This function wipes the last pressed times of each of the specified buttons and replaces them with the current time.
+	**/
 	public void resetButtonTimes(final int[] buttons) {
 		for (int button : buttons) {
 			buttonTimes[button - 1] = System.currentTimeMillis();

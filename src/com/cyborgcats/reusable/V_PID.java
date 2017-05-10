@@ -1,4 +1,4 @@
-package com.cyborgcats.reusable;
+package com.cyborgcats.reusable;//COMPLETE 2017
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +15,10 @@ public abstract class V_PID {
 			PIDSystems.replace(key, new double[] {P, I, D, previousKerr, previousIerr});
 		}
 	}
-	
+	/**
+	 * This function wipes the i and d errors without messing up p, i, and d values.
+	 * Useful when beginning a new turn to a new angle.
+	**/
 	public static void clear(final String key) {
 		if (PIDSystems.get(key) == null) {
 			PIDSystems.put(key, new double[] {0, 0, 0, 0, 0});
@@ -24,7 +27,9 @@ public abstract class V_PID {
 			PIDSystems.replace(key, new double[] {p, i, d, 0, 0});
 		}
 	}
-	
+	/**
+	 * This function calculates and returns the result of PID for the specified key with the specified error.
+	**/
 	public static double get(final String key, final double error) {
 		if (PIDSystems.get(key) == null) {
 			return 0;
@@ -39,7 +44,10 @@ public abstract class V_PID {
 			return pOut + iOut + dOut;
 		}
 	}
-	
+	/**
+	 * This function calculates and returns the result of PID for the specified key with the specified error.
+	 * Also sets new p, i, and d values on the fly.
+	**/
 	public static double get(final String key, final double error, final double P, final double I, final double D) {
 		set(key, P, I, D);
 		return get(key, error);

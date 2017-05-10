@@ -1,4 +1,4 @@
-package com.cyborgcats.reusable;
+package com.cyborgcats.reusable;//COMPLETE 2017
 
 import com.ctre.CANTalon;
 
@@ -138,7 +138,9 @@ public class R_CANTalon extends CANTalon {
 			updated = setupdated;
 		}
 	}
-	//TODO
+	/**
+	 * Run this after all other commands in a system level loop to make sure the Talon receives a command.
+	**/
 	public void completeLoopUpdate() {
 		if (!updated && getControlMode() != follower) {
 			set(lastSetPoint, true, false);

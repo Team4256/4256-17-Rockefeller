@@ -46,17 +46,17 @@ public abstract class Parameters {
 	
 	//AUTONOMOUS
 	public static final double[][] leftInstructions = new double[][] {
-		//time ms, direction, speed, orientation
+		//duration ms, direction, speed, orientation
 		{2150, -20, .2, Parameters.leftGear},
 		{700, 0, 0, Parameters.leftGear},
 		{250, Parameters.leftGear, .15, Parameters.leftGear}
 	};
 	public static final double[][] middleInstructions = new double[][] {
-		//time ms, direction, speed, orientation
+		//duration ms, direction, speed, orientation
 		{1000, 0, .15, 0}
 	};
 	public static final double[][] rightInstructions = new double[][] {
-		//time ms, direction, speed, orientation
+		//duration ms, direction, speed, orientation
 		{2000, 20, .2, Parameters.rightGear},
 		{500, 0.01, 0, Parameters.rightGear},
 		{300, Parameters.rightGear, .15, Parameters.rightGear}

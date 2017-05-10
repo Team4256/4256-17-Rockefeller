@@ -1,16 +1,20 @@
-package org.usfirst.frc.team4256.robot;
+package org.usfirst.frc.team4256.robot;//COMPLETE 2017
 
 import com.cyborgcats.reusable.R_Gyro;
 import com.cyborgcats.reusable.V_PID;
 
 public abstract class V_Instructions {
-	private static int previousStep = -1;//should ensure it always starts fresh
+	private static int previousStep = -1;//ensures it always starts fresh
 	private static Long stepStart = System.currentTimeMillis();
 	private static double[] currentInstructions;
 	private static boolean canMoveOn = true;
 	private static Long autoTimer = System.currentTimeMillis();
 	private static boolean startedTimer;
-	
+	/**
+	 * This function requires a multi-dimensional array of instructions containing a duration, direction, speed, and orientation.
+	 * The array is saved inside the V_Instructions class for use by its other members.
+	 * It then runs through the specified step in the array, commanding swerve to move accordingly.
+	**/
 	public static void follow(final double[][] instructions, final int autoStep, final R_DriveTrain swerve, final R_Gyro gyro) {
 		if (autoStep != previousStep) {
 			stepStart = System.currentTimeMillis();
@@ -26,11 +30,15 @@ public abstract class V_Instructions {
 			swerve.holonomic(currentInstructions[1], currentInstructions[2], V_PID.get("spin", spinError));
 		}
 	}
-	
+	/**
+	 * This function returns true when the current step has run to completion.
+	**/
 	public static boolean readyToMoveOn() {
 		return System.currentTimeMillis() - stepStart >= currentInstructions[0];
 	}
-	
+	/**
+	 * This function indicates whether there is another step to follow.
+	**/
 	public static boolean canMoveOn() {
 		return canMoveOn;
 	}

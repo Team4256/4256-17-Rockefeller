@@ -95,7 +95,6 @@ public class R_SwerveModule {
 		rotator.completeLoopUpdate();
 		tractionA.completeLoopUpdate();
 	}
-	
 	/**
 	 * TODO
 	**/

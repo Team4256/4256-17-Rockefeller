@@ -1,9 +1,9 @@
-package com.cyborgcats.reusable;//COMPLETE
+package com.cyborgcats.reusable;//COMPLETE 2016
 
 public class V_Compass {
 	private double tareAngle = 0;
-	private double protectedZoneStart; //Angles increase as the numbers on a clock increase. This value should be the first protected angle encountered by a minute hand which starts at 12:00.
-	private double protectedZoneSize; //This value should be the number of degrees the minute hand must travel before reaching the end of the protected section.
+	private double protectedZoneStart;//Angles increase as the numbers on a clock increase. This value should be the first protected angle encountered by a minute hand which starts at 12:00.
+	private double protectedZoneSize;//This value should be the number of degrees the minute hand must travel before reaching the end of the protected section.
 	
 	public V_Compass(final double protectedZoneStart, final double protectedZoneSize) {
 		this.protectedZoneStart = protectedZoneStart;

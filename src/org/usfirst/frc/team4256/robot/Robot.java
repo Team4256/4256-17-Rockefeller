@@ -16,8 +16,6 @@
 
 //GUNNER
 //start + back: gyro reset
-//left stick, y axis: delta gimbal y
-//right stick, x axis: delta gimbal x
 //LT: reverse driver's climbing commands
 
 package org.usfirst.frc.team4256.robot;
@@ -52,8 +50,8 @@ public class Robot extends IterativeRobot {
 	private static NetworkTable rockefeller;
 	private static NetworkTable edison;
 	private static NetworkTable tesla;
-//	private static double metersX = 0;
-//	private static double metersY = 0;
+	private static double metersX = 0;
+	private static double metersY = 0;
 	
 	private static Long highAmpTimer = System.currentTimeMillis();
 	public static enum LiftState {up, middle, down}
@@ -170,8 +168,8 @@ public class Robot extends IterativeRobot {
 				}else if (V_Instructions.readyToMoveOn() && !V_Instructions.canMoveOn()) {
 					double pegX = edison.getNumber("peg x", 0);
 					if (edison.getNumber("targets", 0) > 1 && edison.getNumber("peg y", 0) < 198) {
-						double xError = pegX - 170;//TODO what is actual center?
-						double angleError = xError*40/100;//TODO tune
+						double xError = pegX - 170;
+						double angleError = xError*40/100;
 						swerve.holonomic(Parameters.leftGear + angleError, 0.12, 0);
 					}else {
 						if (V_Instructions.getSeconds() < 10.25) {
@@ -191,8 +189,8 @@ public class Robot extends IterativeRobot {
 				}else if (V_Instructions.readyToMoveOn() && !V_Instructions.canMoveOn()) {
 					double pegX = edison.getNumber("peg x", 0);
 					if (edison.getNumber("targets", 0) > 0 && edison.getNumber("peg y", 0) < 205) {
-						double xError = pegX - 170;//TODO what is actual center?
-						double angleError = xError*45/100;//TODO tune
+						double xError = pegX - 170;
+						double angleError = xError*45/100;
 						swerve.holonomic(Parameters.centerGear + angleError, 0.15, 0);
 					}else {
 						if (V_Instructions.getSeconds() < 8) {
@@ -216,8 +214,8 @@ public class Robot extends IterativeRobot {
 				}else if (V_Instructions.readyToMoveOn() && !V_Instructions.canMoveOn()) {
 					double pegX = edison.getNumber("peg x", 0);
 					if (edison.getNumber("targets", 0) > 1 && edison.getNumber("peg y", 0) < 198) {
-						double xError = pegX - 170;//TODO what is actual center?
-						double angleError = xError*45/100;//TODO tune
+						double xError = pegX - 170;
+						double angleError = xError*45/100;
 						swerve.holonomic(Parameters.rightGear + angleError, 0.12, 0);
 					}else {
 						if (V_Instructions.getSeconds() < 9) {
@@ -343,19 +341,15 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void testPeriodic() {
-		moduleA.swivelTo(0);
-		moduleB.swivelTo(0);
-		moduleC.swivelTo(0);
-		moduleD.swivelTo(0);
-//		metersX = tesla.getNumber("x", metersX);
-//		metersY = tesla.getNumber("y", metersY);
-//		double expectedX = tesla.getNumber("expected x", metersX);
-//		double expectedY = tesla.getNumber("expected y", metersY);
-//		double expectedAngle = tesla.getNumber("expected angle", gyro.getCurrentAngle());
-//		double xError = expectedX - metersX;
-//		double yError = expectedY - metersY;
-//		double spinError = gyro.wornPath(expectedAngle);
-//		swerve.holonomic2(V_PID.get("forward", yError), V_PID.get("strafe", xError), V_PID.get("spin", spinError));
+		metersX = tesla.getNumber("x", metersX);
+		metersY = tesla.getNumber("y", metersY);
+		double expectedX = tesla.getNumber("expected x", metersX);
+		double expectedY = tesla.getNumber("expected y", metersY);
+		double expectedAngle = tesla.getNumber("expected angle", gyro.getCurrentAngle());
+		double xError = expectedX - metersX;
+		double yError = expectedY - metersY;
+		double spinError = gyro.wornPath(expectedAngle);
+		swerve.holonomic2(V_PID.get("forward", yError), V_PID.get("strafe", xError), V_PID.get("spin", spinError));
 	}
 	
 	@Override
