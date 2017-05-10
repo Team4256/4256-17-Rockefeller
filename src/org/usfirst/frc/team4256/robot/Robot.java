@@ -67,7 +67,8 @@ public class Robot extends IterativeRobot {
 	private static final R_SwerveModule moduleD = new R_SwerveModule(Parameters.Swerve_rotatorD, true, Parameters.Swerve_driveDA, Parameters.Swerve_driveDB, Parameters.Swerve_calibratorD);
 	private static final R_DriveTrain swerve = new R_DriveTrain(gyro, moduleA, moduleB, moduleC, moduleD);
 	
-	private static final R_CANTalon climber = new R_CANTalon(Parameters.Climber, 17, R_CANTalon.voltage);
+	private static final R_CANTalon climberA = new R_CANTalon(Parameters.ClimberA, 51, R_CANTalon.voltage);
+	private static final R_CANTalon climberB = new R_CANTalon(Parameters.ClimberB, 51, R_CANTalon.follower);
 	
 	private static final R_CANTalon lift = new R_CANTalon(Parameters.Lift, 1, R_CANTalon.voltage);
 	private static final DoubleSolenoid clamp = new DoubleSolenoid(Parameters.Clamp_module, Parameters.Clamp_forward, Parameters.Clamp_reverse);
@@ -85,8 +86,10 @@ public class Robot extends IterativeRobot {
 		V_PID.set("forward", Parameters.forwardP, Parameters.forwardI, Parameters.forwardD);
 		V_PID.set("strafe", Parameters.strafeP, Parameters.strafeI, Parameters.strafeD);
 		V_PID.set("spin", Parameters.spinP, Parameters.spinI, Parameters.spinD);
-		climber.init();
-		climber.setVoltageCompensationRampRate(24);
+		climberA.init();
+		climberA.setVoltageCompensationRampRate(24);
+		climberB.init(climberA.getDeviceID(), 12f);
+		climberB.setVoltageCompensationRampRate(24);
 		lift.init();
 		lift.setVoltageRampRate(8);
 	}
@@ -235,7 +238,7 @@ public class Robot extends IterativeRobot {
 			moduleB.completeLoopUpdate();
 			moduleC.completeLoopUpdate();
 			moduleD.completeLoopUpdate();
-			climber.completeLoopUpdate();
+			climberA.completeLoopUpdate();
 			lift.completeLoopUpdate();
 		}
 	}
@@ -283,11 +286,11 @@ public class Robot extends IterativeRobot {
 		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), speed, spin);//SWERVE DRIVE
 		
 		if (driver.getRawButton(R_Xbox.BUTTON_LB)) {//CLIMBER
-			double climbSpeed = driver.getRawButton(R_Xbox.BUTTON_RB) ? -1 : -.6;
+			double climbSpeed = driver.getRawButton(R_Xbox.BUTTON_RB) ? 1 : .6;//make both values negative for single CIM
 			if (gunner.getAxisPress(R_Xbox.AXIS_LT, .5)) {climbSpeed *= -1;}
-			climber.set(climbSpeed);
+			climberA.set(climbSpeed);
 		}else {
-			climber.set(0);
+			climberA.set(0);
 		}
 		
 		if (V_Fridge.freeze("POVSOUTH", driver.getPOV(0) == R_Xbox.POV_SOUTH)) {//GEARER
@@ -335,7 +338,7 @@ public class Robot extends IterativeRobot {
 		moduleB.completeLoopUpdate();
 		moduleC.completeLoopUpdate();
 		moduleD.completeLoopUpdate();
-		climber.completeLoopUpdate();
+		climberA.completeLoopUpdate();
 		lift.completeLoopUpdate();
 	}
 	
