@@ -107,7 +107,7 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void teleopInit() {
-		if (DriverStation.getInstance().getAlliance() != DriverStation.Alliance.Red) {//TODO override brake modes
+		if (DriverStation.getInstance().getAlliance() != DriverStation.Alliance.Red) {//TODO override all brake modes
 			Parameters.loadingStation += 90;
 		}
 		buttons2angle.put(R_Xbox.BUTTON_X, Parameters.leftGear);
@@ -247,7 +247,7 @@ public class Robot extends IterativeRobot {
 	public void teleopPeriodic() {
 		if (driver.getRawButton(R_Xbox.BUTTON_START) && driver.getRawButton(R_Xbox.BUTTON_BACK)) {//SWERVE ALIGNMENT
 			swerve.align(.004);//TODO limit how long this can take
-			moduleA.setTareAngle(5);	moduleB.setTareAngle(3);	moduleC.setTareAngle(4);	moduleD.setTareAngle(5);//TODO add to parameters
+			moduleA.setTareAngle(5);	moduleB.setTareAngle(3);	moduleC.setTareAngle(4);	moduleD.setTareAngle(5);
 			//comp robot: 5, 3, 4, 5
 			//practice robot: 9, -3, 6, 8
 		}
@@ -286,7 +286,7 @@ public class Robot extends IterativeRobot {
 		swerve.holonomic(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true), speed, spin);//SWERVE DRIVE
 		
 		if (driver.getRawButton(R_Xbox.BUTTON_LB)) {//CLIMBER
-			double climbSpeed = driver.getRawButton(R_Xbox.BUTTON_RB) ? 1 : .6;//make both values negative for single CIM
+			double climbSpeed = driver.getRawButton(R_Xbox.BUTTON_RB) ? 1 : .6;//make both values negative for use with a single CIM
 			if (gunner.getAxisPress(R_Xbox.AXIS_LT, .5)) {climbSpeed *= -1;}
 			climberA.set(climbSpeed);
 		}else {

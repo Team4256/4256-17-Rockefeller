@@ -1,4 +1,4 @@
-package org.usfirst.frc.team4256.robot;
+package org.usfirst.frc.team4256.robot;//COMPLETE 2017
 
 import com.cyborgcats.reusable.R_CANTalon;
 import com.cyborgcats.reusable.V_Compass;
@@ -24,7 +24,7 @@ public class R_SwerveModule {
 		this.sensor = new DigitalInput(sensorID);
 	}
 	/**
-	 * This function prepares each motor individually, including setting actual PID values for the rotator and enslaving the second traction motor.
+	 * This function prepares each motor individually, including setting PID values for the rotator and enslaving the second traction motor.
 	**/
 	public void init() {
 		rotator.init();
@@ -47,6 +47,9 @@ public class R_SwerveModule {
 	public boolean isAligning() {
 		return aligning;
 	}
+	/**
+	 * Call this to align the module with its magnet.
+	**/
 	public void align(final double increment) {
 		set(0);
 		if (sensor.get()) {
@@ -63,47 +66,55 @@ public class R_SwerveModule {
 			aligned = true;
 		}
 	}
+	/**
+	 * This offsets the tare angle by the specified amount. Positive means clockwise and negative means counter-clockwise.
+	 * Useful when correcting for loose mechanical tolerances.
+	**/
 	public void setTareAngle(final double tareAngle) {
 		rotator.compass.setTareAngle(rotator.compass.getTareAngle() + tareAngle);
 	}
 	/**
-	 * 
+	 * Use wheel_chassisAngle to specify the wheel's orientation relative to the robot in degrees.
 	**/
 	public void swivelTo(final double wheel_chassisAngle) {
 		swivelTo(wheel_chassisAngle, false);
 	}
 	/**
-	 * 
+	 * Use wheel_chassisAngle to specify the wheel's orientation relative to the robot in degrees.
+	 * If ignore is true, nothing will happen, which is useful for coasting based on variables outside this class' scope.
 	**/
 	public void swivelTo(final double wheel_chassisAngle, final boolean ignore) {
 		if (!ignore) {rotator.set(decapitateAngle(wheel_chassisAngle));}//if this doesn't run, complete loop update will eventually set it to be the last angle
 	}
 	/**
-	 * 
+	 * Use wheel_fieldAngle to specify the wheel's orientation relative to the field in degrees.
 	**/
 	public void swivelWith(final double wheel_fieldAngle, final double chassis_fieldAngle) {
 		swivelTo(convertToRobot(wheel_fieldAngle, chassis_fieldAngle));
 	}
 	/**
-	 * 
+	 * This function sets the master and slave traction motors to the specified speed, from -1 to 1.
+	 * It also makes sure that they turn in the correct direction, regardless of decapitated state.
 	**/
 	public void set(final double speed) {
 		tractionA.set(speed*decapitated);
 	}
-	
+	/**
+	 * A shortcut to call completeLoopUpdate on all the Talons in the module except for the traction slave.
+	**/
 	public void completeLoopUpdate() {
 		rotator.completeLoopUpdate();
 		tractionA.completeLoopUpdate();
 	}
 	/**
-	 * TODO
+	 * Threshold should be specified in degrees. If the rotator is within that many degrees of its target, this function returns true.
 	**/
 	public boolean isThere(final double threshold) {
 		return Math.abs(rotator.getCurrentError()) <= threshold;
 	}
 	/**
 	 * This function makes sure the module rotates no more than 90 degrees from its current position.
-	 * It should be used every time a new angle is being set.
+	 * It should be used every time a new angle is being set to ensure quick rotation.
 	**/
 	public double decapitateAngle(final double endAngle) {
 		decapitated = Math.abs(rotator.wornPath(endAngle)) > 90 ? -1 : 1;

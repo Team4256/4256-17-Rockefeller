@@ -1,4 +1,4 @@
-package com.cyborgcats.reusable;//COMPLETE 2016
+package com.cyborgcats.reusable;//COMPLETE(ish) 2016
 
 public class V_Compass {
 	private double tareAngle = 0;
@@ -14,7 +14,9 @@ public class V_Compass {
 	**/
 	public void setTareAngle(final double tareAngle) {
 		this.tareAngle = tareAngle;
-		//protectedZoneStart = validateAngle(protectedZoneStart - this.tareAngle);//TODO I don't think this still works with tares outside of 0 to 360
+		/*protectedZoneStart = validateAngle(protectedZoneStart - this.tareAngle);TODO this logic may not work if the tareAngle is outside of [0,360]
+		 *don't try to fix unless absolutely necessary as it may cause other issues (mainly useful for something like a turret with restricted motion)
+		 */
 	}
 	/**
 	 * This function returns the current tare angle, relative to the initialized 0.
