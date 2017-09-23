@@ -31,8 +31,6 @@ import com.cyborgcats.reusable.R_Xbox;
 import com.cyborgcats.reusable.V_Fridge;
 import com.cyborgcats.reusable.V_PID;
 
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -55,26 +53,20 @@ public class Robot extends IterativeRobot {
 //	private static double metersX = 0;
 //	private static double metersY = 0;
 	
-	private static Long highAmpTimer = System.currentTimeMillis();
 	public static enum LiftState {up, middle, down}
 	public static LiftState liftState = LiftState.down;
 	private static int autoMode = 1;
 	private static int autoStep = 0;
 	//{Robot Output}
-	private static final Compressor compressor = new Compressor(0);
+	private static final R_CANTalon turret = new R_CANTalon(Parameters.Shooter_rotator, 3.43, R_CANTalon.position, false, R_CANTalon.absolute);
 	
-	private static final R_SwerveModule moduleA = new R_SwerveModule(Parameters.Swerve_rotatorA, true, Parameters.Swerve_driveAA, Parameters.Swerve_driveAB, Parameters.Swerve_calibratorA);
-	private static final R_SwerveModule moduleB = new R_SwerveModule(Parameters.Swerve_rotatorB, true, Parameters.Swerve_driveBA, Parameters.Swerve_driveBB, Parameters.Swerve_calibratorB);
-	private static final R_SwerveModule moduleC = new R_SwerveModule(Parameters.Swerve_rotatorC, true, Parameters.Swerve_driveCA, Parameters.Swerve_driveCB, Parameters.Swerve_calibratorC);
-	private static final R_SwerveModule moduleD = new R_SwerveModule(Parameters.Swerve_rotatorD, true, Parameters.Swerve_driveDA, Parameters.Swerve_driveDB, Parameters.Swerve_calibratorD);
+	private static final R_SwerveModule moduleA = new R_SwerveModule(Parameters.Swerve_rotatorA, true, Parameters.Swerve_driveAA, Parameters.Swerve_calibratorA);
+	private static final R_SwerveModule moduleB = new R_SwerveModule(Parameters.Swerve_rotatorB, true, Parameters.Swerve_driveBA, Parameters.Swerve_calibratorB);
+	private static final R_SwerveModule moduleC = new R_SwerveModule(Parameters.Swerve_rotatorC, true, Parameters.Swerve_driveCA, Parameters.Swerve_calibratorC);
+	private static final R_SwerveModule moduleD = new R_SwerveModule(Parameters.Swerve_rotatorD, true, Parameters.Swerve_driveDA, Parameters.Swerve_calibratorD);
 	private static final R_DriveTrain swerve = new R_DriveTrain(gyro, moduleA, moduleB, moduleC, moduleD);
 	
 	private static final R_CANTalon climberA = new R_CANTalon(Parameters.ClimberA, 51, R_CANTalon.voltage);
-	private static final R_CANTalon climberB = new R_CANTalon(Parameters.ClimberB, 51, R_CANTalon.follower);
-	
-	private static final R_CANTalon lift = new R_CANTalon(Parameters.Lift, 1, R_CANTalon.voltage);
-	private static final DoubleSolenoid clamp = new DoubleSolenoid(Parameters.Clamp_module, Parameters.Clamp_forward, Parameters.Clamp_reverse);
-	private static final DoubleSolenoid gearer = new DoubleSolenoid(Parameters.Gearer_module, Parameters.Gearer_forward, Parameters.Gearer_reverse);
 	
 	@Override
 	public void robotInit() {
@@ -83,17 +75,13 @@ public class Robot extends IterativeRobot {
 		edison = NetworkTable.getTable("edison");
 		tesla = NetworkTable.getTable("tesla");
 		//{Robot Output}
-		compressor.clearAllPCMStickyFaults();
 		swerve.init();
 		V_PID.set("forward", Parameters.forwardP, Parameters.forwardI, Parameters.forwardD);
 		V_PID.set("strafe", Parameters.strafeP, Parameters.strafeI, Parameters.strafeD);
 		V_PID.set("spin", Parameters.spinP, Parameters.spinI, Parameters.spinD);
 		climberA.init();
 		climberA.setVoltageCompensationRampRate(24);
-		climberB.init(climberA.getDeviceID(), 12f);
-		climberB.setVoltageCompensationRampRate(24);
-		lift.init();
-		lift.setVoltageRampRate(8);
+		turret.setPID(.06, 0, .6);
 	}
 
 	@Override
@@ -135,8 +123,6 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void robotPeriodic() {
-		rockefeller.putBoolean("old gear out", gearer.get().equals(DoubleSolenoid.Value.kForward));
-		rockefeller.putBoolean("clamp open", clamp.get().equals(DoubleSolenoid.Value.kForward));
 		rockefeller.putBoolean("lift down", liftState.equals(LiftState.down));
 		rockefeller.putBoolean("aligning", swerve.isAligning());
 		rockefeller.putBoolean("aligned", swerve.isAligned());
@@ -155,15 +141,6 @@ public class Robot extends IterativeRobot {
 				//comp robot: 5, 3, 4, 5
 				//practice robot: 9, -3, 6, 8
 			}
-			if (!liftState.equals(LiftState.up)) {//RAISE LIFTER
-				lift.set(-.23);
-				liftState = LiftState.middle;
-			}else {
-				lift.set(-.1);
-			}
-			if (lift.getOutputCurrent() < 3) {
-				highAmpTimer = System.currentTimeMillis();
-			}else if (System.currentTimeMillis() - highAmpTimer > 500) {liftState = LiftState.up;}
 			
 			switch (autoMode) {
 			case 0://LEFT GEAR
@@ -181,8 +158,6 @@ public class Robot extends IterativeRobot {
 							swerve.holonomic(Parameters.leftGear, .18, -.06);
 						}else {
 							swerve.holonomic(Parameters.leftGear, 0, 0);
-							clamp.set(DoubleSolenoid.Value.kForward);
-							lift.set(0);
 						}
 					}
 				}
@@ -202,8 +177,6 @@ public class Robot extends IterativeRobot {
 							swerve.holonomic(Parameters.centerGear, .15, 0);
 						}else if (V_Instructions.getSeconds() < 9) {
 							swerve.holonomic(Parameters.centerGear, 0, 0);
-							clamp.set(DoubleSolenoid.Value.kForward);
-							lift.set(0);
 						}else if (V_Instructions.getSeconds() < 10) {
 							swerve.holonomic(Parameters.centerGear, -.15, 0);
 						}else {
@@ -227,8 +200,6 @@ public class Robot extends IterativeRobot {
 							swerve.holonomic(Parameters.rightGear, .12, 0);
 						}else {
 							swerve.holonomic(Parameters.rightGear, 0, 0);
-							clamp.set(DoubleSolenoid.Value.kForward);
-							lift.set(0);
 						}
 					}
 				}
@@ -241,7 +212,6 @@ public class Robot extends IterativeRobot {
 			moduleC.completeLoopUpdate();
 			moduleD.completeLoopUpdate();
 			climberA.completeLoopUpdate();
-			lift.completeLoopUpdate();
 		}
 	}
 	
@@ -295,39 +265,8 @@ public class Robot extends IterativeRobot {
 			climberA.set(0);
 		}
 		
-		if (V_Fridge.freeze("POVSOUTH", driver.getPOV(0) == R_Xbox.POV_SOUTH)) {//GEARER
-			gearer.set(DoubleSolenoid.Value.kForward);
-		}else {
-			gearer.set(DoubleSolenoid.Value.kReverse);
-		}
 		
-		if (V_Fridge.freeze("AXISRT", driver.getAxisPress(R_Xbox.AXIS_RT, .5))) {//CLAMPER
-			clamp.set(DoubleSolenoid.Value.kForward);
-		}else {
-			clamp.set(DoubleSolenoid.Value.kReverse);
-		}
 		
-		if (V_Fridge.freeze("AXISLT", driver.getAxisPress(R_Xbox.AXIS_LT, .5))) {//LIFTER
-			if (!liftState.equals(LiftState.up)) {
-				lift.set(-.23);
-				liftState = LiftState.middle;
-			}else {
-				lift.set(-.1);
-			}
-			if (lift.getOutputCurrent() < 3) {
-				highAmpTimer = System.currentTimeMillis();
-			}else if (System.currentTimeMillis() - highAmpTimer > 500) {liftState = LiftState.up;}
-		}else {
-			if (!liftState.equals(LiftState.down)) {
-				lift.set(.15);
-				liftState = LiftState.middle;
-			}else {
-				lift.set(0);
-			}
-			if (lift.getOutputCurrent() < 1.7) {
-				highAmpTimer = System.currentTimeMillis();
-			}if (System.currentTimeMillis() - highAmpTimer > 500) {liftState = LiftState.down;}
-		}
 		
 		if (gyro.netAcceleration() >= 1) {
 			driver.setRumble(RumbleType.kLeftRumble, 1);//DANGER RUMBLE
@@ -341,7 +280,6 @@ public class Robot extends IterativeRobot {
 		moduleC.completeLoopUpdate();
 		moduleD.completeLoopUpdate();
 		climberA.completeLoopUpdate();
-		lift.completeLoopUpdate();
 	}
 	
 	@Override
@@ -350,6 +288,8 @@ public class Robot extends IterativeRobot {
 		moduleB.swivelTo(0);
 		moduleC.swivelTo(0);
 		moduleD.swivelTo(0);
+		
+		turret.set(driver.getCurrentAngle(R_Xbox.STICK_LEFT, true));
 //		metersX = tesla.getNumber("x", metersX);
 //		metersY = tesla.getNumber("y", metersY);
 //		double expectedX = tesla.getNumber("expected x", metersX);

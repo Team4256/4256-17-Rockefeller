@@ -3,7 +3,6 @@ package org.usfirst.frc.team4256.robot;
 public abstract class Parameters {
 	//ELECTRONICS
 	public static final int ClimberA = 18;//CAN, master
-	public static final int ClimberB = 19;//CAN, slave
 	
 	public static final int Camera_servoX = 8;//PWM
 	public static final int Camera_servoY = 9;//PWM
@@ -20,13 +19,9 @@ public abstract class Parameters {
 	public static final int Swerve_rotatorC = 13;//CAN, aft left
 	public static final int Swerve_rotatorD = 14;//CAN, aft right
 	public static final int Swerve_driveAA = 21;//CAN, front left
-	public static final int Swerve_driveAB = 22;//CAN, front left
-	public static final int Swerve_driveBA = 23;//CAN, front right
-	public static final int Swerve_driveBB = 24;//CAN, front right
-	public static final int Swerve_driveCA = 25;//CAN, aft left
-	public static final int Swerve_driveCB = 26;//CAN, aft left
-	public static final int Swerve_driveDA = 27;//CAN, aft right
-	public static final int Swerve_driveDB = 28;//CAN, aft right
+	public static final int Swerve_driveBA = 22;//CAN, front right
+	public static final int Swerve_driveCA = 23;//CAN, aft left
+	public static final int Swerve_driveDA = 24;//CAN, aft right
 	public static final int Swerve_calibratorA = 0;//AIO, front left
 	public static final int Swerve_calibratorB = 1;//AIO, front right
 	public static final int Swerve_calibratorC = 2;//AIO, aft left

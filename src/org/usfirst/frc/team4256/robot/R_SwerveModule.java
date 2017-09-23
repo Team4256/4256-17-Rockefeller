@@ -14,14 +14,12 @@ public class R_SwerveModule {
 	private double decapitated = 1;
 	private R_CANTalon rotator;
 	private R_CANTalon tractionA;
-	private R_CANTalon tractionB;
-	public DigitalInput sensor;
+//	public DigitalInput sensor;
 	
-	public R_SwerveModule(final int rotatorID, final boolean flipped, final int tractionAID, final int tractionBID, final int sensorID) {
+	public R_SwerveModule(final int rotatorID, final boolean flipped, final int tractionAID, final int sensorID) {
 		this.rotator = new R_CANTalon(rotatorID, rotatorGearRatio, R_CANTalon.position, flipped, R_CANTalon.absolute);
 		this.tractionA = new R_CANTalon(tractionAID, tractionGearRatio, R_CANTalon.percent);
-		this.tractionB = new R_CANTalon(tractionBID, tractionGearRatio, R_CANTalon.follower);
-		this.sensor = new DigitalInput(sensorID);
+//		this.sensor = new DigitalInput(sensorID);
 	}
 	/**
 	 * This function prepares each motor individually, including setting actual PID values for the rotator and enslaving the second traction motor.
@@ -32,8 +30,8 @@ public class R_SwerveModule {
 		rotator.setPID(Parameters.swerveP, Parameters.swerveI, Parameters.swerveD);
 		tractionA.init(0, 12f);
 		tractionA.enableBrakeMode(false);
-		tractionB.init(tractionA.getDeviceID(), 12f);
-		tractionB.enableBrakeMode(false);
+		tractionA.setCurrentLimit(50);
+		tractionA.EnableCurrentLimit(true);
 	}
 	/**
 	 * This function indicates whether the module has been aligned.
@@ -49,7 +47,7 @@ public class R_SwerveModule {
 	}
 	public void align(final double increment) {
 		set(0);
-		if (sensor.get()) {
+		if (false/*sensor.get()*/) {
 			if (!aligning) {
 				aligned = false;
 				aligning = true;
