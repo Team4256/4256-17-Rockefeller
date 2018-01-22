@@ -1,6 +1,7 @@
 package org.usfirst.frc.team4256.robot;//COMPLETE 2017
 
-import com.cyborgcats.reusable.R_CANTalon;
+import com.cyborgcats.reusable.Talon.ConvertTo;
+import com.cyborgcats.reusable.Talon.R_Talon;
 import com.cyborgcats.reusable.V_Compass;
 
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -12,15 +13,15 @@ public class R_SwerveModule {
 	private boolean aligning = false;
 	private double alignmentRevs = 0;
 	private double decapitated = 1;
-	private R_CANTalon rotator;
-	private R_CANTalon tractionA;
-	private R_CANTalon tractionB;
+	private R_Talon rotator;
+	private R_Talon tractionA;
+	private R_Talon tractionB;
 	public DigitalInput sensor;
 	
 	public R_SwerveModule(final int rotatorID, final boolean flipped, final int tractionAID, final int tractionBID, final int sensorID) {
-		this.rotator = new R_CANTalon(rotatorID, rotatorGearRatio, R_CANTalon.position, flipped, R_CANTalon.absolute);
-		this.tractionA = new R_CANTalon(tractionAID, tractionGearRatio, R_CANTalon.percent);
-		this.tractionB = new R_CANTalon(tractionBID, tractionGearRatio, R_CANTalon.follower);
+		this.rotator = new R_Talon(rotatorID, rotatorGearRatio, R_Talon.position, flipped, R_Talon.absolute);
+		this.tractionA = new R_Talon(tractionAID, tractionGearRatio, R_Talon.percent);
+		this.tractionB = new R_Talon(tractionBID, tractionGearRatio, R_Talon.follower);
 		this.sensor = new DigitalInput(sensorID);
 	}
 	/**
@@ -28,12 +29,15 @@ public class R_SwerveModule {
 	**/
 	public void init() {
 		rotator.init();
-		rotator.enableBrakeMode(false);
-		rotator.setPID(Parameters.swerveP, Parameters.swerveI, Parameters.swerveD);
+		rotator.setNeutralMode(R_Talon.coast);
+		//otator.setPID(Parameters.swerveP, Parameters.swerveI, Parameters.swerveD);
+		rotator.config_kP(0, 6, R_Talon.kTimeoutMS);
+		rotator.config_kI(0, 0, R_Talon.kTimeoutMS);
+		rotator.config_kD(0, .6, R_Talon.kTimeoutMS);
 		tractionA.init(0, 12f);
-		tractionA.enableBrakeMode(false);
-		tractionB.init(tractionA.getDeviceID(), 12f);
-		tractionB.enableBrakeMode(false);
+		tractionA.setNeutralMode(R_Talon.coast);
+		tractionB.init(tractionA.getDeviceID(), 1);
+		tractionB.setNeutralMode(R_Talon.coast);
 	}
 	/**
 	 * This function indicates whether the module has been aligned.
@@ -56,7 +60,7 @@ public class R_SwerveModule {
 			if (!aligning) {
 				aligned = false;
 				aligning = true;
-				alignmentRevs = rotator.getPosition();
+				alignmentRevs = ConvertTo.REVS.beforeGears(rotator.getSelectedSensorPosition(0));//rotator.getPosition();
 			}alignmentRevs += increment;
 			rotator.set(alignmentRevs, false, true);
 		}else {
@@ -84,7 +88,7 @@ public class R_SwerveModule {
 	 * If ignore is true, nothing will happen, which is useful for coasting based on variables outside this class' scope.
 	**/
 	public void swivelTo(final double wheel_chassisAngle, final boolean ignore) {
-		if (!ignore) {rotator.set(decapitateAngle(wheel_chassisAngle));}//if this doesn't run, complete loop update will eventually set it to be the last angle
+		if (!ignore) {rotator.quickSet(decapitateAngle(wheel_chassisAngle));}//if this doesn't run, complete loop update will eventually set it to be the last angle
 	}
 	/**
 	 * Use wheel_fieldAngle to specify the wheel's orientation relative to the field in degrees.
@@ -97,7 +101,7 @@ public class R_SwerveModule {
 	 * It also makes sure that they turn in the correct direction, regardless of decapitated state.
 	**/
 	public void set(final double speed) {
-		tractionA.set(speed*decapitated);
+		tractionA.quickSet(speed*decapitated);
 	}
 	/**
 	 * A shortcut to call completeLoopUpdate on all the Talons in the module except for the traction slave.

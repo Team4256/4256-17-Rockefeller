@@ -23,7 +23,7 @@ package org.usfirst.frc.team4256.robot;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.cyborgcats.reusable.R_CANTalon;
+import com.cyborgcats.reusable.Talon.R_Talon;
 import com.cyborgcats.reusable.R_Gyro;
 import com.cyborgcats.reusable.R_Xbox;
 import com.cyborgcats.reusable.V_Fridge;
@@ -67,10 +67,10 @@ public class Robot extends IterativeRobot {
 	private static final R_SwerveModule moduleD = new R_SwerveModule(Parameters.Swerve_rotatorD, true, Parameters.Swerve_driveDA, Parameters.Swerve_driveDB, Parameters.Swerve_calibratorD);
 	private static final R_DriveTrain swerve = new R_DriveTrain(gyro, moduleA, moduleB, moduleC, moduleD);
 	
-	private static final R_CANTalon climberA = new R_CANTalon(Parameters.ClimberA, 51, R_CANTalon.voltage);
-	private static final R_CANTalon climberB = new R_CANTalon(Parameters.ClimberB, 51, R_CANTalon.follower);
+	private static final R_Talon climberA = new R_Talon(Parameters.ClimberA, 51, R_Talon.percent);
+	private static final R_Talon climberB = new R_Talon(Parameters.ClimberB, 51, R_Talon.follower);
 	
-	private static final R_CANTalon lift = new R_CANTalon(Parameters.Lift, 1, R_CANTalon.voltage);
+	private static final R_Talon lift = new R_Talon(Parameters.Lift, 1, R_Talon.percent);
 	private static final DoubleSolenoid clamp = new DoubleSolenoid(Parameters.Clamp_module, Parameters.Clamp_forward, Parameters.Clamp_reverse);
 	private static final DoubleSolenoid gearer = new DoubleSolenoid(Parameters.Gearer_module, Parameters.Gearer_forward, Parameters.Gearer_reverse);
 	
@@ -87,11 +87,11 @@ public class Robot extends IterativeRobot {
 		V_PID.set("strafe", Parameters.strafeP, Parameters.strafeI, Parameters.strafeD);
 		V_PID.set("spin", Parameters.spinP, Parameters.spinI, Parameters.spinD);
 		climberA.init();
-		climberA.setVoltageCompensationRampRate(24);
+		//climberA.setVoltageCompensationRampRate(24);
 		climberB.init(climberA.getDeviceID(), 12f);
-		climberB.setVoltageCompensationRampRate(24);
+		//climberB.setVoltageCompensationRampRate(24);
 		lift.init();
-		lift.setVoltageRampRate(8);
+		//lift.setVoltageRampRate(8);
 	}
 
 	@Override
@@ -143,104 +143,6 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void autonomousPeriodic() {
-		if (!V_Instructions.startedTimer()) {
-			V_Instructions.startTimer();
-		}
-		if (Timer.getMatchTime() <= 15) {
-			if (!swerve.isAligned()) {//ALIGN
-				swerve.align(.004);
-				moduleA.setTareAngle(5);	moduleB.setTareAngle(3);	moduleC.setTareAngle(4);	moduleD.setTareAngle(5);
-				//comp robot: 5, 3, 4, 5
-				//practice robot: 9, -3, 6, 8
-			}
-			if (!liftState.equals(LiftState.up)) {//RAISE LIFTER
-				lift.set(-.23);
-				liftState = LiftState.middle;
-			}else {
-				lift.set(-.1);
-			}
-			if (lift.getOutputCurrent() < 3) {
-				highAmpTimer = System.currentTimeMillis();
-			}else if (System.currentTimeMillis() - highAmpTimer > 500) {liftState = LiftState.up;}
-			
-			switch (autoMode) {
-			case 0://LEFT GEAR
-				V_Instructions.follow(Parameters.leftInstructions, autoStep, swerve, gyro);
-				if (V_Instructions.readyToMoveOn() && V_Instructions.canMoveOn()) {
-					autoStep++;
-				}else if (V_Instructions.readyToMoveOn() && !V_Instructions.canMoveOn()) {
-					double pegX = edison.getNumber("peg x", 0);
-					if (edison.getNumber("targets", 0) > 1 && edison.getNumber("peg y", 0) < 198) {
-						double xError = pegX - 170;
-						double angleError = xError*40/100;
-						swerve.holonomic(Parameters.leftGear + angleError, 0.12, 0);
-					}else {
-						if (V_Instructions.getSeconds() < 10.25) {
-							swerve.holonomic(Parameters.leftGear, .18, -.06);
-						}else {
-							swerve.holonomic(Parameters.leftGear, 0, 0);
-							clamp.set(DoubleSolenoid.Value.kForward);
-							lift.set(0);
-						}
-					}
-				}
-				break;
-			case 1://MIDDLE GEAR
-				V_Instructions.follow(Parameters.middleInstructions, autoStep, swerve, gyro);
-				if (V_Instructions.readyToMoveOn() && V_Instructions.canMoveOn()) {
-					autoStep++;
-				}else if (V_Instructions.readyToMoveOn() && !V_Instructions.canMoveOn()) {
-					double pegX = edison.getNumber("peg x", 0);
-					if (edison.getNumber("targets", 0) > 0 && edison.getNumber("peg y", 0) < 205) {
-						double xError = pegX - 170;
-						double angleError = xError*45/100;
-						swerve.holonomic(Parameters.centerGear + angleError, 0.15, 0);
-					}else {
-						if (V_Instructions.getSeconds() < 8) {
-							swerve.holonomic(Parameters.centerGear, .15, 0);
-						}else if (V_Instructions.getSeconds() < 9) {
-							swerve.holonomic(Parameters.centerGear, 0, 0);
-							clamp.set(DoubleSolenoid.Value.kForward);
-							lift.set(0);
-						}else if (V_Instructions.getSeconds() < 10) {
-							swerve.holonomic(Parameters.centerGear, -.15, 0);
-						}else {
-							swerve.holonomic(Parameters.centerGear, 0, 0);
-						}
-					}
-				}
-				break;
-			case 2://RIGHT GEAR
-				V_Instructions.follow(Parameters.rightInstructions, autoStep, swerve, gyro);
-				if (V_Instructions.readyToMoveOn() && V_Instructions.canMoveOn()) {
-					autoStep++;
-				}else if (V_Instructions.readyToMoveOn() && !V_Instructions.canMoveOn()) {
-					double pegX = edison.getNumber("peg x", 0);
-					if (edison.getNumber("targets", 0) > 1 && edison.getNumber("peg y", 0) < 198) {
-						double xError = pegX - 170;
-						double angleError = xError*45/100;
-						swerve.holonomic(Parameters.rightGear + angleError, 0.12, 0);
-					}else {
-						if (V_Instructions.getSeconds() < 9) {
-							swerve.holonomic(Parameters.rightGear, .12, 0);
-						}else {
-							swerve.holonomic(Parameters.rightGear, 0, 0);
-							clamp.set(DoubleSolenoid.Value.kForward);
-							lift.set(0);
-						}
-					}
-				}
-				break;
-			default:break;
-			}
-			//{completing Talon updates}
-			moduleA.completeLoopUpdate();
-			moduleB.completeLoopUpdate();
-			moduleC.completeLoopUpdate();
-			moduleD.completeLoopUpdate();
-			climberA.completeLoopUpdate();
-			lift.completeLoopUpdate();
-		}
 	}
 	
 	@Override
@@ -288,9 +190,9 @@ public class Robot extends IterativeRobot {
 		if (driver.getRawButton(R_Xbox.BUTTON_LB)) {//CLIMBER
 			double climbSpeed = driver.getRawButton(R_Xbox.BUTTON_RB) ? 1 : .6;//make both values negative for use with a single CIM
 			if (gunner.getAxisPress(R_Xbox.AXIS_LT, .5)) {climbSpeed *= -1;}
-			climberA.set(climbSpeed);
+			climberA.quickSet(climbSpeed);
 		}else {
-			climberA.set(0);
+			climberA.quickSet(0);
 		}
 		
 		if (V_Fridge.freeze("POVSOUTH", driver.getPOV(0) == R_Xbox.POV_SOUTH)) {//GEARER
@@ -305,27 +207,27 @@ public class Robot extends IterativeRobot {
 			clamp.set(DoubleSolenoid.Value.kReverse);
 		}
 		
-		if (V_Fridge.freeze("AXISLT", driver.getAxisPress(R_Xbox.AXIS_LT, .5))) {//LIFTER
-			if (!liftState.equals(LiftState.up)) {
-				lift.set(-.23);
-				liftState = LiftState.middle;
-			}else {
-				lift.set(-.1);
-			}
-			if (lift.getOutputCurrent() < 3) {
-				highAmpTimer = System.currentTimeMillis();
-			}else if (System.currentTimeMillis() - highAmpTimer > 500) {liftState = LiftState.up;}
-		}else {
-			if (!liftState.equals(LiftState.down)) {
-				lift.set(.15);
-				liftState = LiftState.middle;
-			}else {
-				lift.set(0);
-			}
-			if (lift.getOutputCurrent() < 1.7) {
-				highAmpTimer = System.currentTimeMillis();
-			}if (System.currentTimeMillis() - highAmpTimer > 500) {liftState = LiftState.down;}
-		}
+//		if (V_Fridge.freeze("AXISLT", driver.getAxisPress(R_Xbox.AXIS_LT, .5))) {//LIFTER
+//			if (!liftState.equals(LiftState.up)) {
+//				lift.set(-.23);
+//				liftState = LiftState.middle;
+//			}else {
+//				lift.set(-.1);
+//			}
+//			if (lift.getOutputCurrent() < 3) {
+//				highAmpTimer = System.currentTimeMillis();
+//			}else if (System.currentTimeMillis() - highAmpTimer > 500) {liftState = LiftState.up;}
+//		}else {
+//			if (!liftState.equals(LiftState.down)) {
+//				lift.set(.15);
+//				liftState = LiftState.middle;
+//			}else {
+//				lift.set(0);
+//			}
+//			if (lift.getOutputCurrent() < 1.7) {
+//				highAmpTimer = System.currentTimeMillis();
+//			}if (System.currentTimeMillis() - highAmpTimer > 500) {liftState = LiftState.down;}
+//		}
 		
 		if (gyro.netAcceleration() >= 1) {
 			driver.setRumble(RumbleType.kLeftRumble, 1);//DANGER RUMBLE
