@@ -148,9 +148,10 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 		if (driver.getRawButton(R_Xbox.BUTTON_START) && driver.getRawButton(R_Xbox.BUTTON_BACK)) {//SWERVE ALIGNMENT
-			swerve.align(.004);//TODO limit how long this can take
-			moduleA.setTareAngle(5);	moduleB.setTareAngle(3);	moduleC.setTareAngle(4);	moduleD.setTareAngle(5);
-			//comp robot: 5, 3, 4, 5
+			swerve.align(.001);//TODO limit how long this can take
+			moduleA.setTareAngle(8);	moduleB.setTareAngle(-28);	moduleC.setTareAngle(10);	moduleD.setTareAngle(0);
+			//comp robot 2018, bc apparently screws get loose (Connor thinks gears wore in): 8, -28, 10, 0
+			//comp robot 2017: 5, 3, 4, 5
 			//practice robot: 9, -3, 6, 8
 		}
 		
@@ -246,15 +247,16 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void testPeriodic() {
-		metersX = tesla.getNumber("x", metersX);
-		metersY = tesla.getNumber("y", metersY);
-		double expectedX = tesla.getNumber("expected x", metersX);
-		double expectedY = tesla.getNumber("expected y", metersY);
-		double expectedAngle = tesla.getNumber("expected angle", gyro.getCurrentAngle());
-		double xError = expectedX - metersX;
-		double yError = expectedY - metersY;
-		double spinError = gyro.wornPath(expectedAngle);
-		swerve.holonomic2(V_PID.get("forward", yError), V_PID.get("strafe", xError), V_PID.get("spin", spinError));
+		if (driver.getRawButton(R_Xbox.BUTTON_START) && driver.getRawButton(R_Xbox.BUTTON_BACK)) {//SWERVE ALIGNMENT
+			swerve.align(.001);//TODO limit how long this can take
+			moduleA.setTareAngle(8);	moduleB.setTareAngle(-28);	moduleC.setTareAngle(10);	moduleD.setTareAngle(0);
+			//comp robot: 5, 3, 4, 5
+			//practice robot: 9, -3, 6, 8
+		}
+		moduleA.swivelTo(0);
+		moduleB.swivelTo(0);
+		moduleC.swivelTo(0);
+		moduleD.swivelTo(0);
 	}
 	
 	@Override

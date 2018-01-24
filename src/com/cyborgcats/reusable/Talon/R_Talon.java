@@ -149,7 +149,7 @@ public class R_Talon extends TalonSRX {
 				super.set(controlMode, ConvertFrom.DEGREES.afterGears(gearRatio, getCurrentAngle(false) + wornPath(value)));
 			}else {
 				//lastSetPoint = ConvertFrom.REVS.afterGears(gearRatio, value);
-				lastSetPoint = value*360.0/gearRatio;//TODO not sure exactly why this is being modified here
+				//lastSetPoint = value*360.0/gearRatio;//TODO not sure exactly why this is being modified here
 				super.set(controlMode, value);
 			}
 			break;

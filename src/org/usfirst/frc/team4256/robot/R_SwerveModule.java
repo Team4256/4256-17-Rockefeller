@@ -1,5 +1,6 @@
 package org.usfirst.frc.team4256.robot;//COMPLETE 2017
 
+import com.cyborgcats.reusable.Talon.ConvertFrom;
 import com.cyborgcats.reusable.Talon.ConvertTo;
 import com.cyborgcats.reusable.Talon.R_Talon;
 import com.cyborgcats.reusable.V_Compass;
@@ -29,11 +30,12 @@ public class R_SwerveModule {
 	**/
 	public void init() {
 		rotator.init();
+		rotator.setInverted(true);
 		rotator.setNeutralMode(R_Talon.coast);
 		//otator.setPID(Parameters.swerveP, Parameters.swerveI, Parameters.swerveD);
-		rotator.config_kP(0, 6, R_Talon.kTimeoutMS);
+		rotator.config_kP(0, .7, R_Talon.kTimeoutMS);
 		rotator.config_kI(0, 0, R_Talon.kTimeoutMS);
-		rotator.config_kD(0, .6, R_Talon.kTimeoutMS);
+		rotator.config_kD(0, 1.5, R_Talon.kTimeoutMS);
 		tractionA.init(0, 12f);
 		tractionA.setNeutralMode(R_Talon.coast);
 		tractionB.init(tractionA.getDeviceID(), 1);
@@ -62,10 +64,10 @@ public class R_SwerveModule {
 				aligning = true;
 				alignmentRevs = ConvertTo.REVS.beforeGears(rotator.getSelectedSensorPosition(0));//rotator.getPosition();
 			}alignmentRevs += increment;
-			rotator.set(alignmentRevs, false, true);
+			rotator.set(ConvertFrom.REVS.beforeGears(alignmentRevs), false, true);
 		}else {
 			aligning = false;
-			rotator.set(alignmentRevs, false, true);
+			rotator.set(ConvertFrom.REVS.beforeGears(alignmentRevs), false, true);
 			rotator.compass.setTareAngle(alignmentRevs%rotatorGearRatio*360/rotatorGearRatio);
 			aligned = true;
 		}
