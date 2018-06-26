@@ -3,21 +3,26 @@ package com.cyborgcats.reusable;//COMPLETE 2017
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class V_Fridge {//fridges and freezers control the state of matter (solid, liquid) as this class helps with boolean states
+public final class Fridge {//this class helps with boolean states
+	private Fridge() {}
+	
 	private static final Map<String, Boolean> previousStates = new HashMap<String, Boolean>();
 	public static final Map<String, Boolean> toggleStates = new HashMap<String, Boolean>();
 	public static final Map<String, Long> toggledTimes = new HashMap<String, Long>();
 	/**
 	 * Run this to ensure that the specified key is available in all the class' HashMaps.
 	**/
-	private static void initialize(final String key) {
+	public static void initialize(final String key, final boolean initState) {
 		if (previousStates.get(key) == null) {
-			previousStates.put(key, false);
+			previousStates.put(key, initState);
 		}if (toggleStates.get(key) == null) {
 			toggleStates.put(key, false);
 		}if (toggledTimes.get(key) == null) {
 			toggledTimes.put(key, System.currentTimeMillis());
 		}
+	}
+	private static void initialize(final String key) {
+		initialize(key, false);
 	}
 	/**
 	 * This function's return value alternates between true and false each time currentState becomes true.
