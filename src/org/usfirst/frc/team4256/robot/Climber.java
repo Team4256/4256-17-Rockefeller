@@ -7,7 +7,7 @@ public class Climber implements Subsystem {
 	private static final double fastSpeed = 1.0, slowSpeed = 0.6;
 	private final Talon motor;
 	private double direction = 1.0;
-	public Climber(final double climberID) {this.motor = new Talon(climberID, 51, Talon.percent);}
+	public Climber(final int climberID) {this.motor = new Talon(climberID, Talon.percent);}
 	
 	public void ascend(final boolean fast) {
 		if (fast) motor.quickSet(direction*fastSpeed, false);

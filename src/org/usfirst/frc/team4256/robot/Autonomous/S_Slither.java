@@ -8,8 +8,8 @@ import com.cyborgcats.reusable.Autonomous.Path;
 
 public final class S_Slither extends Strategy2017 {
 	
-	public S_Slither(final StartingPosition posI, final char[] gameData, final Odometer odometer) {super(posI, gameData, odometer);}
-	public S_Slither(final Odometer odometer) {super(StartingPosition.CENTER, new char[] {'R', 'R', 'R'}, odometer);}
+	public S_Slither(final StartingPosition posI, final char[] gameData, final Odometer odometer) {super(posI, odometer);}
+	public S_Slither(final Odometer odometer) {super(StartingPosition.CENTER, odometer);}
 	
 	@Override
 	protected Leash getLeash() {

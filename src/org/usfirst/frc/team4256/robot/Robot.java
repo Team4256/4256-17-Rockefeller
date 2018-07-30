@@ -71,8 +71,6 @@ public class Robot extends IterativeRobot {
 
 	@Override
 	public void autonomousInit() {
-		if (DriverStation.getInstance().getAlliance() != DriverStation.Alliance.Red) Parameters.loadingStation += 90;
-		
 		swerve.autoMode(true);
 		
 		PID.clear("forward");
